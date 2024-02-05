@@ -1,0 +1,59 @@
+<!-- Botón -->
+<button pButton
+        pRipple
+        type="button"
+        icon="pi pi-plus"
+        class="p-button-rounded p-button-text z-3 ml-auto sm:ml-0"
+        pTooltip="Añadir a mis planes"
+        (click)="_toggleMenu($event)">
+</button>
+
+<!-- Dropdown -->
+<p-menu #menu
+        [popup]="true"
+        [model]="_menuItems"
+        styleClass="w-8rem">
+</p-menu>
+
+<!-- Modal -->
+<p-dialog [(visible)]="_displayModal"
+          [transitionOptions]="'100ms'"
+          [closable]="true"
+          [draggable]="false"
+          [showHeader]="true"
+          [modal]="true"
+          [style]="{width: '450px'}"
+          header="Crea un nuevo plan"
+>
+  <!-- Form -->
+  <form [formGroup]="_formCreatePlan" (ngSubmit)="_onCreatePlanFormSubmit()" class="mt-0">
+    <!-- Titulo -->
+    <div class="form-group">
+      <label class="mb-1" for="titleInput">Titulo</label>
+      <input formControlName="title" type="text" class="form-control" id="titleInput" placeholder="Título del plan">
+    </div>
+    <!-- Descripción -->
+    <div class="form-group mt-4">
+      <label class="mb-1" for="descriptionInput">Descripción</label>
+      <textarea formControlName="description" class="form-control" id="descriptionInput"
+                placeholder="Descripción del plan"></textarea>
+    </div>
+    <!-- Switch público -->
+    <div class="form-group mt-4 row align-items-center">
+      <div class="col-8">
+        <p>Plan público</p>
+        <p class="text-secondary">Los planes públicos serán visibles para el resto de usuarios</p>
+      </div>
+      <div class="col d-flex justify-content-end">
+        <p-inputSwitch [ngModel]="false" formControlName="public" id="publicInput"></p-inputSwitch>
+      </div>
+    </div>
+    <!-- Botón crear plan -->
+    <button [disabled]="_formCreatePlan.invalid || _formBeingSubmitted" type="submit"
+            class="btn btn-primary mt-4 w-100">Crear plan
+    </button>
+  </form>
+</p-dialog>
+
+<!-- Toast -->
+<p-toast position="bottom-center"></p-toast>

@@ -1,0 +1,79 @@
+<!-- Form y logo -->
+<div *ngIf="!_isLoading" class="container-fluid">
+  <!-- Logo -->
+  <img src="assets/images/logo.png" class="img-fluid logo" alt="logo">
+  <!-- Form -->
+  <form [formGroup]="_formLogin" (ngSubmit)="_onLoginFormSubmit()">
+    <!-- Email -->
+    <div class="form-group mt-4">
+      <input formControlName="email" type="email" class="form-control" id="emailInput" placeholder="Correo electrónico"
+             [ngClass]="
+                 (_formLogin.get('email').touched || _formLogin.get('email').dirty) &&
+                 _formLogin.get('email').hasError('required')
+                 ? 'is-invalid': ''
+                 ||
+                 _formLogin.get('email').hasError('email')
+                 ? 'is-invalid' : ''
+                 ||
+                 (_formLogin.get('email').touched || _formLogin.get('email').dirty) &&
+                 !_formLogin.get('email').invalid
+                 ? 'is-valid' : ''
+                 "
+      >
+    </div>
+    <!-- Contraseña -->
+    <div class="form-group mt-4">
+      <div class="input-group">
+        <input formControlName="password" [type]="_passwordTextFieldType ? 'text' : 'password'" class="form-control"
+               id="passwordInput" placeholder="Contraseña"
+               [ngClass]="
+                 (_formLogin.get('password').touched || _formLogin.get('password').dirty) &&
+                 _formLogin.get('password').hasError('required')
+                 ? 'is-invalid': ''
+                 ||
+                 _formLogin.get('password').hasError('minlength')
+                 ? 'is-invalid' : ''
+                 ||
+                 (_formLogin.get('password').touched || _formLogin.get('password').dirty) &&
+                 !_formLogin.get('password').invalid
+                 ? 'is-valid' : ''
+                 "
+        >
+        <div (click)="_togglePasswordTextFieldType()" class="input-group-append ms-1">
+                  <span class="input-group-text h-100">
+                    <i class="pi"
+                       [ngClass]="{'pi-eye-slash': !_passwordTextFieldType,'pi-eye': _passwordTextFieldType}"></i>
+                  </span>
+        </div>
+      </div>
+    </div>
+    <!-- Botón login -->
+    <button [disabled]="_formLogin.invalid || _formBeingSubmitted" type="submit" class="btn btn-primary mt-4 w-100">Entrar</button>
+    <!-- Enlace a contraseña olvidada -->
+    <div class="form-text mt-2 text-center">
+      <a [routerLink]="['/auth/password-recovery']" role="button" class="small">He olvidado mi contraseña</a>
+    </div>
+    <!-- Enlace crear cuenta -->
+    <div class="form-text mt-4 text-center">
+      <hr>
+      <a [routerLink]="['/auth/signup']" role="button">¿No tienes cuenta? Regístrate</a>
+    </div>
+  </form>
+</div>
+<!-- Toast -->
+<p-toast position="bottom-center"></p-toast>
+<!-- Modal -->
+<p-dialog [(visible)]="_displayModal"
+          [transitionOptions]="'100ms'"
+          [closable]="false"
+          [draggable]="false"
+          [showHeader]="false"
+          [modal]="true"
+          [style]="{width: '450px'}"
+>
+  <p>Tu cuenta aun no está verificada.</p>
+  <p>Revisa tu bandeja de entrada, te enviamos un correo electrónico para que puedas verificarla.</p>
+  <div class="d-flex justify-content-center">
+    <button class="btn btn-primary btn-sm" (click)="_onClickResendVerificationEmailButton()">¡VALE!</button>
+  </div>
+</p-dialog>

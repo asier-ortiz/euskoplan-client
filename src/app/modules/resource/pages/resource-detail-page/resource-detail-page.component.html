@@ -1,0 +1,154 @@
+<div *ngIf="_resource" class="container">
+
+  <!-- Acciones -->
+  <div class="pt-4">
+    <h4>Acciones:</h4>
+    <!-- Botón añadir crear plan -->
+    <app-button-add-to-plan [_resource]="_resource"></app-button-add-to-plan>
+    <!-- Botón añadir a favoritos -->
+    <app-button-add-to-favourites [_resource]="_resource"></app-button-add-to-favourites>
+    <hr>
+  </div>
+
+  <!-- Switch con el tipo del recurso para mostrar un template u otro -->
+  <ng-container [ngSwitch]="_resource.coleccion">
+    <ng-container *ngSwitchCase="'accommodation'" [ngTemplateOutlet]="accommodation"></ng-container>
+    <ng-container *ngSwitchCase="'cave'" [ngTemplateOutlet]="cave"></ng-container>
+    <ng-container *ngSwitchCase="'cultural'" [ngTemplateOutlet]="cultural"></ng-container>
+    <ng-container *ngSwitchCase="'event'" [ngTemplateOutlet]="event"></ng-container>
+    <ng-container *ngSwitchCase="'fair'" [ngTemplateOutlet]="fair"></ng-container>
+    <ng-container *ngSwitchCase="'locality'" [ngTemplateOutlet]="locality"></ng-container>
+    <ng-container *ngSwitchCase="'museum'" [ngTemplateOutlet]="museum"></ng-container>
+    <ng-container *ngSwitchCase="'natural'" [ngTemplateOutlet]="natural"></ng-container>
+    <ng-container *ngSwitchCase="'restaurant'" [ngTemplateOutlet]="restaurant"></ng-container>
+  </ng-container>
+</div>
+
+<ng-template #accommodation>
+  <!-- Nombre -->
+  <h4>Nombre:</h4>
+  <p>{{_resource.nombre}}</p>
+  <hr>
+  <!-- Tipo alojamiento -->
+  <h4>Tipo:</h4>
+  <p>{{_resource.nombre_subtipo_recurso}}</p>
+  <hr>
+  <!-- Descripción -->
+  <h4>Descripción:</h4>
+  <div [innerHTML]="_resource.descripcion"></div>
+  <hr>
+  <!-- Datos contacto -->
+  <h4>Contacto:</h4>
+  <div>
+    <p> Dirección: C/ {{_resource.direccion}}, {{_resource.codigo_postal}}, {{_resource.nombre_municipio}}, {{_resource.nombre_provincia}}</p>
+    <p> Sitio web: {{_resource.pagina_web}}</p>
+    <p> Teléfono: {{_resource.numero_telefono}}</p>
+  </div>
+  <hr>
+  <!-- Datos alojamiento -->
+  <h4>Datos alojamiento:</h4>
+  <div>
+    <p>Año de apertura: {{_resource.anno_apertura}}</p>
+    <p>Capacidad: {{_resource.capacidad}} habitaciones</p>
+  </div>
+  <hr>
+  <!-- Servicios -->
+  <h4>Servicios:</h4>
+  <div>
+    <ul>
+      <li *ngFor="let service of _resource.servicios">{{service.nombre}}</li>
+    </ul>
+  </div>
+  <hr>
+  <!-- Precios -->
+  <h4>Precios:</h4>
+  <div>
+    <ul>
+      <li *ngFor="let price of _resource.precios">
+        <!-- Si la capacidad es 0, no se trata del precio de una habitación -->
+          <p *ngIf="price.capacidad != 0; else notRoomPrice" >{{price.nombre}} para {{price.capacidad}} personas desde {{price.precio_minimo}}€ hasta {{price.precio_maximo}}€</p>
+          <ng-template #notRoomPrice>
+            <p>{{price.nombre}} desde {{price.precio_minimo}}€ hasta {{price.precio_maximo}}€</p>
+          </ng-template>
+      </li>
+    </ul>
+  </div>
+  <hr>
+  <!-- Imágenes -->
+  <ng-container [ngTemplateOutlet]="gallery"></ng-container>
+</ng-template>
+
+<ng-template #cave>
+  <!-- TODO Poner los datos de la cueva -->
+  TODO Poner los datos de la cueva
+  <!-- Imágenes -->
+  <ng-container [ngTemplateOutlet]="gallery"></ng-container>
+</ng-template>
+
+<ng-template #cultural>
+  <!-- TODO Poner los datos del recurso cultural -->
+  TODO Poner los datos del recurso cultural
+  <!-- Imágenes -->
+  <ng-container [ngTemplateOutlet]="gallery"></ng-container>
+</ng-template>
+
+<ng-template #event>
+  <!-- TODO Poner los datos del evento -->
+  TODO Poner los datos del evento
+  <!-- Imágenes -->
+  <ng-container [ngTemplateOutlet]="gallery"></ng-container>
+</ng-template>
+
+<ng-template #fair>
+  <!-- TODO Poner los datos del parque de atracciones -->
+  TODO Poner los datos del parque de atracciones
+  <!-- Imágenes -->
+  <ng-container [ngTemplateOutlet]="gallery"></ng-container>
+</ng-template>
+
+<ng-template #locality>
+  <!-- TODO Poner los datos de la localidad -->
+  TODO Poner los datos de la localidad
+  <!-- Imágenes -->
+  <ng-container [ngTemplateOutlet]="gallery"></ng-container>
+</ng-template>
+
+<ng-template #museum>
+  <!-- TODO Poner los datos del museo -->
+  TODO Poner los datos del museo
+  <!-- Imágenes -->
+  <ng-container [ngTemplateOutlet]="gallery"></ng-container>
+</ng-template>
+
+<ng-template #natural>
+  <!-- TODO Poner los datos del parque natural -->
+  TODO Poner los datos del parque natural
+  <!-- Imágenes -->
+  <ng-container [ngTemplateOutlet]="gallery"></ng-container>
+</ng-template>
+
+<ng-template #restaurant>
+  <!-- TODO Poner los datos del restaurante -->
+  TODO Poner los datos del restaurante
+  <!-- Imágenes -->
+  <ng-container [ngTemplateOutlet]="gallery"></ng-container>
+</ng-template>
+
+<ng-template #gallery>
+  <h4>Galería:</h4>
+  <div>
+    <p-galleria [value]="_resource.imagenes.length > 0 ? _resource.imagenes : [{fuente: 'assets/images/' + _imgGeneric, titulo: 'imagen'}]"
+                [responsiveOptions]="_responsiveOptions"
+                [containerStyle]="{'max-width': '500px'}"
+    >
+      <ng-template pTemplate="item" let-image>
+        <img [src]="image.fuente" style="width: 100%; display: block;" [alt]="image.titulo"/>
+      </ng-template>
+      <ng-template pTemplate="thumbnail" let-image>
+        <div class="grid grid-nogutter justify-content-center">
+          <img [src]="image.fuente" style="height: 50px; width: 75px" [alt]="image.titulo"/>
+        </div>
+      </ng-template>
+    </p-galleria>
+  </div>
+</ng-template>

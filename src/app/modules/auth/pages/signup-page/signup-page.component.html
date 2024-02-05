@@ -1,0 +1,139 @@
+<!-- Form -->
+<div class="container-fluid">
+  <form [formGroup]="_formSignup" (ngSubmit)="_onSignupFormSummit()">
+    <!-- Nombre usuario -->
+    <div class="form-group">
+      <input formControlName="username" type="email" class="form-control" id="usernameInput"
+             placeholder="Nombre de usuario"
+             [ngClass]="
+                 (_formSignup.get('username').touched || _formSignup.get('username').dirty) &&
+                 _formSignup.get('username').hasError('username')
+                 ? 'is-invalid': ''
+                 ||
+                 _formSignup.get('username').hasError('minlength')
+                 ? 'is-invalid' : ''
+                 ||
+                 (_formSignup.get('username').touched || _formSignup.get('username').dirty) &&
+                 !_formSignup.get('username').invalid
+                 ? 'is-valid' : ''
+                 "
+      >
+      <div class="invalid-feedback mt-0">
+        <p *ngIf="!_usernameIsAvailable$.value" class="small text-end">Usuario no disponible</p>
+      </div>
+    </div>
+    <!-- Email -->
+    <div class="form-group mt-4">
+      <input formControlName="email" type="email" class="form-control" id="emailInput" placeholder="Correo electrónico"
+             [ngClass]="
+                 (_formSignup.get('email').touched || _formSignup.get('email').dirty) &&
+                 _formSignup.get('email').hasError('required')
+                 ? 'is-invalid': ''
+                 ||
+                 _formSignup.get('email').hasError('email')
+                 ? 'is-invalid' : ''
+                 ||
+                 (_formSignup.get('email').touched || _formSignup.get('email').dirty) &&
+                 !_formSignup.get('email').invalid
+                 ? 'is-valid' : ''
+                 "
+      >
+      <div class="invalid-feedback mt-0">
+        <p *ngIf="!_emailIsAvailable$.value" class="small text-end">Email no disponible</p>
+      </div>
+    </div>
+    <!-- Contraseña -->
+    <div class="form-group mt-4">
+      <div class="input-group">
+        <input formControlName="password" [type]="_passwordTextFieldType ? 'text' : 'password'" class="form-control"
+               id="passwordInput" placeholder="Contraseña"
+               [ngClass]="
+                 (_formSignup.get('password').touched || _formSignup.get('password').dirty) &&
+                 _formSignup.get('password').hasError('required')
+                 ? 'is-invalid': ''
+                 ||
+                 _formSignup.get('password').hasError('minlength')
+                 ? 'is-invalid' : ''
+                 ||
+                 (_formSignup.get('password').touched || _formSignup.get('password').dirty) &&
+                 !_formSignup.get('password').invalid
+                 ? 'is-valid' : ''
+                 "
+        >
+        <div (click)="_togglePasswordTextFieldType()" class="input-group-append ms-1">
+                  <span class="input-group-text h-100">
+                    <i class="pi"
+                       [ngClass]="{'pi-eye-slash': !_passwordTextFieldType,'pi-eye': _passwordTextFieldType}"></i>
+                  </span>
+        </div>
+        <div class="invalid-feedback mt-0">
+          <p *ngIf="_formSignup.get('password').hasError('minlength')" class="small text-end">Introduce al menos 6
+            caracteres</p>
+        </div>
+      </div>
+    </div>
+    <!-- Confirmación contraseña -->
+    <div class="form-group mt-4">
+      <div class="input-group">
+        <input formControlName="passwordConfirmation" [type]="_passwordConfirmTextFieldType ? 'text' : 'password'"
+               class="form-control"
+               id="passwordConfirmationInput" placeholder="Confirma tu contraseña"
+               [ngClass]="
+                 (_formSignup.get('passwordConfirmation').touched || _formSignup.get('passwordConfirmation').dirty) &&
+                 _formSignup.get('passwordConfirmation').hasError('required')
+                 ? 'is-invalid': ''
+                 ||
+                 _formSignup.get('passwordConfirmation').hasError('minlength')
+                 ? 'is-invalid' : ''
+                 ||
+                 _formSignup.get('passwordConfirmation').hasError('confirmedValidator')
+                 ? 'is-invalid' : ''
+                 ||
+                 (_formSignup.get('passwordConfirmation').touched || _formSignup.get('passwordConfirmation').dirty) &&
+                 !_formSignup.get('passwordConfirmation').invalid
+                 ? 'is-valid' : ''
+                 "
+        >
+        <div (click)="_togglePasswordConfirmTextFieldType()" class="input-group-append ms-1">
+                  <span class="input-group-text h-100">
+                    <i class="pi"
+                       [ngClass]="{'pi-eye-slash': !_passwordConfirmTextFieldType,'pi-eye': _passwordConfirmTextFieldType}"></i>
+                  </span>
+        </div>
+        <div class="invalid-feedback mt-0">
+          <p *ngIf="_formSignup.get('passwordConfirmation').hasError('confirmedValidator')" class="small text-end">Las
+            contraseñas no coinciden</p>
+        </div>
+      </div>
+    </div>
+    <!-- Botón registrase -->
+    <button
+      [disabled]="_formSignup.invalid || !_emailHasBeenValidated$.value || !_usernameHasBeenValidated$.value || _formBeingSubmitted"
+      type="submit"
+      class="btn btn-primary mt-4 w-100">Registrarse
+    </button>
+    <!-- Enlace a iniciar sesión -->
+    <div class="form-text mt-4 text-center">
+      <hr>
+      <a [routerLink]="['/auth/login']" role="button">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+  </form>
+</div>
+<!-- Modal -->
+<p-dialog [(visible)]="_displayModal"
+          [transitionOptions]="'100ms'"
+          [closable]="false"
+          [draggable]="false"
+          [showHeader]="false"
+          [modal]="true"
+          [style]="{width: '450px'}"
+>
+  <p>¡Bienvenido a Euskoplan! Tu cuenta ha sido creada satisfactoriamente.</p>
+  <p>Revisa tu bandeja de entrada, te hemos enviado un correo para que actives tu cuenta.</p>
+  <div class="d-flex justify-content-center">
+    <button class="btn btn-primary btn-sm" (click)="_navigateToLogin()">¡VALE!</button>
+  </div>
+</p-dialog>
+<!-- Toast -->
+<p-toast position="bottom-center"></p-toast>
+

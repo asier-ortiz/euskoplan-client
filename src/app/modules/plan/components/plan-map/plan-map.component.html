@@ -1,0 +1,48 @@
+<div class="main-container">
+  <!---------------------------- Col1: Plan Info ---------------------------->
+  <div class="info-container">
+    <i class="bi bi-arrow-left-short" href="#"></i><!--Enlazar con página anterior-->
+    <div class="header">
+      <h2>Nombre del plan</h2> <!--Bindear nombre del plan-->
+        <div class="tooltip top"><i class="bi bi-info-circle-fill"></i>
+          <span class="tiptext">Puedes cambiar el orden de cualquier actividad arrastrándola a otra posición</span>
+        </div>
+    </div>
+    
+    <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+      <div class="step" *ngFor="let plan of planes">
+        <div>
+          <div class="circle">1</div> <!--Podemos poner el numerico del indice o no, como queráis, yo creo que es útil-->
+        </div>
+        <div class="example-box title" cdkDrag>{{plan}}</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!---------------------------- Col2: Mapa ---------------------------->
+  <div #mapDiv class="map-container">
+    <!-- Spinner -->
+    <p-progressSpinner [hidden]="!_isLoading"
+                      class="spinner"
+                      styleClass="map-spinner"
+                      strokeWidth="4">
+    </p-progressSpinner>
+    <!-- Botón cambiar estilo mapa -->
+    <button (click)="_onChangeMapStyleButtonClicked()" type="button"
+            class="btn btn-map-style"
+            [ngClass]="{'btn-dark': !_mapStyleIsDark,'btn-light': _mapStyleIsDark}"
+    >
+      <i class="pi map-style-icon" [ngClass]="{'pi-moon': !_mapStyleIsDark,'pi-sun': _mapStyleIsDark}"></i>
+    </button>
+    <!-- SpeedDial cambio tipo ruta -->
+    <p-speedDial class="speed-dial"
+                [model]="_speedDialItems"
+                [rotateAnimation]="false"
+                showIcon="pi pi-directions" hideIcon="pi pi-times"
+                direction="down"
+                buttonClassName="p-button-warning"
+    >
+    </p-speedDial>
+  </div>
+</div>

@@ -1,0 +1,89 @@
+.map-container {
+  position: relative;
+  margin: 0;
+  height: 75vh;
+  width: 75%;
+}
+
+.spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+}
+
+.btn-map-style {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+  width: 30px;
+  height: 30px;
+  padding: 6px 0;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.42857;
+}
+
+:host ::ng-deep .map-spinner .p-progress-spinner-circle {
+  animation: map-progress-spinner-dash 1.2s ease-in-out infinite, map-progress-spinner-color 6s ease-in-out infinite;
+}
+
+@keyframes map-progress-spinner-color {
+  100%,
+  0%,
+  20% {
+    stroke: #9176F7;
+  }
+  30%,
+  40% {
+    stroke: #FCC700;
+  }
+  50%,
+  60% {
+    stroke: #9176F7;
+  }
+  70%,
+  80% {
+    stroke: #FCC700;
+  }
+  90% {
+    stroke: #9176F7;
+  }
+}
+
+@keyframes map-progress-spinner-dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124px;
+  }
+}
+
+.map-container{
+  position: relative;
+  margin: 0;
+  display: flex;
+  width: auto;
+  align-items: baseline;
+}
+
+.mapboxgl-canvas{
+  width: 100vw;
+}
+
+
+@media only screen and (max-width: 600px) {
+  .map-container {
+    width: 100%;
+  }
+}

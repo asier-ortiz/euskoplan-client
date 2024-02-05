@@ -1,0 +1,176 @@
+<!-- Botón mostrar Sidebar -->
+<p-button (click)="_showHideModal()"
+          [disabled]="_isLoadingLocalities || _isLoadingCategories"
+          label="Filtros"
+          [badge]="_getFilterCount()"
+          styleClass="mx-2"
+          id="button-filter"
+>
+</p-button>
+
+<!-- Sidebar -->
+<form [formGroup]="_formFilter"
+      (ngSubmit)="_onFormFilterSubmit()"
+      [hidden]="_isLoadingLocalities || _isLoadingCategories"
+      class="mt-0"
+>
+
+  <p-sidebar #sidebar
+             [(visible)]="_displaySidebar"
+             [transitionOptions]="'100ms'"
+             [modal]="true"
+             [blockScroll]="true"
+             position="right"
+             styleClass="p-sidebar-md"
+  >
+
+    <!-- Sidebar header -->
+    <ng-template pTemplate="header">
+      <button (click)="_resetForm()" class="btn btn-outline-secondary">Borrar filtros</button>
+    </ng-template>
+
+    <!-- Sidebar content -->
+    <ng-template pTemplate="content">
+
+      <!-- Chips filtros -->
+      <div class="container-fluid p-0 mb-2">
+
+        <!-- Chip provincia -->
+        <p-chip *ngIf="_selectedProvince"
+                [removable]="true"
+                (onRemove)="_clear('province')"
+                [label]="_selectedProvince['name']"
+        >
+        </p-chip>
+
+        <!-- Chip localidad -->
+        <p-chip *ngIf="_selectedLocality"
+                [removable]="true"
+                (onRemove)="_clear('locality')"
+                [label]="_selectedLocality['name']"
+        >
+        </p-chip>
+
+        <!-- Chip categoría -->
+        <p-chip *ngIf="_selectedCategory"
+                [removable]="true"
+                (onRemove)="_clear('category')"
+                [label]="_selectedCategory['name']"
+        >
+        </p-chip>
+
+        <!-- Chip fecha desde -->
+        <p-chip *ngIf="_startDate"
+                [removable]="true"
+                (onRemove)="_clear('startDate')"
+                [label]="_getFromDateString()"
+        >
+        </p-chip>
+
+        <!-- Chip fecha hasta -->
+        <p-chip *ngIf="_endDate"
+                [removable]="true"
+                (onRemove)="_clear('endDate')"
+                [label]="_getToDateString()"
+        >
+        </p-chip>
+
+      </div>
+
+      <!-- Acordeón filtros -->
+      <p-accordion [multiple]="true">
+
+        <!-- Provincia -->
+        <p-accordionTab header="Provincia" [selected]="true">
+          <div class="form-group">
+            <p-listbox
+              formControlName="province"
+              id="provinceInput"
+              [options]="_provinces"
+              [(ngModel)]="_selectedProvince"
+              [multiple]="false"
+              optionLabel="name"
+            >
+            </p-listbox>
+          </div>
+        </p-accordionTab>
+
+        <!-- Localidad -->
+        <p-accordionTab header="Localidad">
+          <div class="form-group">
+            <p-listbox
+              formControlName="locality"
+              id="localityInput"
+              [options]="_localities"
+              [(ngModel)]="_selectedLocality"
+              [multiple]="false"
+              [filter]="true"
+              optionLabel="name"
+            >
+            </p-listbox>
+          </div>
+        </p-accordionTab>
+
+        <!-- Categoría -->
+        <p-accordionTab *ngIf="_categories" header="Categoría">
+          <div class="form-group">
+            <p-listbox
+              formControlName="category"
+              id="categoryInput"
+              [options]="_categories"
+              [(ngModel)]="_selectedCategory"
+              [multiple]="false"
+              optionLabel="name"
+            >
+            </p-listbox>
+          </div>
+        </p-accordionTab>
+
+        <!-- Fechas -->
+        <p-accordionTab *ngIf="_collection == 'events'" header="Fecha">
+          <div class="d-flex justify-content-around p-2">
+
+            <!-- Desde -->
+            <div class="form-group d-flex flex-column me-1">
+              <label for="startDateInput">Desde</label>
+              <p-calendar
+                formControlName="startDate"
+                id="startDateInput"
+                [(ngModel)]="_startDate"
+                view="date"
+                dateFormat="dd/mm/yy"
+                [readonlyInput]="false"
+                [touchUI]="true"
+              >
+              </p-calendar>
+            </div>
+
+            <!-- Hasta -->
+            <div class="form-group d-flex flex-column">
+              <label for="endDateInput">Hasta</label>
+              <p-calendar
+                formControlName="endDate"
+                id="endDateInput"
+                [(ngModel)]="_endDate"
+                view="date"
+                dateFormat="dd/mm/yy"
+                [readonlyInput]="false"
+                [touchUI]="true"
+              >
+              </p-calendar>
+            </div>
+          </div>
+        </p-accordionTab>
+
+      </p-accordion>
+    </ng-template>
+
+    <!-- Botón aplicar filtros -->
+    <ng-template pTemplate="footer">
+      <p-divider></p-divider>
+      <button type="submit" class="btn btn-primary mt-4 w-100">Aplicar filtros</button>
+    </ng-template>
+
+  </p-sidebar>
+
+</form>

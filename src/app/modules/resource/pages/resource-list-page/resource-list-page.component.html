@@ -1,0 +1,99 @@
+<div class="header-text-container">
+  <p>Actividades > </p>
+  <!-- TODO Poner el nombre de la categoría traducido -->
+  <h4 class="categoria">{{_collection | titlecase}}</h4>
+</div>
+
+<!-- Botón filtros -->
+<app-form-filter
+  [_collection]="_collection"
+  (formFilterCallback)="_onFilterFormSubmit($event)"
+>
+</app-form-filter>
+
+<!-- Tabview -->
+<div class="container-fluid">
+  <p-tabView>
+
+    <!------------ Lista y grid ------------>
+    <!--VER COMO AÑADIR EL LAZY LOADING PARA QUE NO TARDE TANTO EN CARGAR:
+      https://www.primefaces.org/primeng/dataview
+    -->
+    <p-tabPanel header="Lista" leftIcon="pi pi-list">
+
+      <div *ngIf="_resources$ | async as resources" class="container-list">
+
+        <div class="content-section implementation">
+          <div class="card">
+              <p-dataView #dv [value]="resources" [paginator]="true" [rows]="9">
+                  <ng-template pTemplate="header">
+                      <div class="flex flex-column md:flex-row md:justify-content-between">
+                          <span class="p-input-icon-left mb-2 md:mb-0">
+                          </span>
+                          <p-dataViewLayoutOptions></p-dataViewLayoutOptions>
+                      </div>
+                  </ng-template>
+                  <ng-template let-resource pTemplate="listItem">
+                      <div class="col-12">
+                          <div class="resource-list-item">
+                              <img class="img-recurso" [src]="'assets/images/gazte.jpeg'" [alt]="resource.name"/>
+                              <div class="resource-list-detail">
+                                  <div class="resource-name">{{resource.nombre}}</div>
+                                  <div class="resource-description">Descripcion</div>
+                                  <i class="bi bi-hash"></i><span class="resource-category">Tipo de recurso</span>
+                              </div>
+                              <div class="resource-list-action">
+                                  <span class="bi bi-geo-alt-fill location"><p class="p-location truncate">Municipio super lago que se sale</p></span>
+                                  <p-button label="Ver más" ></p-button>
+                              </div>
+                          </div>
+                      </div>
+                  </ng-template>
+                  <ng-template let-resource pTemplate="gridItem">
+                      <div class="col-sm-12 col-md-6 col-lg-4 col-xl-4">
+                          <div class="resource-grid-item card">
+                              <div class="resource-grid-item-top">
+                                  <div>
+                                      <!--<i class="pi pi-tag resource-category-icon"></i>-->
+                                      <span class="resource-category">{{resource.category}}</span>
+                                  </div>
+                                  <!--<span [class]="'resource-badge status'" >Estado</span>-->
+                              </div>
+                              <div class="resource-grid-item-content">
+                                  <img class="img-recurso" [src]="'assets/images/gazte.jpeg'" [alt]="resource.nombre"/>
+                                  <div class="resource-name">{{resource.nombre}}</div>
+                                  <div class="resource-description">Descripcion</div>
+                              </div>
+                              <div class="resource-grid-item-bottom-card">
+                                <span class="bi bi-geo-alt-fill location"><p class="p-location">Municipio super lago que se sale</p></span>
+                                <p-button label="Ver más"></p-button>
+
+                              </div>
+                          </div>
+                      </div>
+                  </ng-template>
+              </p-dataView>
+          </div>
+        </div>
+
+      </div>
+    </p-tabPanel>
+
+
+    <!------------ Mapa ------------>
+    <p-tabPanel header="Mapa" leftIcon="pi pi-map">
+      <ng-template pTemplate="content"> <!-- Lazy loading -->
+        <app-map [_resources$]="_resources$.asObservable()"
+                 [_loading$]="_loading$.asObservable()"
+                 [_collection]="_collection"
+        >
+        </app-map>
+      </ng-template>
+    </p-tabPanel>
+
+
+  </p-tabView>
+</div>
+
+
+

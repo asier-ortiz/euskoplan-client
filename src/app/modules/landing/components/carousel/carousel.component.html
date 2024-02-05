@@ -1,0 +1,39 @@
+<div class="main-container">
+    <p-carousel [value]="dataFinCarga" [numVisible]="5" [numScroll]="2" [responsiveOptions]="responsiveOptions">
+            <ng-template pTemplate="header">
+                <h5>{{ tipoCarousel | translate }}</h5>
+                <a role="button" routerLink="/resource/{{collectionNamePlural}}"> Ver más... </a> <!--Ruta al listado -->
+            </ng-template>
+            <ng-template let-data pTemplate="item">
+                <p-card  header={{data.nombre}}>
+                    <ng-template pTemplate="header">
+                        <img alt="Card" (click) = "goDetalle(data.id,tipoCarousel,data.nombre,data.codigo)" class="carousel-img" src="{{getImagen(data.imagenes, data.id)}}" default="assets/images/{{this.imgGeneric}}">
+                    </ng-template>
+                    <ng-template pTemplate="footer">
+                        <div class="likes-type-container">
+                            <!--likes-->
+                            <div class="likes-container">
+                                <button type="button" class="btn btn-outline-primary">
+                                    <i class="bi bi-hand-thumbs-up-fill"></i> 978
+                                </button>
+                            </div>
+                            <!--tipo recurso-->
+                            <div class="type-container">
+                                <button type="button" class="btn btn-outline-primary">
+                                    <i class="bi bi-hash"></i> <p class="tipo-recurso">Restaurante</p> <!--bindear tipo de recurso-->
+                                </button>
+                            </div>
+                        </div>
+                        <!--localizacion-->
+                        <div class="location-container">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <div class="localizacion">
+                                <p class="provincia">{{data.nombre_provincia}}</p>
+                                <p class="municipio">{{data.nombre_municipio}}</p>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-card>
+        </ng-template>
+    </p-carousel>
+</div>

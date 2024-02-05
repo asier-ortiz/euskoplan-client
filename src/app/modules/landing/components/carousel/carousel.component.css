@@ -1,0 +1,269 @@
+@import '~primeicons/primeicons.css';
+
+*{
+margin: 0;
+padding: 0;
+}
+
+.p-carousel-header {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.p-carousel-indicators.p-reset {
+display: none;
+}
+
+.p-carousel-prev-icon.pi.pi-chevron-left,
+.p-carousel-prev-icon.pi.pi-chevron-right
+{
+color: var(--color-primary);
+height:20px;
+}
+
+.p-ripple{
+background:none;
+border:none;
+margin-top: 0.3em;
+}
+
+.p-card{
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  overflow: hidden;
+  height: 380px;
+  margin-bottom: 1em;
+  box-shadow: none;
+  transition: transform 600ms, filter 200ms ease-in-out;
+}
+
+.p-card-footer{
+  gap: 2em;
+  display: flex;
+  margin-top: 2em;
+}
+
+.pcard-body{
+  padding: 1.5em 0.5em 0em 1.5em;
+}
+
+.p-card .p-card-content {
+  padding: 0; 
+}
+
+.p-card .p-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+/*
+.p-card-header{
+  border-radius: 10px 10px 0px 0px;
+}
+*/
+.p-card-header img {
+    width:100%;
+}
+
+
+.p-card-title {
+  font-size: 1rem;
+  font-weight: 10;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.p-carousel-header{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  }
+
+.p-carousel-header > h5{
+color: var(--font-color);
+font-size: 35px;
+margin:1.2em 0 0.8em 0.5em;
+font-family: 'Din Alternate Bold', 'arial Bold';
+padding-left: 0.85em; 
+}
+
+.p-carousel-header > a{
+color: var(--color-primary);
+margin-right: 5em;
+}
+
+.p-carousel-container {
+    margin: 2em 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.p-carousel-items-container {
+display: flex;
+flex-direction: row;
+}
+
+
+.p-carousel-item{
+  margin-bottom: 2em;
+}
+
+.carousel-img{
+  transition: transform 600ms, filter 200ms ease-in-out;
+  height: 10rem;
+}
+
+.carousel-img:hover{
+cursor:pointer;
+}
+
+
+.p-card:hover {
+  cursor: pointer;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.likes-container, .location-container{
+    width: 50%;
+    display: flex;
+    gap: 1em;
+    align-items: baseline;
+}
+
+.likes-container > button, .type-container > button{
+  cursor: default;
+  border: none;
+  color: var(--font-color);
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 1em;
+  margin-bottom: 0.2em;
+}
+
+.type-container> button{
+  background-color: var(--color-secondary);
+}
+
+.likes-container > .btn:hover {
+  background-color: aliceblue !important;
+  color: var(--font-color);
+  text-decoration: none;
+  cursor:default;
+}
+.btn-outline-primary:hover{
+  background-color: aliceblue !important;
+  color: var(--font-color);
+  text-decoration: none;
+  cursor:default;
+}
+
+.btn-outline-primary:active{
+  color: aliceblue !important;
+  text-decoration: none;
+  cursor:default;
+}
+
+.likes-type-container{
+  display:flex;
+  flex-direction:column;
+}
+div.type-container > button{
+  display: flex;
+  align-items: center;
+}
+
+.likes-container>p{
+  margin-bottom: 0;
+}
+.type-container{
+  margin-bottom: 0.8em;
+}
+.tipo-recurso{
+  margin-bottom:0;
+}
+
+.localizacion{
+  display: flex;
+  flex-direction:column;
+}
+
+.municipio, .provincia{
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.bi-hand-thumbs-up-fill, .bi-hash, .bi-geo-alt-fill  {
+  font-size: 1.3em;
+  color: #9176f7;
+}
+
+
+/******* MEQIA QUERIES *******/
+/* Small devices: Mobile */
+@media screen and (max-width: 767px) { 
+
+.p-carousel-header > h5{
+font-size: 3.5vw;
+margin-left: 1.8em;
+}
+
+.carousel-img{
+height:80px;
+width:auto;
+}
+
+
+.p-carousel-items-container {
+display: block;
+}
+
+.carousel-img{
+  transition: transform 600ms, filter 200ms ease-in-out;
+  height:180px;
+}
+
+.p-card-title{
+  margin-bottom: 0.5rem;
+}
+
+}
+
+/* Small devices: Mobile */
+@media screen and (max-width: 767px) { 
+.hero-image{ 
+display:none;
+}
+.container{
+display:block;
+}
+.hero-text{
+top:10%;
+left:40%;
+}
+.hero-text > h4{
+display:none;
+}
+}
+
+/* Medium devices: Tablet */
+@media screen and (min-width: 768px) and (max-width:1023px){ 
+.container{
+  display:block;
+  margin-bottom: 10em;
+  }
+
+  .p-card:hover {
+    cursor: pointer;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  }
+  
+}

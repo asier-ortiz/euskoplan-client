@@ -1,0 +1,52 @@
+<!-- Barra de búsqueda -->
+<div class="search-bar-container">
+  <form [formGroup]="_formSearch" (ngSubmit)="_onFormSearchSubmit()" class="search-bar-form">
+    <label for="search-input">¿Qué quieres hacer?</label><br>
+    <input formControlName="searchInput" id="search-input" class="search-input" type="text" placeholder="Busca un plan"
+           aria-label="Search input" [ngModel]="_searchInput">
+    <button [disabled]="_formSearch.invalid" type="submit" class="button-search-form">
+      <svg xmlns="http://www.w3.org/2000/svg" width="1.5vw" height="1.5vw" fill="white" class="bi bi-search"
+           viewBox="0 0 16 16">
+        <path
+          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+      </svg>
+    </button>
+  </form>
+</div>
+
+<!-- TabMenu y Resultados de búsqueda -->
+<div *ngIf="!_isLoading; else loading">
+  <div *ngIf="_menuItems.length > 0; else noMatches">
+    <!-- TabMenu -->
+    <p-tabMenu #tab
+               [model]="_menuItems"
+               [activeItem]="_activeItem"
+               [scrollable]="true"
+               (click)="_onTabClick(tab.activeItem.label)"
+    >
+    </p-tabMenu>
+    <!-- Resultados de búsqueda -->
+    <p-dataView [value]="_activeCollection">
+      <ng-template let-item pTemplate="listItem">
+        <div>
+          <p class="text-secondary">{{item.nombre}}</p>
+          <p class="text-secondary">{{item.titulo}}</p>
+          <p class="text-info">  {{item.nombre_subtipo_recurso}}</p>
+          <p class="text-info"> {{item.nombre_subtipo_recurso_espacio_natural}}</p>
+          <p class="text-info"> {{item.nombre_subtipo_recurso_playas_pantanos_rios}}</p>
+        </div>
+      </ng-template>
+    </p-dataView>
+  </div>
+</div>
+
+<!-- Pantalla de carga -->
+<ng-template #loading>
+  <!-- TODO Cambiar por un Spinner o un Skeleton -->
+  <p class="text-secondary text-center">Cargando...</p>
+</ng-template>
+
+<!-- Mensaje 'Sin coincidencias' -->
+<ng-template #noMatches>
+  <p class="text-info text-center">Sin coincidencias</p>
+</ng-template>

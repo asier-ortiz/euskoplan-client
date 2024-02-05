@@ -1,0 +1,15 @@
+.footer{
+  max-height: 30%;
+  min-height: 10vh;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: var(--color-secondary);
+  color: white;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5em;
+}
+

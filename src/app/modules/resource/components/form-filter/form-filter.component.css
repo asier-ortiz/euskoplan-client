@@ -1,0 +1,23 @@
+.p-accordion .p-accordion-content {
+  padding: 0;
+}
+
+.p-chip {
+  margin: 10px;
+}
+
+.p-sidebar-content {
+  height: 100%;
+}
+
+#button-filter > .p-button {
+  background: rgb(145, 118, 247) !important;
+}
+
+#button-filter > .p-button:hover {
+  background: rgb(252, 199, 0) !important;
+}
+
+#button-filter > .p-button {
+  border: none !important;
+}

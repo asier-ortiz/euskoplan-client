@@ -1,0 +1,4 @@
+::ng-deep .new-plan-menu-item {
+  border-bottom: 1px solid grey;
+  padding-bottom: 10px;
+}

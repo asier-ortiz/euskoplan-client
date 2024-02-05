@@ -1,0 +1,15 @@
+<!-- Modal -->
+<p-dialog [(visible)]="_displayModal"
+          [transitionOptions]="'100ms'"
+          [closable]="false"
+          [draggable]="false"
+          [showHeader]="false"
+          [modal]="true"
+          [style]="{width: '450px'}"
+>
+  <p>Verificación completada.</p>
+  <p>Ya puedes empezar a usar tu cuenta.</p>
+  <div class="d-flex justify-content-center">
+    <button class="btn btn-primary btn-sm" (click)="_navigateToLogin()">¡VALE!</button>
+  </div>
+</p-dialog>

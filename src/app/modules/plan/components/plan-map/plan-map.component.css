@@ -1,0 +1,307 @@
+
+.map-container {
+  position: relative;
+  margin: auto;
+  height: 75vh;
+  width: 75%;
+}
+
+.spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+}
+
+.btn-map-style {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+  width: 30px;
+  height: 30px;
+  padding: 6px 0;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.42857;
+}
+
+.speed-dial {
+  position: absolute;
+  top: 65px;
+  left: 12px;
+  z-index: 999;
+  width: 30px;
+  height: 30px;
+  padding: 6px 0;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.42857;
+}
+
+:host ::ng-deep .map-spinner .p-progress-spinner-circle {
+  animation: map-progress-spinner-dash 1.2s ease-in-out infinite, map-progress-spinner-color 6s ease-in-out infinite;
+}
+
+@keyframes map-progress-spinner-color {
+  100%,
+  0%,
+  20% {
+    stroke: #9176F7;
+  }
+  30%,
+  40% {
+    stroke: #FCC700;
+  }
+  50%,
+  60% {
+    stroke: #9176F7;
+  }
+  70%,
+  80% {
+    stroke: #FCC700;
+  }
+  90% {
+    stroke: #9176F7;
+  }
+}
+
+@keyframes map-progress-spinner-dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124px;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .map-container {
+    width: 100%;
+  }
+}
+
+/*
+<div class="main-container">
+  <!---------------------------- Col1: Plan Info ---------------------------->
+  <div class="info-container">
+    <i class="bi bi-arrow-left-short"></i>
+    <h2>Nombre del plan</h2>
+    <p>Componente</p>
+  </div>
+  <!---------------------------- Col2: Mapa ---------------------------->
+  <div #mapDiv class="map-container">
+    <!-- Spinner -->
+    <p-progressSpinner [hidden]="!_isLoading"
+                      class="spinner"
+                      styleClass="map-spinner"
+                      strokeWidth="4">
+    </p-progressSpinner>
+    <!-- Botón cambiar estilo mapa -->
+    <button (click)="_onChangeMapStyleButtonClicked()" type="button"
+            class="btn btn-map-style"
+            [ngClass]="{'btn-dark': !_mapStyleIsDark,'btn-light': _mapStyleIsDark}"
+    >
+      <i class="pi map-style-icon" [ngClass]="{'pi-moon': !_mapStyleIsDark,'pi-sun': _mapStyleIsDark}"></i>
+    </button>
+    <!-- SpeedDial cambio tipo ruta -->
+    <p-speedDial class="speed-dial"
+                [model]="_speedDialItems"
+                [rotateAnimation]="false"
+                showIcon="pi pi-directions" hideIcon="pi pi-times"
+                direction="down"
+                buttonClassName="p-button-warning"
+    >
+    </p-speedDial>
+  </div>
+</div>
+*/
+
+.main-container{
+  display:flex;
+  justify-content:space-between;
+}
+.info-container{
+  width: 50vw;
+  margin-left: 60px
+}
+.info-container>h2{
+  margin: 2em 0 3.4em 0;
+  font-size: 1.5em;
+}
+.bi-arrow-left-short{
+  margin-top: 2em;
+  font-size: 3em;
+  color: #9176F7;
+}
+.info-container>.bi:hover{
+  cursor: pointer;
+  color: var(--color-tertiary);
+}
+
+.map-container{
+  width: 50vw;
+}
+
+.header{
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 2em;
+  margin: 1em 0 3em 0.7em;
+  color: var(--text-color-secondary);
+}
+
+/****************** DRAG DROP ******************/
+
+.cdk-drop-list{
+  margin-left: 1em;
+  display: flex;
+  flex-direction:column;
+}
+
+.cdk-drag:hover{
+ cursor: move;
+ color: var(--color-primary);
+}
+
+.list-timeline-container{
+  display:flex;
+}
+
+.title{
+  line-height: 1.5em;
+  font-weight: 400;
+}
+
+/****************** Stepper *******************/
+
+/* Steps */
+
+.step {
+  position: relative;
+  min-height: 1em;
+  color: grey;
+  margin-left: 1.5em;
+  padding-left: 1em;
+  margin-bottom: 2em;
+}
+.step + .step {
+  margin-top: 1.5em
+}
+.step > div:first-child {
+  position: static;
+  height: 0;
+}
+.step > div:not(:first-child) {
+  margin-left: 1.5em;
+  padding-left: 1em;
+}
+.step.step-active {
+  color: #4285f4
+}
+.step.step-active .circle {
+  background-color: #0069B4;
+}
+
+/* Circle */
+.circle {
+  background: var(--color-primary);
+  position: relative;
+  width: 1.5em;
+  height: 1.5em;
+  line-height: 1.5em;
+  border-radius: 100%;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 0 0 3px #fff;
+}
+
+/* Vertical Line */
+.circle:after {
+  content: ' ';
+  position: absolute;
+  display: block;
+  top: 1px;
+  right: 50%;
+  bottom: 1px;
+  left: 50%;
+  height: 100%;
+  width: 2px;
+  transform: scale(1, 2);
+  transform-origin: 50% -100%;
+  background-color: var(--color-primary);
+  z-index: -1;
+}
+.step:last-child .circle:after {
+  display: none
+}
+
+.step:first-child .circle:after {
+  height: 100%;
+  z-index: -1;
+}
+
+/* Stepper Titles */
+.title {
+  line-height: 1.5em;
+  font-weight: 400;
+}
+.caption {
+  font-size: 0.8em;
+}
+
+/*Tooltip*/
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  opacity: 100;
+}
+.tooltip .tiptext {
+  visibility: hidden;
+  width: 320px;
+  background-color: #fff;
+  color: var(--font-color);
+  text-align: center;
+  border-radius: 3px;
+  padding: 6px 0;
+  position: absolute;
+  z-index: 1;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+.tooltip .tiptext::after {
+  content: "";
+  position: absolute;
+  border-width: 5px;
+  border-style: solid;
+}
+.tooltip:hover .tiptext {
+  visibility: visible;
+}
+
+.tooltip.top .tiptext{
+  margin-left: -34px;
+  bottom: 117%;
+  left: 50%;
+}
+.tooltip.top .tiptext::after{
+  margin-left: -130px;
+  top: 100%;
+  left: 50%;
+  border-color: #fff transparent transparent transparent;
+}
+
+.bi-info-circle-fill{
+  color: #FCC700;
+  font-size: 2em;
+}
