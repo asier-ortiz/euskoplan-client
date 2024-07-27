@@ -24,16 +24,16 @@
 
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
-import Home from '@/views/Home.vue';
-import Login from '@/views/Auth/Login.vue';
-import Signup from '@/views/Auth/Signup.vue';
-import EmailVerify from '@/views/Auth/EmailVerify.vue';
-import PasswordReset from '@/views/Auth/PasswordReset.vue';
-import PasswordRecovery from '@/views/Auth/PasswordRecovery.vue';
-import Results from '@/views/Results.vue';
-import Detail from '@/views/Detail.vue';
-import Account from '@/views/Account.vue';
-import PlanEdit from '@/views/PlanEdit.vue';
+import Home from '@/views/HomeView.vue';
+import Login from '@/views/Auth/LoginView.vue';
+import Signup from '@/views/Auth/SignupView.vue';
+import EmailVerify from '@/views/Auth/EmailVerifyView.vue';
+import PasswordReset from '@/views/Auth/PasswordResetView.vue';
+import PasswordRecovery from '@/views/Auth/PasswordRecoveryView.vue';
+import Results from '@/views/ResultsView.vue';
+import Detail from '@/views/DetailView.vue';
+import Account from '@/views/AccountView.vue';
+import PlanEdit from '@/views/PlanEditView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'Home', component: Home },
