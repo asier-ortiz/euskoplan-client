@@ -34,6 +34,7 @@ import Results from '@/views/ResultsView.vue';
 import Detail from '@/views/DetailView.vue';
 import Account from '@/views/AccountView.vue';
 import PlanEdit from '@/views/PlanEditView.vue';
+import { useAuthStore } from '@/stores/auth';
 
 const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'Home', component: Home },
@@ -50,8 +51,20 @@ const routes: Array<RouteRecordRaw> = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+});
+
+// Add navigation guard
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  if (to.name === 'Login' && authStore.isLoggedIn()) {
+    next({ path: '/' });
+  } else {
+    next();
+  }
 });
 
 export default router;
+
+
 
