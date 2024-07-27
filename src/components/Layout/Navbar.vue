@@ -2,34 +2,46 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
       <RouterLink class="navbar-brand" to="/">Euskoplan</RouterLink>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <RouterLink class="nav-link" to="/">Home</RouterLink>
-          </li>
-          <li class="nav-item">
-            <RouterLink class="nav-link" to="/about">About</RouterLink>
-          </li>
-          <!-- Añade más enlaces según sea necesario -->
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <RouterLink class="nav-link" to="/login">Login</RouterLink>
-          </li>
-          <li class="nav-item">
-            <RouterLink class="nav-link" to="/signup">Signup</RouterLink>
-          </li>
-        </ul>
+      <div class="d-flex ms-auto">
+        <div v-if="authStore.isLoggedIn()" class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ authStore.user?.email }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+            <li><RouterLink class="dropdown-item" to="/account">Manage Account</RouterLink></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" @click.prevent="logout">Logout</a></li>
+          </ul>
+        </div>
+        <div v-else class="d-flex align-items-center">
+          <RouterLink class="nav-link me-2" to="/auth/login">Login</RouterLink>
+          <RouterLink class="nav-link" to="/auth/signup">Signup</RouterLink>
+        </div>
       </div>
     </div>
   </nav>
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { onMounted } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import axios from 'axios';
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+const logout = async () => {
+  await authStore.logout();
+  router.push('/');
+};
+
+onMounted(async () => {
+  if (authStore.token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${authStore.token}`;
+    await authStore.fetchUser();
+  }
+});
 </script>
 
 <style scoped>

@@ -18,7 +18,11 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.post('/user/login', credentials);
         this.token = response.data.jwt;
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
-        this.user = response.data.user; // Asume que el endpoint de login también devuelve los datos del usuario
+
+        // Llamada adicional para obtener los datos del usuario
+        await this.fetchUser();
+
+        router.push('/');
       } catch (error) {
         throw new Error('Invalid credentials');
       }
@@ -29,9 +33,30 @@ export const useAuthStore = defineStore('auth', {
         this.user = null;
         this.token = null;
         delete axios.defaults.headers.common['Authorization'];
-        router.push('/login');
+        router.push('/');
+        Swal.fire({
+          icon: 'success',
+          title: 'Logged out',
+          text: 'You have been logged out successfully.',
+        });
       } catch (error) {
         console.error(error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Logout failed',
+          text: 'There was a problem logging you out. Please try again.',
+        });
+      }
+    },
+    async fetchUser() {
+      try {
+        const response = await axios.get('/user/user');
+        this.user = response.data;
+      } catch (error) {
+        this.user = null;
+        this.token = null;
+        delete axios.defaults.headers.common['Authorization'];
+        router.push('/auth/login');
       }
     },
     async verifyEmail(token) {
@@ -54,7 +79,7 @@ export const useAuthStore = defineStore('auth', {
     async requestPasswordReset(email) {
       try {
         await axios.post('/password/sendEmail', { email });
-        router.push('/password-reset');
+        router.push('/auth/password-reset');
       } catch (error) {
         console.error(error);
       }
@@ -63,7 +88,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await axios.post('/password/reset', data);
         this.user = response.data;
-        router.push('/login');
+        router.push('/auth/login');
       } catch (error) {
         console.error(error);
       }
@@ -77,14 +102,14 @@ export const useAuthStore = defineStore('auth', {
           title: 'Registration Successful',
           text: 'Please check your email to verify your account.',
         }).then(() => {
-          router.push('/login');
+          router.push('/auth/login');
         });
       } catch (error) {
         throw new Error('Registration failed');
       }
     },
     isLoggedIn() {
-      return !this.user;
+      return !!this.token;
     },
   },
 });
