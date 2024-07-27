@@ -66,7 +66,7 @@
       </button>
     </form>
     <div class="mt-3">
-      <p>Already have an account? <RouterLink to="/login">Login</RouterLink></p>
+      <p>Already have an account? <RouterLink to="/auth/login">Login</RouterLink></p>
     </div>
   </div>
 </template>

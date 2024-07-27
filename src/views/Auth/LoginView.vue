@@ -9,8 +9,9 @@
           class="form-control"
           id="email"
           v-model="email"
-          @blur="handleBlur('email')"
+          @blur="validateField('email')"
           :class="{ 'is-invalid': touched.email && errors.email }"
+          @input="touched.email = true"
         />
         <div class="invalid-feedback" v-if="touched.email && errors.email">{{ errors.email }}</div>
       </div>
@@ -22,8 +23,9 @@
             class="form-control"
             id="password"
             v-model="password"
-            @blur="handleBlur('password')"
+            @blur="validateField('password')"
             :class="{ 'is-invalid': touched.password && errors.password }"
+            @input="touched.password = true"
           />
           <button type="button" class="btn btn-outline-secondary" @click="togglePassword">
             <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
@@ -37,8 +39,8 @@
       </button>
     </form>
     <div class="mt-3">
-      <p>Don't have an account? <RouterLink to="/signup">Sign up</RouterLink></p>
-      <p><RouterLink to="/password-recovery">Forgot your password?</RouterLink></p>
+      <p>Don't have an account? <RouterLink to="/auth/signup">Sign up</RouterLink></p>
+      <p><RouterLink to="/auth/password-recovery">Forgot your password?</RouterLink></p>
     </div>
   </div>
 </template>
@@ -73,11 +75,6 @@ const loading = ref(false);
 
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
-};
-
-const handleBlur = (field: string) => {
-  validateField(field);
-  touched.value[field] = true;
 };
 
 const onSubmit = handleSubmit(async (values) => {

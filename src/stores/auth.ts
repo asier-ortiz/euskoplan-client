@@ -41,6 +41,14 @@ export const useAuthStore = defineStore('auth', {
         router.push('/');
       } catch (error) {
         console.error(error);
+        if (error.response && error.response.status === 400) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Token expired',
+            text: 'Your token has expired. We have sent you a new verification email.',
+          });
+          await axios.post('/account/sendEmail', { email: this.user.email });
+        }
       }
     },
     async requestPasswordReset(email) {
