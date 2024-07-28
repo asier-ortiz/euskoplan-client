@@ -31,6 +31,7 @@ const router = createRouter({
 });
 
 // Add navigation guard
+// TODO: Mirar esto que no va muy bien
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   if (to.name === 'Login' && authStore.isLoggedIn()) {

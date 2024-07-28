@@ -9,14 +9,15 @@ axios.defaults.baseURL = config.apiBaseUrl;
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: null,
-    token: null,
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
+    token: localStorage.getItem('token'),
   }),
   actions: {
     async login(credentials) {
       try {
         const response = await axios.post('/user/login', credentials);
         this.token = response.data.jwt;
+        localStorage.setItem('token', this.token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
 
         // Llamada adicional para obtener los datos del usuario
@@ -32,6 +33,8 @@ export const useAuthStore = defineStore('auth', {
         await axios.post('/user/logout');
         this.user = null;
         this.token = null;
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         delete axios.defaults.headers.common['Authorization'];
         router.push('/');
         Swal.fire({
@@ -52,9 +55,12 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await axios.get('/user/user');
         this.user = response.data;
+        localStorage.setItem('user', JSON.stringify(this.user));
       } catch (error) {
         this.user = null;
         this.token = null;
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         delete axios.defaults.headers.common['Authorization'];
         router.push('/auth/login');
       }
@@ -63,6 +69,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await axios.post('/account/verify', { token });
         this.user = response.data;
+        localStorage.setItem('user', JSON.stringify(this.user));
         router.push('/');
       } catch (error) {
         console.error(error);
@@ -88,6 +95,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await axios.post('/password/reset', data);
         this.user = response.data;
+        localStorage.setItem('user', JSON.stringify(this.user));
         router.push('/auth/login');
       } catch (error) {
         console.error(error);
