@@ -28,8 +28,13 @@ const categories = [
 ];
 
 const selectedCategory = ref(null);
+
 const selectCategory = (category) => {
-  selectedCategory.value = category;
+  if (selectedCategory.value === category) {
+    selectedCategory.value = null;  // Deselecciona el chip si ya está seleccionado
+  } else {
+    selectedCategory.value = category;
+  }
   console.log(`Selected category: ${selectedCategory.value}`);
 };
 </script>
