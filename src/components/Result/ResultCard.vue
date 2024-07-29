@@ -57,14 +57,13 @@ const handleImageError = () => {
 
 <style scoped>
 .result-card {
-  width: 300px;
-  height: 150px;
+  width: 100%;
+  height: 150px; /* Ajusta la altura según tus necesidades */
   background-size: cover;
   background-position: center;
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 1rem;
   display: flex;
   align-items: flex-end;
 }
