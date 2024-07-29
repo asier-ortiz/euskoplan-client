@@ -3,86 +3,87 @@
     <Hero />
     <Spinner :visible="!randomCollectionsLoaded" />
     <div v-if="randomCollectionsLoaded">
-      <h2>Random Accommodations</h2>
+
       <div class="card-container">
         <ResultCard
-          v-for="item in randomAccommodations"
+          v-for="item in collectionsStore.randomAccommodations"
           :key="item.id"
           collection="Accommodation"
-          :name="item.nombre || 'No name available'"
-          :images="item.imagenes || []"
+          :name="item.nombre"
+          :images="item.imagenes"
         />
       </div>
-      <h2>Random Caves</h2>
+
       <div class="card-container">
         <ResultCard
-          v-for="item in randomCaves"
+          v-for="item in collectionsStore.randomCaves"
           :key="item.id"
           collection="Cave"
-          :name="item.nombre || 'No name available'"
-          :images="item.imagenes || []"
+          :name="item.nombre"
+          :images="item.imagenes"
         />
       </div>
-      <h2>Random Culturals</h2>
+
       <div class="card-container">
         <ResultCard
-          v-for="item in randomCulturals"
+          v-for="item in collectionsStore.randomCulturals"
           :key="item.id"
           collection="Cultural"
-          :name="item.nombre || 'No name available'"
-          :images="item.imagenes || []"
+          :name="item.nombre"
+          :images="item.imagenes"
         />
       </div>
-      <h2>Random Events</h2>
+
       <div class="card-container">
         <ResultCard
-          v-for="item in randomEvents"
+          v-for="item in collectionsStore.randomEvents"
           :key="item.id"
           collection="Event"
-          :name="item.nombre || 'No name available'"
-          :images="item.imagenes || []"
+          :name="item.nombre"
+          :images="item.imagenes"
         />
       </div>
-      <h2>Random Fairs</h2>
+
       <div class="card-container">
         <ResultCard
-          v-for="item in randomFairs"
+          v-for="item in collectionsStore.randomFairs"
           :key="item.id"
           collection="Fair"
-          :name="item.nombre || 'No name available'"
-          :images="item.imagenes || []"
+          :name="item.nombre"
+          :images="item.imagenes"
         />
       </div>
-      <h2>Random Museums</h2>
+
       <div class="card-container">
         <ResultCard
-          v-for="item in randomMuseums"
+          v-for="item in collectionsStore.randomMuseums"
           :key="item.id"
           collection="Museum"
-          :name="item.nombre || 'No name available'"
-          :images="item.imagenes || []"
+          :name="item.nombre"
+          :images="item.imagenes"
         />
       </div>
-      <h2>Random Naturals</h2>
+
       <div class="card-container">
         <ResultCard
-          v-for="item in randomNaturals"
+          v-for="item in collectionsStore.randomNaturals"
           :key="item.id"
           collection="Natural"
-          :name="item.nombre || 'No name available'"
-          :images="item.imagenes || []"
+          :name="item.nombre"
+          :images="item.imagenes"
         />
       </div>
-      <h2>Random Restaurants</h2>
+
       <div class="card-container">
         <ResultCard
-          v-for="item in randomRestaurants"
+          v-for="item in collectionsStore.randomRestaurants"
           :key="item.id"
           collection="Restaurant"
-          :name="item.nombre || 'No name available'"
-          :images="item.imagenes || []"
+          :name="item.nombre"
+          :images="item.imagenes"
         />
       </div>
+      
     </div>
   </div>
 </template>
@@ -101,21 +102,12 @@ const randomCollectionsLoaded = ref(false);
 const loadRandomCollections = async () => {
   await collectionsStore.loadRandomCollections();
   randomCollectionsLoaded.value = true;
-  console.log('Random Accommodations:', collectionsStore.randomAccommodations);
-  console.log('Random Caves:', collectionsStore.randomCaves);
-  console.log('Random Culturals:', collectionsStore.randomCulturals);
-  console.log('Random Events:', collectionsStore.randomEvents);
-  console.log('Random Fairs:', collectionsStore.randomFairs);
-  console.log('Random Museums:', collectionsStore.randomMuseums);
-  console.log('Random Naturals:', collectionsStore.randomNaturals);
-  console.log('Random Restaurants:', collectionsStore.randomRestaurants);
 };
 
 onMounted(() => {
   loadRandomCollections();
 });
 
-const { randomAccommodations, randomCaves, randomCulturals, randomEvents, randomFairs, randomMuseums, randomNaturals, randomRestaurants } = collectionsStore;
 </script>
 
 <style scoped>

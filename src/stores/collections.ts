@@ -356,28 +356,28 @@ export const useCollectionsStore = defineStore('collections', {
     // Métodos para obtener elementos aleatorios
     async loadRandomCollections() {
 
-      await this.getAccommodationsFiltering({ idioma: 'es', aleatorio: 'si', limite: '2' });
+      await this.getAccommodationsFiltering({ idioma: 'es', aleatorio: 'si', limite: '4' });
       this.randomAccommodations = this.accommodations;
 
-      await this.getCavesFiltering({ idioma: 'es', aleatorio: 'si', limite: '2' });
+      await this.getCavesFiltering({ idioma: 'es', aleatorio: 'si', limite: '4' });
       this.randomCaves = this.caves;
 
-      await this.getCulturalsFiltering({ idioma: 'es', aleatorio: 'si', limite: '2' });
+      await this.getCulturalsFiltering({ idioma: 'es', aleatorio: 'si', limite: '4' });
       this.randomCulturals = this.culturals;
 
-      await this.getEventsFiltering({ idioma: 'es', aleatorio: 'si', limite: '2' });
+      await this.getEventsFiltering({ idioma: 'es', aleatorio: 'si', limite: '4' });
       this.randomEvents = this.events;
 
-      await this.getFairsFiltering({ idioma: 'es', aleatorio: 'si', limite: '2' });
+      await this.getFairsFiltering({ idioma: 'es', aleatorio: 'si', limite: '4' });
       this.randomFairs = this.fairs;
 
-      await this.getMuseumsFiltering({ idioma: 'es', aleatorio: 'si', limite: '2' });
+      await this.getMuseumsFiltering({ idioma: 'es', aleatorio: 'si', limite: '4' });
       this.randomMuseums = this.museums;
 
-      await this.getNaturalsFiltering({ idioma: 'es', aleatorio: 'si', limite: '2' });
+      await this.getNaturalsFiltering({ idioma: 'es', aleatorio: 'si', limite: '4' });
       this.randomNaturals = this.naturals;
 
-      await this.getRestaurantsFiltering({ idioma: 'es', aleatorio: 'si', limite: '2' });
+      await this.getRestaurantsFiltering({ idioma: 'es', aleatorio: 'si', limite: '4' });
       this.randomRestaurants = this.restaurants;
     }
 

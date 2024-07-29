@@ -1,19 +1,15 @@
 <template>
   <div class="result-card" :style="{ backgroundImage: `url(${imageUrl})` }">
     <div class="card-content">
-      <template v-if="collection">
-        <h3>{{ collection }}</h3>
-      </template>
-      <template v-if="name">
-        <h2>{{ name }}</h2>
-      </template>
-      <img :src="imageUrl" @error="handleImageError" class="hidden-image" />
+      <h3>{{ collection }}</h3>
+      <h2>{{ name }}</h2>
+      <img :src="imageUrl" @error="handleImageError" class="hidden-image" alt="" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, computed } from 'vue';
+import { ref, defineProps, watch } from 'vue';
 
 const props = defineProps({
   collection: String,
@@ -24,19 +20,45 @@ const props = defineProps({
   },
 });
 
-const defaultImageUrl = 'path/to/default/image.jpg'; // Reemplaza con la URL de tu imagen predeterminada
+const getDefaultImageUrl = (collection) => {
+  const defaultImages = {
+    accommodation: '/images/default/default-accommodation.jpg',
+    cave: '/images/default/default-cave.jpg',
+    cultural: '/images/default/default-cultural.jpg',
+    event: '/images/default/default-event.jpg',
+    fair: '/images/default/default-fair.jpg',
+    museum: '/images/default/default-museum.jpg',
+    natural: '/images/default/default-natural.jpg',
+    restaurant: '/images/default/default-restaurant.jpg',
+    default: '/images/default/default-image.jpg',
+  };
 
-const imageUrl = ref(props.images.length > 0 ? props.images[0].fuente : defaultImageUrl);
+  return defaultImages[collection.toLowerCase()] || defaultImages.default;
+};
+
+const imageUrl = ref('');
+
+watch(
+  () => props.images,
+  (newImages) => {
+    if (newImages.length > 0 && newImages[0].fuente) {
+      imageUrl.value = newImages[0].fuente;
+    } else {
+      imageUrl.value = getDefaultImageUrl(props.collection);
+    }
+  },
+  { immediate: true }
+);
 
 const handleImageError = () => {
-  imageUrl.value = defaultImageUrl;
+  imageUrl.value = getDefaultImageUrl(props.collection);
 };
 </script>
 
 <style scoped>
 .result-card {
-  width: 300px; /* Ajusta el ancho según tus necesidades */
-  height: 150px; /* Ajusta la altura según tus necesidades */
+  width: 300px;
+  height: 150px;
   background-size: cover;
   background-position: center;
   position: relative;
