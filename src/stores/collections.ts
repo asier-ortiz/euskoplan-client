@@ -126,124 +126,51 @@ export const useCollectionsStore = defineStore('collections', {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    async getAccommodationsSearching(query, cancelToken) {
+    async performSearch(endpoint, query, cancelToken) {
       const params = new URLSearchParams(query);
       try {
-        const response = await axios.get('/accommodation/results/search', { params, cancelToken });
+        const response = await axios.get(endpoint, { params, cancelToken });
         return response.data;
       } catch (error) {
         if (axios.isCancel(error)) {
           console.log('Request canceled:', error.message);
         } else {
-          console.error('Error searching accommodations:', error);
+          console.error(`Error searching ${endpoint.split('/')[1]}:`, error);
         }
         return [];
       }
+    },
+
+    async getAccommodationsSearching(query, cancelToken) {
+      return this.performSearch('/accommodation/results/search', query, cancelToken);
     },
 
     async getCavesSearching(query, cancelToken) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/cave/results/search', { params, cancelToken });
-        return response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled:', error.message);
-        } else {
-          console.error('Error searching caves:', error);
-        }
-        return [];
-      }
+      return this.performSearch('/cave/results/search', query, cancelToken);
     },
 
     async getCulturalsSearching(query, cancelToken) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/cultural/results/search', { params, cancelToken });
-        return response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled:', error.message);
-        } else {
-          console.error('Error searching culturals:', error);
-        }
-        return [];
-      }
+      return this.performSearch('/cultural/results/search', query, cancelToken);
     },
 
     async getEventsSearching(query, cancelToken) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/event/results/search', { params, cancelToken });
-        return response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled:', error.message);
-        } else {
-          console.error('Error searching events:', error);
-        }
-        return [];
-      }
+      return this.performSearch('/event/results/search', query, cancelToken);
     },
 
     async getFairsSearching(query, cancelToken) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/fair/results/search', { params, cancelToken });
-        return response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled:', error.message);
-        } else {
-          console.error('Error searching fairs:', error);
-        }
-        return [];
-      }
+      return this.performSearch('/fair/results/search', query, cancelToken);
     },
 
     async getMuseumsSearching(query, cancelToken) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/museum/results/search', { params, cancelToken });
-        return response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled:', error.message);
-        } else {
-          console.error('Error searching museums:', error);
-        }
-        return [];
-      }
+      return this.performSearch('/museum/results/search', query, cancelToken);
     },
 
     async getNaturalsSearching(query, cancelToken) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/natural/results/search', { params, cancelToken });
-        return response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled:', error.message);
-        } else {
-          console.error('Error searching naturals:', error);
-        }
-        return [];
-      }
+      return this.performSearch('/natural/results/search', query, cancelToken);
     },
-
+    
     async getRestaurantsSearching(query, cancelToken) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/restaurant/results/search', { params, cancelToken });
-        return response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled:', error.message);
-        } else {
-          console.error('Error searching restaurants:', error);
-        }
-        return [];
-      }
+      return this.performSearch('/restaurant/results/search', query, cancelToken);
     },
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -456,80 +383,6 @@ export const useCollectionsStore = defineStore('collections', {
         this.loading = false;
       }
     },
-
-    // async searchInCategory(category, query, language) {
-    //   if (this.searchCancelToken) {
-    //     this.searchCancelToken.cancel('Operation canceled due to new request.');
-    //   }
-    //
-    //   this.searchCancelToken = axios.CancelToken.source();
-    //
-    //   if (query.length < 3) {
-    //     this.searchResults = [];
-    //     return;
-    //   }
-    //
-    //   this.loading = true;
-    //   this.searchResults = [];
-    //
-    //   try {
-    //     switch (category.toLowerCase()) {
-    //       case 'alojamientos':
-    //         this.searchResults = await this.getAccommodationsSearching(
-    //             { idioma: language, busqueda: query },
-    //             this.searchCancelToken.token
-    //         );
-    //         break;
-    //       case 'cuevas y restos arqueológicos':
-    //         this.searchResults = await this.getCavesSearching(
-    //             { idioma: language, busqueda: query },
-    //             this.searchCancelToken.token
-    //         );
-    //         break;
-    //       case 'edificios religiosos y castillos':
-    //         this.searchResults = await this.getCulturalsSearching(
-    //             { idioma: language, busqueda: query },
-    //             this.searchCancelToken.token
-    //         );
-    //         break;
-    //       case 'eventos':
-    //         this.searchResults = await this.getEventsSearching(
-    //             { idioma: language, busqueda: query },
-    //             this.searchCancelToken.token
-    //         );
-    //         break;
-    //       case 'parques temáticos':
-    //         this.searchResults = await this.getFairsSearching(
-    //             { idioma: language, busqueda: query },
-    //             this.searchCancelToken.token
-    //         );
-    //         break;
-    //       case 'museos y centros de interpretación':
-    //         this.searchResults = await this.getMuseumsSearching(
-    //             { idioma: language, busqueda: query },
-    //             this.searchCancelToken.token
-    //         );
-    //         break;
-    //       case 'espacios naturales':
-    //         this.searchResults = await this.getNaturalsSearching(
-    //             { idioma: language, busqueda: query },
-    //             this.searchCancelToken.token
-    //         );
-    //         break;
-    //       case 'restaurantes':
-    //         this.searchResults = await this.getRestaurantsSearching(
-    //             { idioma: language, busqueda: query },
-    //             this.searchCancelToken.token
-    //         );
-    //         break;
-    //       default:
-    //         this.searchResults = [];
-    //         break;
-    //     }
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // },
 
     async searchInCategory(category: string | null, query: string, language: string) {
       // Check if category is null or undefined
