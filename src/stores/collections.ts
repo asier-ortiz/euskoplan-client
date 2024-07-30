@@ -1,27 +1,28 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import config from '../config';
+import { useLocalStorage } from '@vueuse/core';
 
 // Configurar la base URL de Axios
 axios.defaults.baseURL = config.apiBaseUrl;
 
 export const useCollectionsStore = defineStore('collections', {
   state: () => ({
-    accommodations: [],
-    caves: [],
-    culturals: [],
-    events: [],
-    fairs: [],
-    museums: [],
-    naturals: [],
-    restaurants: [],
-    accommodationCategories: [],
-    caveCategories: [],
-    culturalCategories: [],
-    eventCategories: [],
-    museumCategories: [],
-    naturalCategories: [],
-    restaurantCategories: [],
+    accommodations: useLocalStorage('accommodations', []),
+    caves: useLocalStorage('caves', []),
+    culturals: useLocalStorage('culturals', []),
+    events: useLocalStorage('events', []),
+    fairs: useLocalStorage('fairs', []),
+    museums: useLocalStorage('museums', []),
+    naturals: useLocalStorage('naturals', []),
+    restaurants: useLocalStorage('restaurants', []),
+    accommodationCategories: useLocalStorage('accommodationCategories', []),
+    caveCategories: useLocalStorage('caveCategories', []),
+    culturalCategories: useLocalStorage('culturalCategories', []),
+    eventCategories: useLocalStorage('eventCategories', []),
+    museumCategories: useLocalStorage('museumCategories', []),
+    naturalCategories: useLocalStorage('naturalCategories', []),
+    restaurantCategories: useLocalStorage('restaurantCategories', []),
 
     // Estado para los elementos aleatorios
     randomAccommodations: [],
@@ -122,31 +123,42 @@ export const useCollectionsStore = defineStore('collections', {
     async loadRandomCollections() {
       this.loading = true;
       try {
-        await this.getAccommodationsFiltering({ idioma: 'es', aleatorio: 'si', limite: '5' });
-        this.randomAccommodations = this.accommodations;
+        const tempAccommodations = await this.fetchRandomItems('/accommodation/results/filter');
+        this.randomAccommodations = tempAccommodations;
 
-        await this.getCavesFiltering({ idioma: 'es', aleatorio: 'si', limite: '5' });
-        this.randomCaves = this.caves;
+        const tempCaves = await this.fetchRandomItems('/cave/results/filter');
+        this.randomCaves = tempCaves;
 
-        await this.getCulturalsFiltering({ idioma: 'es', aleatorio: 'si', limite: '5' });
-        this.randomCulturals = this.culturals;
+        const tempCulturals = await this.fetchRandomItems('/cultural/results/filter');
+        this.randomCulturals = tempCulturals;
 
-        await this.getEventsFiltering({ idioma: 'es', aleatorio: 'si', limite: '5' });
-        this.randomEvents = this.events;
+        const tempEvents = await this.fetchRandomItems('/event/results/filter');
+        this.randomEvents = tempEvents;
 
-        await this.getFairsFiltering({ idioma: 'es', aleatorio: 'si', limite: '5' });
-        this.randomFairs = this.fairs;
+        const tempFairs = await this.fetchRandomItems('/fair/results/filter');
+        this.randomFairs = tempFairs;
 
-        await this.getMuseumsFiltering({ idioma: 'es', aleatorio: 'si', limite: '5' });
-        this.randomMuseums = this.museums;
+        const tempMuseums = await this.fetchRandomItems('/museum/results/filter');
+        this.randomMuseums = tempMuseums;
 
-        await this.getNaturalsFiltering({ idioma: 'es', aleatorio: 'si', limite: '5' });
-        this.randomNaturals = this.naturals;
+        const tempNaturals = await this.fetchRandomItems('/natural/results/filter');
+        this.randomNaturals = tempNaturals;
 
-        await this.getRestaurantsFiltering({ idioma: 'es', aleatorio: 'si', limite: '5' });
-        this.randomRestaurants = this.restaurants;
+        const tempRestaurants = await this.fetchRandomItems('/restaurant/results/filter');
+        this.randomRestaurants = tempRestaurants;
       } finally {
         this.loading = false;
+      }
+    },
+
+    async fetchRandomItems(endpoint: string) {
+      const params = new URLSearchParams({ idioma: 'es', aleatorio: 'si', limite: '5' });
+      try {
+        const response = await axios.get(endpoint, { params });
+        return response.data;
+      } catch (error) {
+        console.error(`Error fetching random items from ${endpoint}:`, error);
+        return [];
       }
     },
 
@@ -156,35 +168,51 @@ export const useCollectionsStore = defineStore('collections', {
       try {
         switch (category.toLowerCase()) {
           case 'alojamientos':
-            await this.getAccommodationsFiltering({ idioma: language });
+            if (this.accommodations.length === 0) {
+              await this.getAccommodationsFiltering({ idioma: language });
+            }
             this.filteredResults = this.accommodations;
             break;
           case 'cuevas y restos arqueológicos':
-            await this.getCavesFiltering({ idioma: language });
+            if (this.caves.length === 0) {
+              await this.getCavesFiltering({ idioma: language });
+            }
             this.filteredResults = this.caves;
             break;
           case 'edificios religiosos y castillos':
-            await this.getCulturalsFiltering({ idioma: language });
+            if (this.culturals.length === 0) {
+              await this.getCulturalsFiltering({ idioma: language });
+            }
             this.filteredResults = this.culturals;
             break;
           case 'eventos':
-            await this.getEventsFiltering({ idioma: language });
+            if (this.events.length === 0) {
+              await this.getEventsFiltering({ idioma: language });
+            }
             this.filteredResults = this.events;
             break;
           case 'parques temáticos':
-            await this.getFairsFiltering({ idioma: language });
+            if (this.fairs.length === 0) {
+              await this.getFairsFiltering({ idioma: language });
+            }
             this.filteredResults = this.fairs;
             break;
           case 'museos y centros de interpretación':
-            await this.getMuseumsFiltering({ idioma: language });
+            if (this.museums.length === 0) {
+              await this.getMuseumsFiltering({ idioma: language });
+            }
             this.filteredResults = this.museums;
             break;
           case 'espacios naturales':
-            await this.getNaturalsFiltering({ idioma: language });
+            if (this.naturals.length === 0) {
+              await this.getNaturalsFiltering({ idioma: language });
+            }
             this.filteredResults = this.naturals;
             break;
           case 'restaurantes':
-            await this.getRestaurantsFiltering({ idioma: language });
+            if (this.restaurants.length === 0) {
+              await this.getRestaurantsFiltering({ idioma: language });
+            }
             this.filteredResults = this.restaurants;
             break;
           default:
@@ -197,3 +225,4 @@ export const useCollectionsStore = defineStore('collections', {
     },
   },
 });
+

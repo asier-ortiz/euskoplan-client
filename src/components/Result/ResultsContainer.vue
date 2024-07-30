@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, watch } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
 import ResultCard from '@/components/Result/ResultCard.vue';
 import Spinner from '@/components/Spinner.vue';
@@ -62,7 +62,7 @@ watch(
 }
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
 }
 </style>

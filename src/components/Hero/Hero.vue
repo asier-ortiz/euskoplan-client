@@ -30,26 +30,12 @@ const onChipSelected = (category) => {
 <style scoped>
 .chips-and-filter {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
 }
 .filter-button {
   margin-left: auto;
-  padding: 0.5rem 1rem;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-.filter-button i {
-  margin-left: 0.5rem;
-}
-.filter-button:hover {
-  background-color: #0056b3;
 }
 </style>
+
+
