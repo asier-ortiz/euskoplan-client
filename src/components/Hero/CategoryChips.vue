@@ -1,11 +1,10 @@
 <template>
-  <div class="d-flex flex-wrap">
+  <div class="chips-container">
     <span
       v-for="category in categories"
       :key="category"
-      :class="['badge', 'rounded-pill', { 'bg-primary': selectedCategory === category, 'bg-secondary': selectedCategory !== category }]"
+      :class="['chip', { 'chip-selected': selectedCategory === category }]"
       @click="selectCategory(category)"
-      class="me-2 mb-2"
       role="button"
     >
       {{ category }}
@@ -42,5 +41,27 @@ const selectCategory = (category) => {
 </script>
 
 <style scoped>
-/* Estilos adicionales si es necesario */
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.chip {
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  cursor: pointer;
+  background-color: #e0e0e0;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.chip:hover {
+  background-color: #d0d0d0;
+}
+
+.chip-selected {
+  background-color: #007bff;
+  color: white;
+}
 </style>

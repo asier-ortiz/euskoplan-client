@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia';
-import axios from 'axios';
-import config from '../config';
-import { useLocalStorage } from '@vueuse/core';
+import { defineStore } from 'pinia'
+import axios from 'axios'
+import config from '../config'
+import { useLocalStorage } from '@vueuse/core'
 
 // Configurar la base URL de Axios
 axios.defaults.baseURL = config.apiBaseUrl;
@@ -123,29 +123,21 @@ export const useCollectionsStore = defineStore('collections', {
     async loadRandomCollections() {
       this.loading = true;
       try {
-        const tempAccommodations = await this.fetchRandomItems('/accommodation/results/filter');
-        this.randomAccommodations = tempAccommodations;
+        this.randomAccommodations = await this.fetchRandomItems('/accommodation/results/filter');
 
-        const tempCaves = await this.fetchRandomItems('/cave/results/filter');
-        this.randomCaves = tempCaves;
+        this.randomCaves = await this.fetchRandomItems('/cave/results/filter');
 
-        const tempCulturals = await this.fetchRandomItems('/cultural/results/filter');
-        this.randomCulturals = tempCulturals;
+        this.randomCulturals = await this.fetchRandomItems('/cultural/results/filter');
 
-        const tempEvents = await this.fetchRandomItems('/event/results/filter');
-        this.randomEvents = tempEvents;
+        this.randomEvents = await this.fetchRandomItems('/event/results/filter');
 
-        const tempFairs = await this.fetchRandomItems('/fair/results/filter');
-        this.randomFairs = tempFairs;
+        this.randomFairs = await this.fetchRandomItems('/fair/results/filter');
 
-        const tempMuseums = await this.fetchRandomItems('/museum/results/filter');
-        this.randomMuseums = tempMuseums;
+        this.randomMuseums = await this.fetchRandomItems('/museum/results/filter');
 
-        const tempNaturals = await this.fetchRandomItems('/natural/results/filter');
-        this.randomNaturals = tempNaturals;
+        this.randomNaturals = await this.fetchRandomItems('/natural/results/filter');
 
-        const tempRestaurants = await this.fetchRandomItems('/restaurant/results/filter');
-        this.randomRestaurants = tempRestaurants;
+        this.randomRestaurants = await this.fetchRandomItems('/restaurant/results/filter');
       } finally {
         this.loading = false;
       }
