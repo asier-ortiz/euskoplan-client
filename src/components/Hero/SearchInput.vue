@@ -1,29 +1,32 @@
 <template>
   <div class="mb-3">
     <label for="search" class="form-label">¿Qué te apetece hacer?</label>
-    <input type="text" class="form-control" id="search" v-model="searchQuery" @input="onSearch">
+    <input
+        type="text"
+        class="form-control"
+        id="search"
+        v-model="searchQuery"
+        @input="debouncedSearch"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
-import debounce from 'lodash.debounce';
+import { debounce } from 'lodash-es'; // Ensure lodash-es is installed
 
 const collectionsStore = useCollectionsStore();
-const searchQuery = ref(collectionsStore.searchQuery);
+const searchQuery = ref('');
 
-const onSearch = debounce(() => {
+const onSearch = () => {
   collectionsStore.searchQuery = searchQuery.value;
-  if (searchQuery.value.length >= 3) {
-    collectionsStore.searchAllCollections(searchQuery.value, 'es');
-  } else {
-    collectionsStore.searchResults = [];
-  }
-}, 500);
+};
 
+// Debounce search to prevent multiple rapid requests
+const debouncedSearch = debounce(onSearch, 300);
 </script>
 
 <style scoped>
-/* Estilos adicionales si es necesario */
+/* Additional styles if needed */
 </style>

@@ -18,6 +18,7 @@
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
+    "lodash-es": "^4.17.21",
     "lodash.debounce": "^4.0.8",
     "mapbox-gl": "^3.5.2",
     "pinia": "^2.1.7",

@@ -1,36 +1,40 @@
 <template>
   <div class="results-container">
+    <!-- Spinner component to show loading status -->
     <Spinner :visible="collectionsStore.loading" />
+    <!-- Cards grid to display results -->
     <div v-if="!collectionsStore.loading" class="cards-grid">
       <ResultCard
-        v-for="item in results"
-        :key="item.id"
-        :collection="item.coleccion"
-        :name="item.nombre"
-        :images="item.imagenes"
+          v-for="item in results"
+          :key="item.id"
+          :collection="item.coleccion"
+          :name="item.nombre"
+          :images="item.imagenes"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
-import { useCollectionsStore } from '@/stores/collections';
-import ResultCard from '@/components/Result/ResultCard.vue';
-import Spinner from '@/components/Spinner.vue';
+import { computed } from 'vue'; // Importing computed from Vue
+import { useCollectionsStore } from '@/stores/collections'; // Importing store
+import ResultCard from '@/components/Result/ResultCard.vue'; // Importing ResultCard component
+import Spinner from '@/components/Spinner.vue'; // Importing Spinner component
 
-const collectionsStore = useCollectionsStore();
+const collectionsStore = useCollectionsStore(); // Getting the collections store
 
+// Compute the results to be displayed
 const results = computed(() => {
+  // If there is a search query, return search results
   if (collectionsStore.searchQuery.length >= 3) {
-    if (collectionsStore.selectedCategory) {
-      return collectionsStore.searchResults.filter(item => item.coleccion === collectionsStore.selectedCategory);
-    } else {
-      return collectionsStore.searchResults;
-    }
-  } else if (collectionsStore.selectedCategory) {
+    return collectionsStore.searchResults;
+  }
+  // If a category is selected, return filtered results
+  else if (collectionsStore.selectedCategory) {
     return collectionsStore.filteredResults;
-  } else {
+  }
+  // Otherwise, return random collections
+  else {
     return [
       ...collectionsStore.randomAccommodations,
       ...collectionsStore.randomCaves,
@@ -43,35 +47,18 @@ const results = computed(() => {
     ];
   }
 });
-
-watch(
-  () => collectionsStore.selectedCategory,
-  async (newCategory) => {
-    if (newCategory) {
-      await collectionsStore.filterResultsByCategory(newCategory, 'es');
-    }
-  }
-);
-
-watch(
-  () => collectionsStore.searchQuery,
-  async (newQuery) => {
-    if (newQuery.length >= 3) {
-      await collectionsStore.searchAllCollections(newQuery, 'es');
-    } else {
-      collectionsStore.searchResults = [];
-    }
-  }
-);
 </script>
 
 <style scoped>
+/* Container for the results */
 .results-container {
   margin-top: 2rem;
 }
+
+/* Grid layout for cards */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Auto-fit to screen size */
+  gap: 1rem; /* Space between cards */
 }
 </style>
