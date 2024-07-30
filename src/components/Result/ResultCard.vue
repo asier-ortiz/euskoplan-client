@@ -1,9 +1,11 @@
 <template>
-  <div class="result-card" :style="{ backgroundImage: `url(${imageUrl})` }">
+  <div class="result-card">
+    <div class="card-image" :style="{ backgroundImage: `url(${imageUrl})` }">
+      <img :src="imageUrl" @error="handleImageError" class="hidden-image" alt="" />
+    </div>
     <div class="card-content">
       <h3>{{ collection }}</h3>
       <h2>{{ name }}</h2>
-      <img :src="imageUrl" @error="handleImageError" class="hidden-image" alt="" />
     </div>
   </div>
 </template>
@@ -20,6 +22,10 @@ const props = defineProps({
   },
 });
 
+// Define a ref to store the current image URL
+const imageUrl = ref('');
+
+// Default images by collection type
 const getDefaultImageUrl = (collection) => {
   const defaultImages = {
     accommodation: '/images/default/default-accommodation.jpg',
@@ -36,8 +42,7 @@ const getDefaultImageUrl = (collection) => {
   return defaultImages[collection.toLowerCase()] || defaultImages.default;
 };
 
-const imageUrl = ref('');
-
+// Set initial image URL or default if none is available
 watch(
   () => props.images,
   (newImages) => {
@@ -50,6 +55,7 @@ watch(
   { immediate: true }
 );
 
+// Handle image loading errors by setting the default image URL
 const handleImageError = () => {
   imageUrl.value = getDefaultImageUrl(props.collection);
 };
@@ -57,35 +63,58 @@ const handleImageError = () => {
 
 <style scoped>
 .result-card {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 150px; /* Ajusta la altura según tus necesidades */
+  height: 300px; /* Increased height for more visual appeal */
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s; /* Added transition effects */
+  cursor: pointer;
+  background-color: white; /* Background color for the card */
+}
+
+.result-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-image {
+  flex: 2;
   background-size: cover;
   background-position: center;
+  height: 60%;
   position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
+}
+
+.hidden-image {
+  display: none;
 }
 
 .card-content {
-  background: rgba(0, 0, 0, 0.5);
-  width: 100%;
-  color: white;
-  padding: 0.5rem;
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff; /* White background for card content */
 }
 
 .card-content h3 {
   margin: 0;
   font-size: 1rem;
+  color: #888888; /* Gray color for the collection text */
+  text-transform: uppercase;
+  font-weight: normal;
 }
 
 .card-content h2 {
   margin: 0;
   font-size: 1.5rem;
-}
-
-.hidden-image {
-  display: none;
+  color: #333333; /* Darker color for the name text */
+  font-weight: bold;
+  text-align: center; /* Center the text */
 }
 </style>

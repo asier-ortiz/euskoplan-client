@@ -168,7 +168,7 @@ export const useCollectionsStore = defineStore('collections', {
     async getNaturalsSearching(query, cancelToken) {
       return this.performSearch('/natural/results/search', query, cancelToken);
     },
-    
+
     async getRestaurantsSearching(query, cancelToken) {
       return this.performSearch('/restaurant/results/search', query, cancelToken);
     },
