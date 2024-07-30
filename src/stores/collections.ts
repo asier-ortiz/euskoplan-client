@@ -457,18 +457,101 @@ export const useCollectionsStore = defineStore('collections', {
       }
     },
 
-    async searchInCategory(category, query, language) {
-      if (this.searchCancelToken) {
-        this.searchCancelToken.cancel('Operation canceled due to new request.');
-      }
+    // async searchInCategory(category, query, language) {
+    //   if (this.searchCancelToken) {
+    //     this.searchCancelToken.cancel('Operation canceled due to new request.');
+    //   }
+    //
+    //   this.searchCancelToken = axios.CancelToken.source();
+    //
+    //   if (query.length < 3) {
+    //     this.searchResults = [];
+    //     return;
+    //   }
+    //
+    //   this.loading = true;
+    //   this.searchResults = [];
+    //
+    //   try {
+    //     switch (category.toLowerCase()) {
+    //       case 'alojamientos':
+    //         this.searchResults = await this.getAccommodationsSearching(
+    //             { idioma: language, busqueda: query },
+    //             this.searchCancelToken.token
+    //         );
+    //         break;
+    //       case 'cuevas y restos arqueológicos':
+    //         this.searchResults = await this.getCavesSearching(
+    //             { idioma: language, busqueda: query },
+    //             this.searchCancelToken.token
+    //         );
+    //         break;
+    //       case 'edificios religiosos y castillos':
+    //         this.searchResults = await this.getCulturalsSearching(
+    //             { idioma: language, busqueda: query },
+    //             this.searchCancelToken.token
+    //         );
+    //         break;
+    //       case 'eventos':
+    //         this.searchResults = await this.getEventsSearching(
+    //             { idioma: language, busqueda: query },
+    //             this.searchCancelToken.token
+    //         );
+    //         break;
+    //       case 'parques temáticos':
+    //         this.searchResults = await this.getFairsSearching(
+    //             { idioma: language, busqueda: query },
+    //             this.searchCancelToken.token
+    //         );
+    //         break;
+    //       case 'museos y centros de interpretación':
+    //         this.searchResults = await this.getMuseumsSearching(
+    //             { idioma: language, busqueda: query },
+    //             this.searchCancelToken.token
+    //         );
+    //         break;
+    //       case 'espacios naturales':
+    //         this.searchResults = await this.getNaturalsSearching(
+    //             { idioma: language, busqueda: query },
+    //             this.searchCancelToken.token
+    //         );
+    //         break;
+    //       case 'restaurantes':
+    //         this.searchResults = await this.getRestaurantsSearching(
+    //             { idioma: language, busqueda: query },
+    //             this.searchCancelToken.token
+    //         );
+    //         break;
+    //       default:
+    //         this.searchResults = [];
+    //         break;
+    //     }
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
 
-      this.searchCancelToken = axios.CancelToken.source();
-
-      if (query.length < 3) {
-        this.searchResults = [];
+    async searchInCategory(category: string | null, query: string, language: string) {
+      // Check if category is null or undefined
+      if (!category) {
+        console.error('Category is null or undefined.');
+        this.searchResults = []; // Optionally reset the search results or handle as needed
         return;
       }
 
+      // Cancel previous requests
+      if (this.searchCancelToken) {
+        this.searchCancelToken.cancel('Operation canceled due to new request.');
+      }
+      this.searchCancelToken = axios.CancelToken.source();
+
+      // Check for minimum query length
+      if (query.length < 3) {
+        this.searchResults = []; // Clear search results if the query is too short
+        return;
+      }
+
+      // Set loading state and initialize search results
       this.loading = true;
       this.searchResults = [];
 
@@ -476,58 +559,62 @@ export const useCollectionsStore = defineStore('collections', {
         switch (category.toLowerCase()) {
           case 'alojamientos':
             this.searchResults = await this.getAccommodationsSearching(
-                { idioma: language, busqueda: query },
-                this.searchCancelToken.token
+              { idioma: language, busqueda: query },
+              this.searchCancelToken.token
             );
             break;
           case 'cuevas y restos arqueológicos':
             this.searchResults = await this.getCavesSearching(
-                { idioma: language, busqueda: query },
-                this.searchCancelToken.token
+              { idioma: language, busqueda: query },
+              this.searchCancelToken.token
             );
             break;
           case 'edificios religiosos y castillos':
             this.searchResults = await this.getCulturalsSearching(
-                { idioma: language, busqueda: query },
-                this.searchCancelToken.token
+              { idioma: language, busqueda: query },
+              this.searchCancelToken.token
             );
             break;
           case 'eventos':
             this.searchResults = await this.getEventsSearching(
-                { idioma: language, busqueda: query },
-                this.searchCancelToken.token
+              { idioma: language, busqueda: query },
+              this.searchCancelToken.token
             );
             break;
           case 'parques temáticos':
             this.searchResults = await this.getFairsSearching(
-                { idioma: language, busqueda: query },
-                this.searchCancelToken.token
+              { idioma: language, busqueda: query },
+              this.searchCancelToken.token
             );
             break;
           case 'museos y centros de interpretación':
             this.searchResults = await this.getMuseumsSearching(
-                { idioma: language, busqueda: query },
-                this.searchCancelToken.token
+              { idioma: language, busqueda: query },
+              this.searchCancelToken.token
             );
             break;
           case 'espacios naturales':
             this.searchResults = await this.getNaturalsSearching(
-                { idioma: language, busqueda: query },
-                this.searchCancelToken.token
+              { idioma: language, busqueda: query },
+              this.searchCancelToken.token
             );
             break;
           case 'restaurantes':
             this.searchResults = await this.getRestaurantsSearching(
-                { idioma: language, busqueda: query },
-                this.searchCancelToken.token
+              { idioma: language, busqueda: query },
+              this.searchCancelToken.token
             );
             break;
           default:
-            this.searchResults = [];
+            console.error('Unrecognized category:', category);
+            this.searchResults = []; // Optionally handle unrecognized categories
             break;
         }
+      } catch (error) {
+        console.error('Error during search:', error);
       } finally {
         this.loading = false;
+        console.log('Search results:', this.searchResults);
       }
     },
 
