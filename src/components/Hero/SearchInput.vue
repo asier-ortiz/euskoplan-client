@@ -7,12 +7,21 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useCollectionsStore } from '@/stores/collections';
+import debounce from 'lodash.debounce';
 
-const searchQuery = ref('');
-const onSearch = () => {
-  // Emitir evento de búsqueda o manejar la búsqueda aquí
-  console.log(searchQuery.value);
-};
+const collectionsStore = useCollectionsStore();
+const searchQuery = ref(collectionsStore.searchQuery);
+
+const onSearch = debounce(() => {
+  collectionsStore.searchQuery = searchQuery.value;
+  if (searchQuery.value.length >= 3) {
+    collectionsStore.searchAllCollections(searchQuery.value, 'es');
+  } else {
+    collectionsStore.searchResults = [];
+  }
+}, 500);
+
 </script>
 
 <style scoped>

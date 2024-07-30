@@ -1,21 +1,18 @@
 <template>
-  <div class="filter-button-container">
-    <button @click="$emit('toggleFilterDrawer')" class="filter-button">
-      Filter <i class="bi bi-funnel"></i>
-    </button>
-  </div>
+  <button @click="toggleFilterDrawer" class="filter-button">
+    Filter <i class="bi bi-funnel"></i>
+  </button>
 </template>
 
-<script setup lang="ts">
+<script setup>
+const emit = defineEmits(['toggleFilterDrawer']);
+
+const toggleFilterDrawer = () => {
+  emit('toggleFilterDrawer');
+};
 </script>
 
 <style scoped>
-.filter-button-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
-}
-
 .filter-button {
   padding: 0.5rem 1rem;
   border: none;

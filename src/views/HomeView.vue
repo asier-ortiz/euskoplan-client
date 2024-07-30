@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Hero @chipSelected="handleChipSelected" />
+    <Hero @chipSelected="handleChipSelected" @search="handleSearch" />
     <ResultsContainer />
   </div>
 </template>
@@ -15,6 +15,11 @@ const collectionsStore = useCollectionsStore();
 const handleChipSelected = async (category) => {
   collectionsStore.selectedCategory = category;
   await collectionsStore.filterResultsByCategory(category, 'es');
+};
+
+const handleSearch = async (query) => {
+  collectionsStore.searchQuery = query;
+  await collectionsStore.searchAllCollections(query, 'es');
 };
 </script>
 

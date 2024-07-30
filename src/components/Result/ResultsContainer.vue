@@ -14,19 +14,21 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue';
+import { computed, watch } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
 import ResultCard from '@/components/Result/ResultCard.vue';
 import Spinner from '@/components/Spinner.vue';
 
 const collectionsStore = useCollectionsStore();
 
-const loadRandomCollections = async () => {
-  await collectionsStore.loadRandomCollections();
-};
-
 const results = computed(() => {
-  if (collectionsStore.selectedCategory) {
+  if (collectionsStore.searchQuery.length >= 3) {
+    if (collectionsStore.selectedCategory) {
+      return collectionsStore.searchResults.filter(item => item.coleccion === collectionsStore.selectedCategory);
+    } else {
+      return collectionsStore.searchResults;
+    }
+  } else if (collectionsStore.selectedCategory) {
     return collectionsStore.filteredResults;
   } else {
     return [
@@ -42,15 +44,22 @@ const results = computed(() => {
   }
 });
 
-onMounted(() => {
-  loadRandomCollections();
-});
-
 watch(
   () => collectionsStore.selectedCategory,
   async (newCategory) => {
     if (newCategory) {
       await collectionsStore.filterResultsByCategory(newCategory, 'es');
+    }
+  }
+);
+
+watch(
+  () => collectionsStore.searchQuery,
+  async (newQuery) => {
+    if (newQuery.length >= 3) {
+      await collectionsStore.searchAllCollections(newQuery, 'es');
+    } else {
+      collectionsStore.searchResults = [];
     }
   }
 );

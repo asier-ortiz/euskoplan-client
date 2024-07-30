@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import axios from 'axios'
-import config from '../config'
-import { useLocalStorage } from '@vueuse/core'
+import { defineStore } from 'pinia';
+import axios from 'axios';
+import config from '../config';
+import { useLocalStorage } from '@vueuse/core';
 
 // Configurar la base URL de Axios
 axios.defaults.baseURL = config.apiBaseUrl;
@@ -38,11 +38,17 @@ export const useCollectionsStore = defineStore('collections', {
     selectedCategory: null,
     filteredResults: [],
 
+    // Estado de búsqueda
+    searchQuery: '',
+    searchResults: [],
+    searchCancelToken: null,
+
     // Estado de carga
     loading: false,
   }),
   getters: {
     getFilteredResults: (state) => state.filteredResults,
+    getSearchResults: (state) => state.searchResults,
   },
   actions: {
     // Métodos de filtrado para cada tipo de colección
@@ -119,6 +125,112 @@ export const useCollectionsStore = defineStore('collections', {
       }
     },
 
+    // Métodos de búsqueda para cada tipo de colección
+    async getAccommodationsSearching(query: Record<string, string>, cancelToken) {
+      const params = new URLSearchParams(query);
+      try {
+        const response = await axios.get('/accommodation/results/search', { params, cancelToken });
+        this.searchResults.push(...response.data);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled:', error.message);
+        } else {
+          console.error('Error searching accommodations:', error);
+        }
+      }
+    },
+    async getCavesSearching(query: Record<string, string>, cancelToken) {
+      const params = new URLSearchParams(query);
+      try {
+        const response = await axios.get('/cave/results/search', { params, cancelToken });
+        this.searchResults.push(...response.data);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled:', error.message);
+        } else {
+          console.error('Error searching caves:', error);
+        }
+      }
+    },
+    async getCulturalsSearching(query: Record<string, string>, cancelToken) {
+      const params = new URLSearchParams(query);
+      try {
+        const response = await axios.get('/cultural/results/search', { params, cancelToken });
+        this.searchResults.push(...response.data);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled:', error.message);
+        } else {
+          console.error('Error searching culturals:', error);
+        }
+      }
+    },
+    async getEventsSearching(query: Record<string, string>, cancelToken) {
+      const params = new URLSearchParams(query);
+      try {
+        const response = await axios.get('/event/results/search', { params, cancelToken });
+        this.searchResults.push(...response.data);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled:', error.message);
+        } else {
+          console.error('Error searching events:', error);
+        }
+      }
+    },
+    async getFairsSearching(query: Record<string, string>, cancelToken) {
+      const params = new URLSearchParams(query);
+      try {
+        const response = await axios.get('/fair/results/search', { params, cancelToken });
+        this.searchResults.push(...response.data);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled:', error.message);
+        } else {
+          console.error('Error searching fairs:', error);
+        }
+      }
+    },
+    async getMuseumsSearching(query: Record<string, string>, cancelToken) {
+      const params = new URLSearchParams(query);
+      try {
+        const response = await axios.get('/museum/results/search', { params, cancelToken });
+        this.searchResults.push(...response.data);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled:', error.message);
+        } else {
+          console.error('Error searching museums:', error);
+        }
+      }
+    },
+    async getNaturalsSearching(query: Record<string, string>, cancelToken) {
+      const params = new URLSearchParams(query);
+      try {
+        const response = await axios.get('/natural/results/search', { params, cancelToken });
+        this.searchResults.push(...response.data);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled:', error.message);
+        } else {
+          console.error('Error searching naturals:', error);
+        }
+      }
+    },
+    async getRestaurantsSearching(query: Record<string, string>, cancelToken) {
+      const params = new URLSearchParams(query);
+      try {
+        const response = await axios.get('/restaurant/results/search', { params, cancelToken });
+        this.searchResults.push(...response.data);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled:', error.message);
+        } else {
+          console.error('Error searching restaurants:', error);
+        }
+      }
+    },
+
     // Métodos para obtener elementos aleatorios
     async loadRandomCollections() {
       this.loading = true;
@@ -156,6 +268,11 @@ export const useCollectionsStore = defineStore('collections', {
 
     // Método para obtener resultados filtrados según la categoría seleccionada
     async filterResultsByCategory(category, language) {
+      if (!category) {
+        this.filteredResults = [];
+        return;
+      }
+
       this.loading = true;
       try {
         switch (category.toLowerCase()) {
@@ -215,6 +332,36 @@ export const useCollectionsStore = defineStore('collections', {
         this.loading = false;
       }
     },
+
+
+    async searchAllCollections(query, language) {
+      if (this.searchCancelToken) {
+        this.searchCancelToken.cancel('Operation canceled due to new request.');
+      }
+
+      this.searchCancelToken = axios.CancelToken.source();
+
+      if (query.length < 3) {
+        this.searchResults = [];
+        return;
+      }
+
+      this.loading = true;
+      this.searchResults = [];
+
+      try {
+        await this.getAccommodationsSearching({ idioma: language, busqueda: query }, this.searchCancelToken.token);
+        await this.getCavesSearching({ idioma: language, busqueda: query }, this.searchCancelToken.token);
+        await this.getCulturalsSearching({ idioma: language, busqueda: query }, this.searchCancelToken.token);
+        await this.getEventsSearching({ idioma: language, busqueda: query }, this.searchCancelToken.token);
+        await this.getFairsSearching({ idioma: language, busqueda: query }, this.searchCancelToken.token);
+        await this.getMuseumsSearching({ idioma: language, busqueda: query }, this.searchCancelToken.token);
+        await this.getNaturalsSearching({ idioma: language, busqueda: query }, this.searchCancelToken.token);
+        await this.getRestaurantsSearching({ idioma: language, busqueda: query }, this.searchCancelToken.token);
+      } finally {
+        console.log('Search results:', this.searchResults); // Verificar el contenido de searchResults
+        this.loading = false;
+      }
+    }
   },
 });
-
