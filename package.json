@@ -20,13 +20,14 @@
     "bootstrap-icons": "^1.11.3",
     "lodash-es": "^4.17.21",
     "lodash.debounce": "^4.0.8",
-    "mapbox-gl": "^3.5.2",
+    "mapbox-gl": "^2.14.1",
     "pinia": "^2.1.7",
     "sweetalert2": "^11.12.3",
     "vee-validate": "^4.13.2",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3",
     "vue-sweetalert2": "^5.0.11",
+    "vue3-mapbox-gl": "^0.6.8",
     "yup": "^1.4.0"
   },
   "devDependencies": {
