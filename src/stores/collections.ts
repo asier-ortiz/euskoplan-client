@@ -31,7 +31,7 @@ export const useCollectionsStore = defineStore('collections', {
     randomMuseums: [],
     randomNaturals: [],
     randomRestaurants: [],
-    selectedCategory: null,
+    selectedCategory: useLocalStorage('selectedCategory', null), // <- Add this line
     filteredResults: [],
     searchQuery: '',
     searchResults: [],
@@ -422,6 +422,10 @@ export const useCollectionsStore = defineStore('collections', {
       } catch (error) {
         console.error(`Error fetching ${category} with id ${id}:`, error);
       }
+    },
+
+    setSelectedCategory(category) {
+      this.selectedCategory = category;
     },
   },
 });

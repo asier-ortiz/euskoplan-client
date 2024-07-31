@@ -3,7 +3,7 @@
     <span
       v-for="category in categories"
       :key="category"
-      :class="['chip', { 'chip-selected': selectedCategory === category }]"
+      :class="['chip', { 'chip-selected': collectionsStore.selectedCategory === category }]"
       @click="selectCategory(category)"
       role="button"
     >
@@ -12,8 +12,11 @@
   </div>
 </template>
 
-<script setup>
-import { ref, defineEmits } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useCollectionsStore } from '@/stores/collections';
+
+const collectionsStore = useCollectionsStore();
 
 const categories = [
   'Alojamientos',
@@ -26,17 +29,13 @@ const categories = [
   'Restaurantes'
 ];
 
-const selectedCategory = ref(null);
-
-const emit = defineEmits(['chipSelected']);
-
 const selectCategory = (category) => {
-  if (selectedCategory.value === category) {
-    selectedCategory.value = null;  // Deselecciona el chip si ya está seleccionado
+  if (collectionsStore.selectedCategory === category) {
+    collectionsStore.setSelectedCategory(null); // Deselect if already selected
   } else {
-    selectedCategory.value = category;
+    collectionsStore.setSelectedCategory(category);
   }
-  emit('chipSelected', selectedCategory.value);
+  collectionsStore.filterResultsByCategory(category, 'es');
 };
 </script>
 

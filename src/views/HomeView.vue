@@ -14,7 +14,7 @@ import { useCollectionsStore } from '@/stores/collections';
 const collectionsStore = useCollectionsStore();
 
 const handleChipSelected = async (category) => {
-  collectionsStore.selectedCategory = category;
+  collectionsStore.setSelectedCategory(category);
 
   if (collectionsStore.searchQuery.length >= 3) {
     await collectionsStore.searchInCategory(category, collectionsStore.searchQuery, 'es');
@@ -33,3 +33,7 @@ watch(() => collectionsStore.searchQuery, async (newQuery) => {
   }
 });
 </script>
+
+<style scoped>
+/* Add styles for your HomeView if needed */
+</style>
