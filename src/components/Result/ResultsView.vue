@@ -2,14 +2,10 @@
   <div class="results-view">
     <div class="tabs-and-filter">
       <div class="tabs">
-        <button
-            :class="{ active: activeTab === 'cards' }"
-            @click="activeTab = 'cards'">
+        <button :class="{ active: activeTab === 'cards' }" @click="activeTab = 'cards'">
           <i class="bi bi-card-text"></i> Cards
         </button>
-        <button
-            :class="{ active: activeTab === 'map' }"
-            @click="activeTab = 'map'">
+        <button :class="{ active: activeTab === 'map' }" @click="activeTab = 'map'">
           <i class="bi bi-geo-alt"></i> Map
         </button>
       </div>
@@ -19,7 +15,9 @@
     </div>
 
     <div class="results-count">
+      <span class="line"></span>
       <p>{{ resultsCount }} results found</p>
+      <span class="line"></span>
     </div>
 
     <div class="tab-content">
@@ -114,9 +112,21 @@ const resultsCount = computed(() => {
 }
 
 .results-count {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 1rem;
   font-size: 1.2rem;
   font-weight: bold;
+}
+
+.results-count p {
+  margin: 0 1rem;
+}
+
+.line {
+  flex: 1;
+  height: 1px;
+  background-color: #ddd;
 }
 </style>

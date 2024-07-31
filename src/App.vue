@@ -1,3 +1,13 @@
+<template>
+  <div class="app-container">
+    <Navbar />
+    <main class="content-container container mt-3">
+      <RouterView />
+    </main>
+    <Footer />
+  </div>
+</template>
+
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { RouterView } from 'vue-router';
@@ -12,15 +22,17 @@ onMounted(() => {
 });
 </script>
 
-<template>
-  <div>
-    <Navbar/>
-    <main class="container mt-3">
-      <RouterView/>
-    </main>
-    <Footer/>
-  </div>
-</template>
-
 <style scoped>
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.content-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 </style>
