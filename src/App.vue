@@ -14,11 +14,11 @@ onMounted(() => {
 
 <template>
   <div>
-    <Navbar />
+    <Navbar/>
     <main class="container mt-3">
-      <RouterView />
+      <RouterView/>
     </main>
-    <!--    <Footer />-->
+    <Footer/>
   </div>
 </template>
 
