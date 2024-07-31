@@ -2,16 +2,24 @@
   <div class="results-view">
     <div class="tabs-and-filter">
       <div class="tabs">
-        <button :class="{ active: activeTab === 'cards' }" @click="activeTab = 'cards'">
-          <font-awesome-icon icon="th" /> Cards
+        <button
+            :class="{ active: activeTab === 'cards' }"
+            @click="activeTab = 'cards'">
+          <i class="bi bi-card-text"></i> Cards
         </button>
-        <button :class="{ active: activeTab === 'map' }" @click="activeTab = 'map'">
-          <font-awesome-icon icon="map" /> Map
+        <button
+            :class="{ active: activeTab === 'map' }"
+            @click="activeTab = 'map'">
+          <i class="bi bi-geo-alt"></i> Map
         </button>
       </div>
       <div class="filter-button-container">
         <FilterButton @toggleFilterDrawer="toggleFilterDrawer" />
       </div>
+    </div>
+
+    <div class="results-count">
+      <p>{{ resultsCount }} results found</p>
     </div>
 
     <div class="tab-content">
@@ -24,19 +32,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import ResultCardContainer from './ResultCardContainer.vue';
 import ResultMap from './ResultMap.vue';
 import FilterDrawer from '@/components/Hero/FilterDrawer.vue';
 import FilterButton from '@/components/Hero/FilterButton.vue';
+import { useCollectionsStore } from '@/stores/collections';
 
 // Manage active tab state
 const activeTab = ref('cards');
 const isFilterDrawerVisible = ref(false);
+const collectionsStore = useCollectionsStore();
 
 const toggleFilterDrawer = () => {
   isFilterDrawerVisible.value = !isFilterDrawerVisible.value;
 };
+
+// Compute the number of results
+const resultsCount = computed(() => {
+  if (collectionsStore.searchQuery.length >= 3) {
+    return collectionsStore.searchResults.length;
+  }
+  if (collectionsStore.selectedCategory) {
+    return collectionsStore.filteredResults.length;
+  }
+  return (
+      collectionsStore.randomAccommodations.length +
+      collectionsStore.randomCaves.length +
+      collectionsStore.randomCulturals.length +
+      collectionsStore.randomEvents.length +
+      collectionsStore.randomFairs.length +
+      collectionsStore.randomMuseums.length +
+      collectionsStore.randomNaturals.length +
+      collectionsStore.randomRestaurants.length
+  );
+});
 </script>
 
 <style scoped>
@@ -64,9 +94,6 @@ const toggleFilterDrawer = () => {
   color: #333;
   cursor: pointer;
   transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .tabs button.active {
@@ -84,5 +111,12 @@ const toggleFilterDrawer = () => {
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #fff;
+}
+
+.results-count {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 </style>
