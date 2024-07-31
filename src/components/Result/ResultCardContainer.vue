@@ -3,12 +3,12 @@
     <Spinner :visible="collectionsStore.loading" />
     <div v-if="!collectionsStore.loading" class="cards-grid">
       <ResultCard
-        v-for="item in results"
-        :key="item.codigo"
-        :collection="item.coleccion"
-        :name="item.nombre"
-        :images="item.imagenes"
-        :itemId="item.codigo"
+          v-for="item in results"
+          :key="item.codigo"
+          :collection="item.coleccion"
+          :name="item.nombre"
+          :images="item.imagenes"
+          :itemId="Number(item.codigo)"
       />
     </div>
   </div>

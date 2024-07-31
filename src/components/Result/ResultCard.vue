@@ -16,7 +16,7 @@ import { useRouter } from 'vue-router';
 
 // Define props with TypeScript types
 const props = defineProps({
-  itemId: Number, // Use `itemId` prop to identify the specific card
+  itemId: Number, // Ensure `itemId` is a number
   collection: String,
   name: String,
   images: {
@@ -37,8 +37,8 @@ const navigateToDetail = () => {
 const imageUrl = ref('');
 
 // Default images by collection type
-const getDefaultImageUrl = (collection: string) => {
-  const defaultImages: Record<string, string> = {
+const getDefaultImageUrl = (collection) => {
+  const defaultImages = {
     accommodation: '/images/default/default-accommodation.jpg',
     cave: '/images/default/default-cave.jpg',
     cultural: '/images/default/default-cultural.jpg',
@@ -55,15 +55,15 @@ const getDefaultImageUrl = (collection: string) => {
 
 // Set initial image URL or default if none is available
 watch(
-  () => props.images,
-  (newImages) => {
-    if (newImages.length > 0 && newImages[0].fuente) {
-      imageUrl.value = newImages[0].fuente;
-    } else {
-      imageUrl.value = getDefaultImageUrl(props.collection);
-    }
-  },
-  { immediate: true }
+    () => props.images,
+    (newImages) => {
+      if (newImages.length > 0 && newImages[0].fuente) {
+        imageUrl.value = newImages[0].fuente;
+      } else {
+        imageUrl.value = getDefaultImageUrl(props.collection);
+      }
+    },
+    { immediate: true }
 );
 
 // Handle image loading errors by setting the default image URL
