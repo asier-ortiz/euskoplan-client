@@ -5,10 +5,10 @@
       <ResultCard
         v-for="item in results"
         :key="item.codigo"
-      :collection="item.coleccion"
-      :name="item.nombre"
-      :images="item.imagenes"
-      :itemId="item.codigo"
+        :collection="item.coleccion"
+        :name="item.nombre"
+        :images="item.imagenes"
+        :itemId="item.codigo"
       />
     </div>
   </div>
