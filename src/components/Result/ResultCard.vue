@@ -1,7 +1,7 @@
 <template>
-  <div class="result-card">
+  <div class="result-card" @click="navigateToDetail">
     <div class="card-image" :style="{ backgroundImage: `url(${imageUrl})` }">
-      <img :src="imageUrl" @error="handleImageError" class="hidden-image" alt="" />
+      <img :src="imageUrl" @error="handleImageError" class="hidden-image" alt="Image of {{ name }}" />
     </div>
     <div class="card-content">
       <h3>{{ collection }}</h3>
@@ -12,8 +12,11 @@
 
 <script setup lang="ts">
 import { ref, defineProps, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
+// Define props with TypeScript types
 const props = defineProps({
+  itemId: Number, // Use `itemId` prop to identify the specific card
   collection: String,
   name: String,
   images: {
@@ -22,12 +25,20 @@ const props = defineProps({
   },
 });
 
+// Use Vue Router for navigation
+const router = useRouter();
+
+// Navigate to detail page on card click
+const navigateToDetail = () => {
+  router.push({ name: 'Detail', params: { id: props.itemId, category: props.collection } });
+};
+
 // Define a ref to store the current image URL
 const imageUrl = ref('');
 
 // Default images by collection type
-const getDefaultImageUrl = (collection) => {
-  const defaultImages = {
+const getDefaultImageUrl = (collection: string) => {
+  const defaultImages: Record<string, string> = {
     accommodation: '/images/default/default-accommodation.jpg',
     cave: '/images/default/default-cave.jpg',
     cultural: '/images/default/default-cultural.jpg',
@@ -86,6 +97,7 @@ const handleImageError = () => {
   background-position: center;
   height: 60%;
   position: relative;
+  border-bottom: 1px solid #ddd; /* Divider between image and content */
 }
 
 .hidden-image {
@@ -100,21 +112,32 @@ const handleImageError = () => {
   justify-content: center;
   align-items: center;
   background-color: #ffffff; /* White background for card content */
+  text-align: center; /* Center align content */
 }
 
 .card-content h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.9rem; /* Smaller font size for collection text */
   color: #888888; /* Gray color for the collection text */
   text-transform: uppercase;
   font-weight: normal;
+  letter-spacing: 1px; /* Add letter spacing for a cleaner look */
 }
 
 .card-content h2 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.4rem; /* Slightly reduced font size for better balance */
   color: #333333; /* Darker color for the name text */
   font-weight: bold;
-  text-align: center; /* Center the text */
+  line-height: 1.2; /* Improved line spacing */
+}
+
+.card-content h3,
+.card-content h2 {
+  transition: color 0.3s; /* Smooth color transition */
+}
+
+.result-card:hover .card-content h2 {
+  color: #007bff; /* Highlight title on hover */
 }
 </style>

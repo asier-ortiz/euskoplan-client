@@ -1,14 +1,14 @@
-<!-- src/components/Result/ResultCardContainer.vue -->
 <template>
   <div class="results-container">
     <Spinner :visible="collectionsStore.loading" />
     <div v-if="!collectionsStore.loading" class="cards-grid">
       <ResultCard
         v-for="item in results"
-        :key="item.id"
-        :collection="item.coleccion"
-        :name="item.nombre"
-        :images="item.imagenes"
+        :key="item.codigo"
+      :collection="item.coleccion"
+      :name="item.nombre"
+      :images="item.imagenes"
+      :itemId="item.codigo"
       />
     </div>
   </div>

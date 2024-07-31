@@ -7,7 +7,7 @@ import EmailVerify from '@/views/Auth/EmailVerifyView.vue';
 import PasswordReset from '@/views/Auth/PasswordResetView.vue';
 import PasswordRecovery from '@/views/Auth/PasswordRecoveryView.vue';
 import Results from '@/views/ResultsView.vue';
-import Detail from '@/views/DetailView.vue';
+import Detail from '@/views/DetailView.vue'; // Ensure this import is correct
 import Account from '@/views/AccountView.vue';
 import PlanEdit from '@/views/PlanEditView.vue';
 import { useAuthStore } from '@/stores/auth';
@@ -20,7 +20,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/auth/password-reset', name: 'PasswordReset', component: PasswordReset },
   { path: '/auth/password-recovery', name: 'PasswordRecovery', component: PasswordRecovery },
   { path: '/results', name: 'Results', component: Results },
-  { path: '/detail/:id', name: 'Detail', component: Detail },
+  { path: '/detail/:category/:id', name: 'Detail', component: Detail },
   { path: '/account', name: 'Account', component: Account },
   { path: '/plan-edit/:id', name: 'PlanEdit', component: PlanEdit },
 ];

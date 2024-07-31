@@ -14,6 +14,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@chenfengyuan/vue-carousel": "^2.0.0",
     "@vueuse/core": "^10.11.0",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",

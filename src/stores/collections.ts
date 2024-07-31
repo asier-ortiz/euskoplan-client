@@ -1,3 +1,4 @@
+// src/store/collections.ts
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import config from '../config';
@@ -36,94 +37,35 @@ export const useCollectionsStore = defineStore('collections', {
     searchResults: [],
     searchCancelToken: null,
     loading: false,
+    currentDetail: null, // Store the current detail data
   }),
   getters: {
     getFilteredResults: (state) => state.filteredResults,
-
     getSearchResults: (state) => state.searchResults,
+    getResourceById: (state) => (category: string, id: number) => {
+      switch (category.toLowerCase()) {
+        case 'accommodation':
+          return state.accommodations.find((item) => item.id === id);
+        case 'cave':
+          return state.caves.find((item) => item.id === id);
+        case 'cultural':
+          return state.culturals.find((item) => item.id === id);
+        case 'event':
+          return state.events.find((item) => item.id === id);
+        case 'fair':
+          return state.fairs.find((item) => item.id === id);
+        case 'museum':
+          return state.museums.find((item) => item.id === id);
+        case 'natural':
+          return state.naturals.find((item) => item.id === id);
+        case 'restaurant':
+          return state.restaurants.find((item) => item.id === id);
+        default:
+          return null;
+      }
+    },
   },
   actions: {
-
-    async getAccommodationsFiltering(query) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/accommodation/results/filter', { params });
-        this.accommodations = response.data;
-      } catch (error) {
-        console.error('Error fetching accommodations:', error);
-      }
-    },
-
-    async getCavesFiltering(query) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/cave/results/filter', { params });
-        this.caves = response.data;
-      } catch (error) {
-        console.error('Error fetching caves:', error);
-      }
-    },
-
-    async getCulturalsFiltering(query) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/cultural/results/filter', { params });
-        this.culturals = response.data;
-      } catch (error) {
-        console.error('Error fetching culturals:', error);
-      }
-    },
-
-    async getEventsFiltering(query) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/event/results/filter', { params });
-        this.events = response.data;
-      } catch (error) {
-        console.error('Error fetching events:', error);
-      }
-    },
-
-    async getFairsFiltering(query) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/fair/results/filter', { params });
-        this.fairs = response.data;
-      } catch (error) {
-        console.error('Error fetching fairs:', error);
-      }
-    },
-
-    async getMuseumsFiltering(query) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/museum/results/filter', { params });
-        this.museums = response.data;
-      } catch (error) {
-        console.error('Error fetching museums:', error);
-      }
-    },
-
-    async getNaturalsFiltering(query) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/natural/results/filter', { params });
-        this.naturals = response.data;
-      } catch (error) {
-        console.error('Error fetching naturals:', error);
-      }
-    },
-
-    async getRestaurantsFiltering(query) {
-      const params = new URLSearchParams(query);
-      try {
-        const response = await axios.get('/restaurant/results/filter', { params });
-        this.restaurants = response.data;
-      } catch (error) {
-        console.error('Error fetching restaurants:', error);
-      }
-    },
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     async performSearch(endpoint, query, cancelToken) {
@@ -254,7 +196,6 @@ export const useCollectionsStore = defineStore('collections', {
         if (this.filteredResults.length === 0) {
           await this.loadCollectionData(category, language);
         }
-
       } finally {
         this.loading = false;
       }
@@ -336,36 +277,36 @@ export const useCollectionsStore = defineStore('collections', {
         } else {
           // Search in all collections if no category is selected
           const accommodations = await this.getAccommodationsSearching(
-              { idioma: language, busqueda: query },
-              this.searchCancelToken.token
+            { idioma: language, busqueda: query },
+            this.searchCancelToken.token
           );
           const caves = await this.getCavesSearching(
-              { idioma: language, busqueda: query },
-              this.searchCancelToken.token
+            { idioma: language, busqueda: query },
+            this.searchCancelToken.token
           );
           const culturals = await this.getCulturalsSearching(
-              { idioma: language, busqueda: query },
-              this.searchCancelToken.token
+            { idioma: language, busqueda: query },
+            this.searchCancelToken.token
           );
           const events = await this.getEventsSearching(
-              { idioma: language, busqueda: query },
-              this.searchCancelToken.token
+            { idioma: language, busqueda: query },
+            this.searchCancelToken.token
           );
           const fairs = await this.getFairsSearching(
-              { idioma: language, busqueda: query },
-              this.searchCancelToken.token
+            { idioma: language, busqueda: query },
+            this.searchCancelToken.token
           );
           const museums = await this.getMuseumsSearching(
-              { idioma: language, busqueda: query },
-              this.searchCancelToken.token
+            { idioma: language, busqueda: query },
+            this.searchCancelToken.token
           );
           const naturals = await this.getNaturalsSearching(
-              { idioma: language, busqueda: query },
-              this.searchCancelToken.token
+            { idioma: language, busqueda: query },
+            this.searchCancelToken.token
           );
           const restaurants = await this.getRestaurantsSearching(
-              { idioma: language, busqueda: query },
-              this.searchCancelToken.token
+            { idioma: language, busqueda: query },
+            this.searchCancelToken.token
           );
 
           this.searchResults = [
@@ -471,5 +412,16 @@ export const useCollectionsStore = defineStore('collections', {
       }
     },
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Fetch a single resource by ID and category
+    async fetchResourceById(category: string, id: number, language: string) {
+      try {
+        const response = await axios.get(`/${category}/result/${id}/${language}`);
+        this.currentDetail = response.data;
+      } catch (error) {
+        console.error(`Error fetching ${category} with id ${id}:`, error);
+      }
+    },
   },
 });
