@@ -8,7 +8,9 @@
           :collection="item.coleccion"
           :name="item.nombre"
           :images="item.imagenes"
-          :itemId="Number(item.codigo)"
+          :itemId="item.codigo"
+          :longitud="item.longitud"
+          :latitud="item.latitud"
       />
     </div>
   </div>

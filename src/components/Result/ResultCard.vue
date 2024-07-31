@@ -6,39 +6,55 @@
     <div class="card-content">
       <h3>{{ collection }}</h3>
       <h2>{{ name }}</h2>
+      <p v-if="distance !== null">{{ distance.toFixed(2) }} km</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, watch } from 'vue';
+import { ref, defineProps, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useLocationStore } from '@/stores/location';
+import { calculateDistance } from '@/utils/distance';
 
 // Define props with TypeScript types
 const props = defineProps({
-  itemId: Number, // Ensure `itemId` is a number
+  itemId: Number, // Use `itemId` prop to identify the specific card
   collection: String,
   name: String,
   images: {
     type: Array,
     default: () => [],
   },
+  longitud: Number,
+  latitud: Number,
 });
 
 // Use Vue Router for navigation
 const router = useRouter();
 
-// Navigate to detail page on card click
-const navigateToDetail = () => {
-  router.push({ name: 'Detail', params: { id: props.itemId, category: props.collection } });
-};
+// Use Location Store
+const locationStore = useLocationStore();
 
 // Define a ref to store the current image URL
 const imageUrl = ref('');
 
+// Distance calculation
+const distance = computed(() => {
+  if (locationStore.userLocation && props.longitud && props.latitud) {
+    return calculateDistance(
+        locationStore.userLocation.latitude,
+        locationStore.userLocation.longitude,
+        props.latitud,
+        props.longitud
+    );
+  }
+  return null;
+});
+
 // Default images by collection type
-const getDefaultImageUrl = (collection) => {
-  const defaultImages = {
+const getDefaultImageUrl = (collection: string) => {
+  const defaultImages: Record<string, string> = {
     accommodation: '/images/default/default-accommodation.jpg',
     cave: '/images/default/default-cave.jpg',
     cultural: '/images/default/default-cultural.jpg',
@@ -69,6 +85,11 @@ watch(
 // Handle image loading errors by setting the default image URL
 const handleImageError = () => {
   imageUrl.value = getDefaultImageUrl(props.collection);
+};
+
+// Navigate to detail page on card click
+const navigateToDetail = () => {
+  router.push({ name: 'Detail', params: { id: props.itemId, category: props.collection } });
 };
 </script>
 
@@ -116,7 +137,7 @@ const handleImageError = () => {
 }
 
 .card-content h3 {
-  margin: 0;
+  margin: 0 0 0.5rem; /* Add margin-bottom for spacing */
   font-size: 0.9rem; /* Smaller font size for collection text */
   color: #888888; /* Gray color for the collection text */
   text-transform: uppercase;
@@ -125,11 +146,17 @@ const handleImageError = () => {
 }
 
 .card-content h2 {
-  margin: 0;
+  margin: 0 0 0.5rem; /* Add margin-bottom for spacing */
   font-size: 1.4rem; /* Slightly reduced font size for better balance */
   color: #333333; /* Darker color for the name text */
   font-weight: bold;
   line-height: 1.2; /* Improved line spacing */
+}
+
+.card-content p {
+  margin: 0; /* Ensure no margin for the distance text */
+  font-size: 1rem; /* Adjust font size for distance text */
+  color: #555555; /* Slightly lighter color for distance text */
 }
 
 .card-content h3,
