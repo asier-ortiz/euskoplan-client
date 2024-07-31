@@ -33,7 +33,7 @@ export const useCollectionsStore = defineStore('collections', {
     randomRestaurants: [],
     selectedCategory: useLocalStorage('selectedCategory', null), // <- Add this line
     filteredResults: [],
-    searchQuery: '',
+    searchQuery: useLocalStorage('searchQuery', ''), // Modificación aquí
     searchResults: [],
     searchCancelToken: null,
     loading: false,

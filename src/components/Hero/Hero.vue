@@ -11,6 +11,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { defineEmits } from 'vue';
 import SearchInput from '@/components/Hero/SearchInput.vue';
 import CategoryChips from '@/components/Hero/CategoryChips.vue';

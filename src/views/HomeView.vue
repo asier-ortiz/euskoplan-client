@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Hero @chipSelected="handleChipSelected" />
+    <Hero @chipSelected="handleChipSelected" @search="handleSearch" />
     <ResultsView />
   </div>
 </template>
@@ -14,26 +14,44 @@ import { useCollectionsStore } from '@/stores/collections';
 const collectionsStore = useCollectionsStore();
 
 const handleChipSelected = async (category) => {
-  collectionsStore.setSelectedCategory(category);
+  collectionsStore.selectedCategory = category;
 
   if (collectionsStore.searchQuery.length >= 3) {
-    await collectionsStore.searchInCategory(category, collectionsStore.searchQuery, 'es');
+    if (category) {
+      await collectionsStore.searchInCategory(category, collectionsStore.searchQuery, 'es');
+    } else {
+      await collectionsStore.searchAllCollections(collectionsStore.searchQuery, 'es');
+    }
   } else {
     await collectionsStore.filterResultsByCategory(category, 'es');
   }
 };
 
-watch(() => collectionsStore.searchQuery, async (newQuery) => {
-  if (newQuery.length >= 3) {
+const handleSearch = async (query) => {
+  collectionsStore.searchQuery = query;
+
+  if (query.length >= 3) {
     if (collectionsStore.selectedCategory) {
-      await collectionsStore.searchInCategory(collectionsStore.selectedCategory, newQuery, 'es');
+      await collectionsStore.searchInCategory(collectionsStore.selectedCategory, query, 'es');
     } else {
-      await collectionsStore.searchAllCollections(newQuery, 'es');
+      await collectionsStore.searchAllCollections(query, 'es');
     }
   }
-});
-</script>
+};
 
-<style scoped>
-/* Add styles for your HomeView if needed */
-</style>
+// Watch for changes in searchQuery and selectedCategory and trigger appropriate search
+watch(
+  () => [collectionsStore.searchQuery, collectionsStore.selectedCategory],
+  async ([newQuery, newCategory]) => {
+    if (newQuery.length >= 3) {
+      if (newCategory) {
+        await collectionsStore.searchInCategory(newCategory, newQuery, 'es');
+      } else {
+        await collectionsStore.searchAllCollections(newQuery, 'es');
+      }
+    } else if (newCategory) {
+      await collectionsStore.filterResultsByCategory(newCategory, 'es');
+    }
+  }
+);
+</script>
