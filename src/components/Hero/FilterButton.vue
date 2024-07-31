@@ -1,10 +1,12 @@
 <template>
   <button @click="toggleFilterDrawer" class="filter-button">
-    Filter <i class="bi bi-funnel"></i>
+    <font-awesome-icon icon="filter" /> Filter
   </button>
 </template>
 
 <script setup>
+import { defineEmits } from 'vue';
+
 const emit = defineEmits(['toggleFilterDrawer']);
 
 const toggleFilterDrawer = () => {
@@ -29,9 +31,5 @@ const toggleFilterDrawer = () => {
 .filter-button:hover {
   background-color: #0056b3;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.filter-button i {
-  font-size: 1rem;
 }
 </style>
