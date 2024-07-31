@@ -48,19 +48,32 @@ const selectCategory = (category) => {
 }
 
 .chip {
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
+  padding: 0.2rem 0.5rem; /* Smaller padding */
+  border-radius: 15px; /* Smaller border radius */
   cursor: pointer;
-  background-color: #e0e0e0;
+  background-color: #f8f9fa; /* Light background color */
+  color: #343a40; /* Darker text color for better readability */
+  font-size: 0.9rem; /* Smaller font size */
   transition: background-color 0.3s, color 0.3s;
+  white-space: nowrap; /* Prevent text from wrapping */
+  border: 1px solid #007bff; /* Border to improve visibility */
 }
 
 .chip:hover {
-  background-color: #d0d0d0;
+  background-color: #007bff;
+  color: white;
 }
 
 .chip-selected {
   background-color: #007bff;
   color: white;
+}
+
+/* Media query to adjust the font size and padding for smaller screens */
+@media (max-width: 600px) {
+  .chip {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.4rem; /* Adjust padding for smaller screens */
+  }
 }
 </style>

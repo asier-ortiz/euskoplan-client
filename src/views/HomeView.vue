@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { watch } from 'vue';
 import Hero from '@/components/Hero/Hero.vue';
 import ResultsView from '@/components/Result/ResultsView.vue';
 import { useCollectionsStore } from '@/stores/collections';
