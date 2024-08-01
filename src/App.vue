@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <Navbar />
-    <main class="content-container container mt-3">
+    <main class="content-container">
       <RouterView />
     </main>
     <Footer />
@@ -36,5 +36,7 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden; /* Hide horizontal overflow */
+  padding: 0 15px; /* Add some horizontal padding if needed */
 }
 </style>

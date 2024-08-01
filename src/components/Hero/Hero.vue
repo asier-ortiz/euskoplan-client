@@ -19,7 +19,7 @@ import SearchInput from '@/components/Hero/SearchInput.vue';
 import CategoryChips from '@/components/Hero/CategoryChips.vue';
 
 const emit = defineEmits(['chipSelected', 'search']);
-const overlayColor = ref('rgba(0, 0, 0, 0.4)'); // Initial overlay color
+const overlayColor = ref('rgba(0, 0, 0, 0.4)');
 
 const onChipSelected = (category) => {
   emit('chipSelected', category);
@@ -31,7 +31,7 @@ const onSearch = (query) => {
 
 const handleScroll = () => {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  const opacity = Math.min(0.4 + scrollTop / 500, 0.7); // Increase overlay opacity with scroll
+  const opacity = Math.min(0.4 + scrollTop / 500, 0.7);
   overlayColor.value = `rgba(0, 0, 0, ${opacity})`;
 };
 
@@ -47,10 +47,14 @@ onUnmounted(() => {
 <style scoped>
 .hero-container {
   position: relative;
-  width: 100%;
-  height: 400px; /* Height can be adjusted */
+  width: 100vw; /* Ensure full viewport width */
+  left: 50%; /* Center hero with respect to the viewport */
+  right: 50%;
+  margin-left: -50vw; /* Adjust position to avoid overflow */
+  height: 400px;
   background: url('/images/gaztelugatxe.webp') no-repeat center center;
   background-size: cover;
+  overflow: hidden;
 }
 
 .hero-overlay {
@@ -62,7 +66,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: background-color 0.3s; /* Smooth transition for background color */
+  transition: background-color 0.3s;
 }
 
 .hero-content {
@@ -84,10 +88,9 @@ onUnmounted(() => {
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 2rem; /* Increased margin for more space between input and chips */
+  margin-top: 2rem;
 }
 
-/* Media queries for responsiveness */
 @media (max-width: 768px) {
   .hero-content h1 {
     font-size: 2rem;

@@ -51,7 +51,7 @@ onMounted(async () => {
 
 <style scoped>
 .navbar {
-  margin-bottom: 1rem;
+  margin-bottom: 0; /* Eliminar margen inferior */
 }
 
 @media (max-width: 768px) {

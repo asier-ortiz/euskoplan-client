@@ -1,7 +1,9 @@
 <template>
   <div>
     <Hero @chipSelected="handleChipSelected" @search="handleSearch" />
-    <ResultsView />
+    <div class="container">
+      <ResultsView />
+    </div>
   </div>
 </template>
 
@@ -41,17 +43,17 @@ const handleSearch = async (query) => {
 
 // Watch for changes in searchQuery and selectedCategory and trigger appropriate search
 watch(
-  () => [collectionsStore.searchQuery, collectionsStore.selectedCategory],
-  async ([newQuery, newCategory]) => {
-    if (newQuery.length >= 3) {
-      if (newCategory) {
-        await collectionsStore.searchInCategory(newCategory, newQuery, 'es');
-      } else {
-        await collectionsStore.searchAllCollections(newQuery, 'es');
+    () => [collectionsStore.searchQuery, collectionsStore.selectedCategory],
+    async ([newQuery, newCategory]) => {
+      if (newQuery.length >= 3) {
+        if (newCategory) {
+          await collectionsStore.searchInCategory(newCategory, newQuery, 'es');
+        } else {
+          await collectionsStore.searchAllCollections(newQuery, 'es');
+        }
+      } else if (newCategory) {
+        await collectionsStore.filterResultsByCategory(newCategory, 'es');
       }
-    } else if (newCategory) {
-      await collectionsStore.filterResultsByCategory(newCategory, 'es');
     }
-  }
 );
 </script>
