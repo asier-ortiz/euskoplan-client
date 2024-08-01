@@ -1,47 +1,55 @@
 <template>
-  <div v-if="resource" class="detail-view">
-    <div class="detail-header">
-      <h1>{{ resource.nombre }}</h1>
-      <h2>{{ resource.coleccion }}</h2>
-    </div>
-    <div class="detail-content">
-      <div v-if="resource.imagenes && resource.imagenes.length > 0" class="detail-carousel">
-        <div class="carousel-container">
-          <div class="carousel-slide" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-            <div v-for="(imagen, index) in resource.imagenes" :key="index" class="carousel-image">
-              <img :src="imagen.fuente" alt="Resource image" />
+  <div class="detail-view-container">
+    <Spinner v-if="loading" :visible="loading" />
+    <div v-else class="detail-view">
+      <div class="detail-header">
+        <h1>{{ resource.nombre }}</h1>
+        <h2>{{ resource.coleccion }}</h2>
+      </div>
+      <div class="detail-content">
+        <div v-if="resource.imagenes && resource.imagenes.length > 1" class="detail-carousel">
+          <div class="carousel-container">
+            <div class="carousel-slide" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
+              <div v-for="(imagen, index) in resource.imagenes" :key="index" class="carousel-image">
+                <img :src="imagen.fuente" alt="Resource image" />
+              </div>
             </div>
           </div>
+          <button v-if="currentIndex > 0" @click="prevSlide" class="carousel-button prev-button">‹</button>
+          <button v-if="currentIndex < resource.imagenes.length - 1" @click="nextSlide" class="carousel-button next-button">›</button>
         </div>
-        <button v-if="currentIndex > 0" @click="prevSlide" class="carousel-button prev-button">‹</button>
-        <button v-if="currentIndex < resource.imagenes.length - 1" @click="nextSlide" class="carousel-button next-button">›</button>
-      </div>
-      <p v-html="resource.descripcion" class="description"></p>
-      <div class="detail-info">
-        <p><strong>Address:</strong> {{ resource.direccion }}</p>
-        <p><strong>Phone:</strong> {{ resource.numero_telefono }}</p>
-        <p><strong>Email:</strong> {{ resource.email }}</p>
-        <p><strong>Website:</strong> <a :href="resource.pagina_web" target="_blank">{{ resource.pagina_web }}</a></p>
-      </div>
-      <div v-if="resource.servicios && resource.servicios.length > 0" class="detail-services">
-        <h3>Services</h3>
-        <ul>
-          <li v-for="(service, index) in resource.servicios" :key="index">{{ service.nombre }}</li>
-        </ul>
-      </div>
-      <div v-if="resource.latitud && resource.longitud" class="detail-map">
-        <div ref="mapContainer" class="map-container"></div>
+
+        <div v-else-if="resource.imagenes && resource.imagenes.length === 1" class="single-image">
+          <img :src="resource.imagenes[0].fuente" alt="Resource image" />
+        </div>
+
+        <p v-html="resource.descripcion" class="description"></p>
+        <div class="detail-info">
+          <p><strong>Address:</strong> {{ resource.direccion }}</p>
+          <p><strong>Phone:</strong> {{ resource.numero_telefono }}</p>
+          <p><strong>Email:</strong> {{ resource.email }}</p>
+          <p><strong>Website:</strong> <a :href="resource.pagina_web" target="_blank">{{ resource.pagina_web }}</a></p>
+        </div>
+        <div v-if="resource.servicios && resource.servicios.length > 0" class="detail-services">
+          <h3>Services</h3>
+          <ul>
+            <li v-for="(service, index) in resource.servicios" :key="index">{{ service.nombre }}</li>
+          </ul>
+        </div>
+        <div v-if="resource.latitud && resource.longitud" class="detail-map">
+          <div ref="mapContainer" class="map-container"></div>
+        </div>
       </div>
     </div>
   </div>
-  <div v-else class="loading">Loading...</div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCollectionsStore } from '@/stores/collections';
 import mapboxgl from 'mapbox-gl';
+import Spinner from '@/components/Spinner.vue';
 
 mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Reemplaza con tu token de Mapbox
 
@@ -60,6 +68,9 @@ const currentIndex = ref(0);
 // Define a ref to store the map container
 const mapContainer = ref(null);
 
+// Define loading state
+const loading = ref(true);
+
 // Fetch the resource based on the ID and category from the route parameters
 const fetchResource = async () => {
   const { id, category } = route.params;
@@ -67,6 +78,9 @@ const fetchResource = async () => {
 
   await collectionsStore.fetchResourceById(category, Number(id), language);
   resource.value = collectionsStore.currentDetail;
+
+  // Set loading to false once the resource is loaded
+  loading.value = false;
 
   // Ensure map initialization after the DOM is updated
   if (resource.value && resource.value.latitud && resource.value.longitud) {
@@ -86,8 +100,8 @@ const initializeMap = () => {
     });
 
     new mapboxgl.Marker()
-      .setLngLat([parseFloat(resource.value.longitud), parseFloat(resource.value.latitud)])
-      .addTo(map);
+        .setLngLat([parseFloat(resource.value.longitud), parseFloat(resource.value.latitud)])
+        .addTo(map);
   }
 };
 
@@ -111,6 +125,14 @@ const nextSlide = () => {
 </script>
 
 <style scoped>
+.detail-view-container {
+  position: relative;
+  min-height: 100vh; /* Ensure full height to center spinner vertically */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .detail-view {
   padding: 2rem;
   font-family: 'Arial', sans-serif;
@@ -169,6 +191,13 @@ const nextSlide = () => {
   width: 100%;
   height: auto;
   border-radius: 8px;
+}
+
+.single-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
 .carousel-button {
@@ -256,8 +285,10 @@ const nextSlide = () => {
 }
 
 .loading {
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f9f9f9;
 }
 </style>

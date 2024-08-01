@@ -28,6 +28,18 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (to.name === 'Detail') {
+      // Scroll to top when navigating to the detail page
+      return { top: 0 };
+    } else if (savedPosition) {
+      // Return to saved position on back/forward navigation
+      return savedPosition;
+    } else {
+      // Do nothing, remain in the current position
+      return false;
+    }
+  },
 });
 
 router.beforeEach((to, from, next) => {

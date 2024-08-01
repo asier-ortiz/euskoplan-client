@@ -17,7 +17,7 @@ const props = defineProps({
 
 <style scoped>
 .spinner-overlay {
-  position: absolute; /* Change from fixed to absolute */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -25,8 +25,8 @@ const props = defineProps({
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(240, 240, 240, 0.7); /* Match the main background color */
-  z-index: 1000; /* Lower z-index if needed */
+  background: rgba(240, 240, 240, 0.8); /* Match the main background color */
+  z-index: 10; /* Ensure it is above the content but below navigation */
 }
 
 .spinner {
