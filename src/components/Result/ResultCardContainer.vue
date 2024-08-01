@@ -10,7 +10,6 @@
         <i :class="sortOrder === 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'"></i>
       </button>
     </div>
-    <Spinner :visible="collectionsStore.loading" />
     <div v-if="!collectionsStore.loading" class="cards-grid">
       <ResultCard
           v-for="item in sortedResults"
@@ -31,7 +30,6 @@ import { ref, computed } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import ResultCard from '@/components/Result/ResultCard.vue';
-import Spinner from '@/components/Spinner.vue';
 import { calculateDistance } from '@/utils/distance';
 
 // Access your collections store

@@ -1,5 +1,6 @@
 <template>
   <div class="results-view">
+    <Spinner :visible="collectionsStore.loading" />
     <div class="tabs-and-filter">
       <div class="tabs">
         <button :class="{ active: activeTab === 'cards' }" @click="activeTab = 'cards'">
@@ -36,6 +37,7 @@ import ResultMap from './ResultMap.vue';
 import FilterDrawer from '@/components/Hero/FilterDrawer.vue';
 import FilterButton from '@/components/Hero/FilterButton.vue';
 import { useCollectionsStore } from '@/stores/collections';
+import Spinner from '@/components/Spinner.vue';
 
 // Manage active tab state
 const activeTab = ref('cards');
@@ -70,6 +72,8 @@ const resultsCount = computed(() => {
 <style scoped>
 .results-view {
   margin: 1rem 0;
+  position: relative; /* Ensure spinner overlay works correctly */
+  min-height: 300px; /* Ensure enough space for spinner */
 }
 
 .tabs-and-filter {
