@@ -28,7 +28,7 @@ const onSearch = () => {
 };
 
 // Debounce search function to prevent multiple rapid requests
-const debouncedSearch = debounce(onSearch, 300);
+const debouncedSearch = debounce(onSearch, 1000);
 
 // Watch for changes in searchQuery and update store
 watch(searchQuery, (newQuery) => {
