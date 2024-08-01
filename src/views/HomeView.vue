@@ -8,52 +8,50 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue';
+import { onMounted, watch } from 'vue';
 import Hero from '@/components/Hero/Hero.vue';
 import ResultsView from '@/components/Result/ResultsView.vue';
 import { useCollectionsStore } from '@/stores/collections';
 
 const collectionsStore = useCollectionsStore();
 
+// Centraliza la lógica de búsqueda en una función
+const performSearch = async () => {
+  const { searchQuery, selectedCategory } = collectionsStore;
+
+  if (searchQuery.length >= 3) {
+    if (selectedCategory) {
+      await collectionsStore.searchInCategory(selectedCategory, searchQuery, 'es');
+    } else {
+      await collectionsStore.searchAllCollections(searchQuery, 'es');
+    }
+  } else if (selectedCategory) {
+    await collectionsStore.filterResultsByCategory(selectedCategory, 'es');
+  }
+};
+
+// Ejecuta la búsqueda si hay un término de búsqueda o categoría seleccionada al montar el componente
+onMounted(() => {
+  if (collectionsStore.searchQuery || collectionsStore.selectedCategory) {
+    performSearch();
+  }
+});
+
 const handleChipSelected = async (category) => {
   collectionsStore.selectedCategory = category;
-
-  if (collectionsStore.searchQuery.length >= 3) {
-    if (category) {
-      await collectionsStore.searchInCategory(category, collectionsStore.searchQuery, 'es');
-    } else {
-      await collectionsStore.searchAllCollections(collectionsStore.searchQuery, 'es');
-    }
-  } else {
-    await collectionsStore.filterResultsByCategory(category, 'es');
-  }
+  await performSearch();
 };
 
 const handleSearch = async (query) => {
   collectionsStore.searchQuery = query;
-
-  if (query.length >= 3) {
-    if (collectionsStore.selectedCategory) {
-      await collectionsStore.searchInCategory(collectionsStore.selectedCategory, query, 'es');
-    } else {
-      await collectionsStore.searchAllCollections(query, 'es');
-    }
-  }
+  await performSearch();
 };
 
-// Watch for changes in searchQuery and selectedCategory and trigger appropriate search
+// Observa los cambios en searchQuery y selectedCategory y desencadena la búsqueda adecuada
 watch(
     () => [collectionsStore.searchQuery, collectionsStore.selectedCategory],
-    async ([newQuery, newCategory]) => {
-      if (newQuery.length >= 3) {
-        if (newCategory) {
-          await collectionsStore.searchInCategory(newCategory, newQuery, 'es');
-        } else {
-          await collectionsStore.searchAllCollections(newQuery, 'es');
-        }
-      } else if (newCategory) {
-        await collectionsStore.filterResultsByCategory(newCategory, 'es');
-      }
+    async () => {
+      await performSearch();
     }
 );
 </script>
