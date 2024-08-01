@@ -19,15 +19,30 @@ import { calculateDistance } from '@/utils/distance';
 
 // Define props with TypeScript types
 const props = defineProps({
-  itemId: Number, // Use `itemId` prop to identify the specific card
-  collection: String,
-  name: String,
+  itemId: {
+    type: [Number, String], // Aceptar tanto Number como String
+    required: true,
+  },
+  collection: {
+    type: String,
+    required: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
   images: {
     type: Array,
     default: () => [],
   },
-  longitud: Number,
-  latitud: Number,
+  longitud: {
+    type: [Number, String], // Aceptar tanto Number como String
+    required: true,
+  },
+  latitud: {
+    type: [Number, String], // Aceptar tanto Number como String
+    required: true,
+  },
 });
 
 // Use Vue Router for navigation
@@ -45,8 +60,8 @@ const distance = computed(() => {
     return calculateDistance(
         locationStore.userLocation.latitude,
         locationStore.userLocation.longitude,
-        props.latitud,
-        props.longitud
+        Number(props.latitud), // Convertir a número
+        Number(props.longitud)  // Convertir a número
     );
   }
   return null;
@@ -89,7 +104,7 @@ const handleImageError = () => {
 
 // Navigate to detail page on card click
 const navigateToDetail = () => {
-  router.push({ name: 'Detail', params: { id: props.itemId, category: props.collection } });
+  router.push({ name: 'Detail', params: { id: Number(props.itemId), category: props.collection } }); // Convertir itemId a número
 };
 </script>
 

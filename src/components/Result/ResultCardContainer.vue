@@ -13,13 +13,13 @@
     <div v-if="!collectionsStore.loading" class="cards-grid">
       <ResultCard
           v-for="item in sortedResults"
-          :key="item.codigo"
+          :key="`${item.coleccion}-${item.id}`"
           :collection="item.coleccion"
           :name="item.nombre"
           :images="item.imagenes"
-          :itemId="item.codigo"
-          :longitud="item.longitud"
-          :latitud="item.latitud"
+          :itemId="Number(item.codigo)"
+          :longitud="Number(item.longitud)"
+          :latitud="Number(item.latitud)"
       />
     </div>
   </div>
