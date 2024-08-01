@@ -31,6 +31,7 @@
     "sweetalert2": "^11.12.3",
     "vee-validate": "^4.13.2",
     "vue": "^3.4.29",
+    "vue-datepicker-next": "^1.0.3",
     "vue-router": "^4.3.3",
     "vue-sweetalert2": "^5.0.11",
     "vue3-mapbox-gl": "^0.6.8",
