@@ -8,14 +8,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import {onMounted, watch} from 'vue';
 import Hero from '@/components/Hero/Hero.vue';
 import ResultsView from '@/components/Result/ResultsView.vue';
 import { useCollectionsStore } from '@/stores/collections';
 
 const collectionsStore = useCollectionsStore();
 
-// Centraliza la lógica de búsqueda en una función
+// Centralize search logic in a function
 const performSearch = async () => {
   const { searchQuery, selectedCategory } = collectionsStore;
 
@@ -30,7 +30,7 @@ const performSearch = async () => {
   }
 };
 
-// Ejecuta la búsqueda si hay un término de búsqueda o categoría seleccionada al montar el componente
+// Execute the search if there is a search term or category selected on the initial load
 onMounted(() => {
   if (collectionsStore.searchQuery || collectionsStore.selectedCategory) {
     performSearch();
@@ -47,11 +47,14 @@ const handleSearch = async (query) => {
   await performSearch();
 };
 
-// Observa los cambios en searchQuery y selectedCategory y desencadena la búsqueda adecuada
+// Watch for changes in searchQuery and selectedCategory and trigger appropriate search
 watch(
     () => [collectionsStore.searchQuery, collectionsStore.selectedCategory],
-    async () => {
-      await performSearch();
+    async ([newQuery, newCategory], [oldQuery, oldCategory]) => {
+      // Perform search when searchQuery is updated or when selectedCategory changes
+      if (newQuery !== oldQuery || newCategory !== oldCategory) {
+        await performSearch();
+      }
     }
 );
 </script>
