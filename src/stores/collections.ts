@@ -113,7 +113,7 @@ export const useCollectionsStore = defineStore('collections', {
       return this.performSearch('/restaurant/results/search', query, cancelToken);
     },
 
-    async loadCollectionData(category, filters, language = 'es') {
+    async loadCollectionData(category, filters = {}, language = 'es') {
       const params = new URLSearchParams({ idioma: language, ...filters });
 
       try {
@@ -167,7 +167,7 @@ export const useCollectionsStore = defineStore('collections', {
       }
     },
 
-    async filterResultsByCategory(category, filters) {
+    async filterResultsByCategory(category, filters = {}) {
       if (!category) {
         this.filteredResults = [];
         return;
@@ -175,42 +175,17 @@ export const useCollectionsStore = defineStore('collections', {
 
       this.loading = true;
       try {
-        // Decide the endpoint based on the selected category
-        let endpoint = '';
-        switch (category.toLowerCase()) {
-          case 'alojamientos':
-            endpoint = '/accommodation/results/filter';
-            break;
-          case 'cuevas y restos arqueológicos':
-            endpoint = '/cave/results/filter';
-            break;
-          case 'edificios religiosos y castillos':
-            endpoint = '/cultural/results/filter';
-            break;
-          case 'eventos':
-            endpoint = '/event/results/filter';
-            break;
-          case 'parques temáticos':
-            endpoint = '/fair/results/filter';
-            break;
-          case 'museos y centros de interpretación':
-            endpoint = '/museum/results/filter';
-            break;
-          case 'espacios naturales':
-            endpoint = '/natural/results/filter';
-            break;
-          case 'restaurantes':
-            endpoint = '/restaurant/results/filter';
-            break;
-          default:
-            console.error('Invalid category:', category);
-            this.filteredResults = [];
-            return;
-        }
+        // Ensure filters include only non-null values and default language
+        const cleanFilters = { idioma: 'es' };
 
-        // Fetch filtered results
-        const response = await axios.get(endpoint, { params: filters });
-        this.filteredResults = response.data;
+        Object.keys(filters).forEach(key => {
+          if (filters[key] !== null && filters[key] !== undefined) {
+            cleanFilters[key] = filters[key];
+          }
+        });
+
+        // Call loadCollectionData with clean filters
+        await this.loadCollectionData(category, cleanFilters);
 
       } catch (error) {
         console.error(`Error filtering results for category ${category}:`, error);
