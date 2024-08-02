@@ -8,18 +8,18 @@
 <script setup>
 import { computed } from 'vue';
 import { defineEmits } from 'vue';
-import { useRegionStore } from '@/stores/region'; // Asegúrate de que esta sea la ruta correcta
+import { useFilterStore } from '@/stores/filter';
 
 const emit = defineEmits(['toggleFilterDrawer']);
 
 // Obtener el store para acceder a los filtros seleccionados
-const regionStore = useRegionStore();
+const filterStore = useFilterStore();
 
 // Calcular el número de filtros aplicados
 const filterCount = computed(() => {
   let count = 0;
-  if (regionStore.selectedProvince) count++;
-  if (regionStore.selectedLocality) count++;
+  if (filterStore.selectedProvince) count++;
+  if (filterStore.selectedLocality) count++;
   return count;
 });
 

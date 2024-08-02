@@ -1,8 +1,8 @@
-// src/stores/region.ts
+// src/stores/filter.ts
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-export const useRegionStore = defineStore('region', {
+export const useFilterStore = defineStore('region', {
     state: () => ({
         provinces: ['Araba/Álava', 'Gipuzkoa', 'Bizkaia'],
         localities: [],

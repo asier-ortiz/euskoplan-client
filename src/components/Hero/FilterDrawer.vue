@@ -75,7 +75,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRegionStore } from '@/stores/region'; // Ensure this is the correct path
+import { useFilterStore } from '@/stores/filter';
 import DatePicker from 'vue-datepicker-next';
 import 'vue-datepicker-next/index.css';
 import { defineProps, defineEmits } from 'vue';
@@ -89,30 +89,30 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'filtersApplied']);
 
-const regionStore = useRegionStore();
+const filterStore = useFilterStore();
 
 // Fetch localities when the component is mounted
 onMounted(() => {
-  if (!regionStore.localities.length) {
-    regionStore.fetchLocalities();
+  if (!filterStore.localities.length) {
+    filterStore.fetchLocalities();
   }
 });
 
 // Fixed provinces options
-const provinces = regionStore.provinces;
+const provinces = filterStore.provinces;
 
 // Filtered localities according to the selected province
 const filteredLocalities = computed(() => {
-  return regionStore.filteredLocalities;
+  return filterStore.filteredLocalities;
 });
 
 // References for the selected province and locality
-const selectedProvince = ref(regionStore.selectedProvince);
-const selectedLocality = ref(regionStore.selectedLocality);
+const selectedProvince = ref(filterStore.selectedProvince);
+const selectedLocality = ref(filterStore.selectedLocality);
 
 // Variables for selected dates
-const startDate = ref(regionStore.startDate);
-const endDate = ref(regionStore.endDate);
+const startDate = ref(filterStore.startDate);
+const endDate = ref(filterStore.endDate);
 
 // Formatted dates for displaying in chips
 const formattedStartDate = computed(() => startDate.value ? new Date(startDate.value).toLocaleDateString() : '');
@@ -125,10 +125,10 @@ const closeDrawer = () => {
 
 // Function to apply filters and update the store
 const applyFilters = () => {
-  regionStore.selectedProvince = selectedProvince.value;
-  regionStore.selectedLocality = selectedLocality.value;
-  regionStore.startDate = startDate.value;
-  regionStore.endDate = endDate.value;
+  filterStore.selectedProvince = selectedProvince.value;
+  filterStore.selectedLocality = selectedLocality.value;
+  filterStore.startDate = startDate.value;
+  filterStore.endDate = endDate.value;
   emit('filtersApplied'); // Emit event when filters are applied
   closeDrawer(); // Optionally close the drawer after applying filters
 };
@@ -137,7 +137,7 @@ const applyFilters = () => {
 const removeProvince = () => {
   selectedProvince.value = null;
   selectedLocality.value = null; // Clear locality if province is removed
-  regionStore.filterLocalitiesByProvince(null); // Clear filtered localities
+  filterStore.filterLocalitiesByProvince(null); // Clear filtered localities
 };
 
 // Function to remove the selected locality
@@ -147,7 +147,7 @@ const removeLocality = () => {
 
 // Function to change the province
 const changeProvince = () => {
-  regionStore.filterLocalitiesByProvince(selectedProvince.value);
+  filterStore.filterLocalitiesByProvince(selectedProvince.value);
   selectedLocality.value = null; // Reset locality when changing province
 };
 
