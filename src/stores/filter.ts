@@ -1,8 +1,7 @@
-// src/stores/filter.ts
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-export const useFilterStore = defineStore('region', {
+export const useFilterStore = defineStore('filter', {
     state: () => ({
         provinces: ['Araba/Álava', 'Gipuzkoa', 'Bizkaia'],
         localities: [],
@@ -43,17 +42,13 @@ export const useFilterStore = defineStore('region', {
             if (state.selectedLocality) count++;
             if (state.startDate) count++;
             if (state.endDate) count++;
-            for (const key in state.selectedCategories) {
-                if (state.selectedCategories[key]) {
-                    if (typeof state.selectedCategories[key] === 'string' && state.selectedCategories[key]) {
+            for (const category in state.selectedCategories) {
+                if (category === 'natural') {
+                    if (state.selectedCategories.natural.espacio_natural || state.selectedCategories.natural.playas_pantanos_rios) {
                         count++;
-                    } else if (typeof state.selectedCategories[key] === 'object') {
-                        for (const subKey in state.selectedCategories[key]) {
-                            if (state.selectedCategories[key][subKey]) {
-                                count++;
-                            }
-                        }
                     }
+                } else if (state.selectedCategories[category]) {
+                    count++;
                 }
             }
             return count;
@@ -72,7 +67,9 @@ export const useFilterStore = defineStore('region', {
         filterLocalitiesByProvince(province) {
             this.selectedProvince = province;
             if (province) {
-                this.filteredLocalities = this.localities.filter(locality => locality.nombre_provincia === province);
+                this.filteredLocalities = this.localities.filter(
+                  (locality) => locality.nombre_provincia === province
+                );
                 this.selectedLocality = null;
             } else {
                 this.filteredLocalities = this.localities;
@@ -89,39 +86,60 @@ export const useFilterStore = defineStore('region', {
         },
         async fetchCategories() {
             try {
-                const accommodationResponse = await axios.get('http://localhost:8000/api/accommodation/categories/es');
-                this.categories.accommodation = accommodationResponse.data.map(cat => cat.nombre_subtipo_recurso);
+                const accommodationResponse = await axios.get(
+                  'http://localhost:8000/api/accommodation/categories/es'
+                );
+                this.categories.accommodation = accommodationResponse.data.map(
+                  (cat) => cat.nombre_subtipo_recurso
+                );
 
                 const caveResponse = await axios.get('http://localhost:8000/api/cave/categories/es');
-                this.categories.cave = caveResponse.data.map(cat => cat.nombre_subtipo_recurso);
+                this.categories.cave = caveResponse.data.map((cat) => cat.nombre_subtipo_recurso);
 
-                const culturalResponse = await axios.get('http://localhost:8000/api/cultural/categories/es');
-                this.categories.cultural = culturalResponse.data.map(cat => cat.nombre_subtipo_recurso);
+                const culturalResponse = await axios.get(
+                  'http://localhost:8000/api/cultural/categories/es'
+                );
+                this.categories.cultural = culturalResponse.data.map(
+                  (cat) => cat.nombre_subtipo_recurso
+                );
 
                 const eventResponse = await axios.get('http://localhost:8000/api/event/categories/es');
-                this.categories.event = eventResponse.data.map(cat => cat.nombre_subtipo_recurso);
+                this.categories.event = eventResponse.data.map((cat) => cat.nombre_subtipo_recurso);
 
-                const museumResponse = await axios.get('http://localhost:8000/api/museum/categories/es');
-                this.categories.museum = museumResponse.data.map(cat => cat.nombre_subtipo_recurso);
+                const museumResponse = await axios.get(
+                  'http://localhost:8000/api/museum/categories/es'
+                );
+                this.categories.museum = museumResponse.data.map((cat) => cat.nombre_subtipo_recurso);
 
-                const naturalResponse = await axios.get('http://localhost:8000/api/natural/categories/es');
+                const naturalResponse = await axios.get(
+                  'http://localhost:8000/api/natural/categories/es'
+                );
                 this.categories.natural.espacio_natural = naturalResponse.data.espacio_natural.map(
-                  cat => cat.nombre_subtipo_recurso_espacio_natural
+                  (cat) => cat.nombre_subtipo_recurso_espacio_natural
                 );
-                this.categories.natural.playas_pantanos_rios = naturalResponse.data.playas_pantanos_rios.map(
-                  cat => cat.nombre_subtipo_recurso_playas_pantanos_rios
-                );
+                this.categories.natural.playas_pantanos_rios =
+                  naturalResponse.data.playas_pantanos_rios.map(
+                    (cat) => cat.nombre_subtipo_recurso_playas_pantanos_rios
+                  );
 
-                const restaurantResponse = await axios.get('http://localhost:8000/api/restaurant/categories/es');
-                this.categories.restaurant = restaurantResponse.data.map(cat => cat.nombre_subtipo_recurso);
+                const restaurantResponse = await axios.get(
+                  'http://localhost:8000/api/restaurant/categories/es'
+                );
+                this.categories.restaurant = restaurantResponse.data.map(
+                  (cat) => cat.nombre_subtipo_recurso
+                );
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }
         },
         setSelectedCategory(collection, category) {
             if (collection === 'natural') {
-                if (category in this.categories.natural) {
-                    this.selectedCategories.natural[category] = category;
+                if (this.categories.natural.espacio_natural.includes(category)) {
+                    this.selectedCategories.natural.espacio_natural = category;
+                    this.selectedCategories.natural.playas_pantanos_rios = null;
+                } else if (this.categories.natural.playas_pantanos_rios.includes(category)) {
+                    this.selectedCategories.natural.playas_pantanos_rios = category;
+                    this.selectedCategories.natural.espacio_natural = null;
                 }
             } else {
                 this.selectedCategories[collection] = category;
@@ -132,15 +150,20 @@ export const useFilterStore = defineStore('region', {
             this.selectedLocality = null;
             this.startDate = null;
             this.endDate = null;
-            for (const key in this.selectedCategories) {
-                if (typeof this.selectedCategories[key] === 'string') {
-                    this.selectedCategories[key] = null;
-                } else if (typeof this.selectedCategories[key] === 'object') {
-                    for (const subKey in this.selectedCategories[key]) {
-                        this.selectedCategories[key][subKey] = null;
-                    }
-                }
-            }
-        }
+            this.selectedCategories = {
+                accommodation: null,
+                cave: null,
+                cultural: null,
+                event: null,
+                museum: null,
+                natural: {
+                    espacio_natural: null,
+                    playas_pantanos_rios: null,
+                },
+                restaurant: null,
+            };
+            console.log('Filters cleared');
+        },
     },
 });
+

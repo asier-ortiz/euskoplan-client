@@ -14,10 +14,10 @@ const emit = defineEmits(['toggleFilterDrawer']);
 
 const filterStore = useFilterStore();
 
-// Calcular el número de filtros aplicados
+// Calculate the number of applied filters using the getter from the store
 const filterCount = computed(() => filterStore.filterCount);
 
-// Emitir el evento para abrir/cerrar el drawer
+// Emit the event to open/close the drawer
 const toggleFilterDrawer = () => {
   emit('toggleFilterDrawer');
 };

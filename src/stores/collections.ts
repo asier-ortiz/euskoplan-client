@@ -113,7 +113,7 @@ export const useCollectionsStore = defineStore('collections', {
       return this.performSearch('/restaurant/results/search', query, cancelToken);
     },
 
-    async loadCollectionData(category, filters = {}, language = 'es') {
+    async loadCollectionData(category, filters, language = 'es') {
       const params = new URLSearchParams({ idioma: language, ...filters });
 
       try {
@@ -167,7 +167,7 @@ export const useCollectionsStore = defineStore('collections', {
       }
     },
 
-    async filterResultsByCategory(category, filters = {}) {
+    async filterResultsByCategory(category, filters) {
       if (!category) {
         this.filteredResults = [];
         return;
@@ -175,17 +175,56 @@ export const useCollectionsStore = defineStore('collections', {
 
       this.loading = true;
       try {
-        // Ensure filters include only non-null values and default language
-        const cleanFilters = { idioma: 'es' };
+        // Decide the endpoint and filters based on the selected category
+        let endpoint = '';
+        let params = { idioma: 'es' };
 
-        Object.keys(filters).forEach(key => {
-          if (filters[key] !== null && filters[key] !== undefined) {
-            cleanFilters[key] = filters[key];
-          }
-        });
+        switch (category.toLowerCase()) {
+          case 'alojamientos':
+            endpoint = '/accommodation/results/filter';
+            params = { ...params, ...filters };
+            break;
+          case 'cuevas y restos arqueológicos':
+            endpoint = '/cave/results/filter';
+            params = { ...params, ...filters };
+            break;
+          case 'edificios religiosos y castillos':
+            endpoint = '/cultural/results/filter';
+            params = { ...params, ...filters };
+            break;
+          case 'eventos':
+            endpoint = '/event/results/filter';
+            params = { ...params, ...filters };
+            break;
+          case 'parques temáticos':
+            endpoint = '/fair/results/filter';
+            params = { ...params, ...filters };
+            break;
+          case 'museos y centros de interpretación':
+            endpoint = '/museum/results/filter';
+            params = { ...params, ...filters };
+            break;
+          case 'espacios naturales':
+            endpoint = '/natural/results/filter';
+            if (filters['nombre_subtipo_recurso_espacio_natural']) {
+              params = { ...params, nombre_subtipo_recurso_espacio_natural: filters['nombre_subtipo_recurso_espacio_natural'] };
+            } else if (filters['nombre_subtipo_recurso_playas_pantanos_rios']) {
+              params = { ...params, nombre_subtipo_recurso_playas_pantanos_rios: filters['nombre_subtipo_recurso_playas_pantanos_rios'] };
+            }
+            break;
+          case 'restaurantes':
+            endpoint = '/restaurant/results/filter';
+            params = { ...params, ...filters };
+            break;
+          default:
+            console.error('Invalid category:', category);
+            this.filteredResults = [];
+            return;
+        }
 
-        // Call loadCollectionData with clean filters
-        await this.loadCollectionData(category, cleanFilters);
+        // Fetch filtered results
+        const response = await axios.get(endpoint, { params });
+        this.filteredResults = response.data;
 
       } catch (error) {
         console.error(`Error filtering results for category ${category}:`, error);

@@ -34,12 +34,11 @@ const categories = [
 const selectCategory = (category) => {
   if (collectionsStore.selectedCategory === category) {
     collectionsStore.setSelectedCategory(null);
-    filterStore.clearFilters();
   } else {
     collectionsStore.setSelectedCategory(category);
-    filterStore.clearFilters();
+    filterStore.clearFilters(); // Clear filters when a new category is selected
   }
-  collectionsStore.filterResultsByCategory(category, {}, 'es');
+  collectionsStore.filterResultsByCategory(category, 'es');
 };
 </script>
 

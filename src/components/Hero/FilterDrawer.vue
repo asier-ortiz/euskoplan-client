@@ -11,7 +11,7 @@
       </div>
       <div class="filter-content">
         <!-- Chips for selected filters -->
-        <div class="chips" v-if="selectedProvince || selectedLocality || startDate || endDate || selectedSubCategory">
+        <div class="chips" v-if="anyFilterSelected">
           <span v-if="selectedProvince" class="chip">
             {{ selectedProvince }}
             <button class="chip-close" @click="removeProvince">&times;</button>
@@ -130,6 +130,14 @@ onMounted(() => {
   }
 });
 
+// Watch for changes in the selected category to clear filters
+watch(() => collectionsStore.selectedCategory, (newCategory, oldCategory) => {
+  if (newCategory !== oldCategory) {
+    filterStore.clearFilters();
+    clearLocalFilters();  // Clear local state as well
+  }
+});
+
 // Fixed provinces options
 const provinces = filterStore.provinces;
 
@@ -176,6 +184,11 @@ const endDate = ref(filterStore.endDate);
 const selectedCategoryName = computed(() => selectedCategory.value);
 const selectedSubCategory = ref(filterStore.selectedCategories[selectedCategory.value?.toLowerCase()]);
 
+// Check if any filter is selected
+const anyFilterSelected = computed(() => {
+  return selectedProvince.value || selectedLocality.value || startDate.value || endDate.value || selectedSubCategory.value;
+});
+
 // Formatted dates for displaying in chips
 const formattedStartDate = computed(() => startDate.value ? new Date(startDate.value).toLocaleDateString() : '');
 const formattedEndDate = computed(() => endDate.value ? new Date(endDate.value).toLocaleDateString() : '');
@@ -187,6 +200,15 @@ const formatDateForApi = (date) => {
   return new Intl.DateTimeFormat('es-ES', options).format(new Date(date)).split('/').reverse().join('/');
 };
 
+// Function to clear local filters and reset UI elements
+const clearLocalFilters = () => {
+  selectedProvince.value = null;
+  selectedLocality.value = null;
+  startDate.value = null;
+  endDate.value = null;
+  selectedSubCategory.value = null;
+};
+
 // Function to close the drawer
 const closeDrawer = () => {
   emit('close');
@@ -194,10 +216,10 @@ const closeDrawer = () => {
 
 // Function to apply filters and update the store
 const applyFilters = async () => {
+  filterStore.setSelectedLocality(selectedLocality.value);
+  filterStore.setStartDate(startDate.value);
+  filterStore.setEndDate(endDate.value);
   filterStore.selectedProvince = selectedProvince.value;
-  filterStore.selectedLocality = selectedLocality.value;
-  filterStore.startDate = startDate.value;
-  filterStore.endDate = endDate.value;
   filterStore.setSelectedCategory(selectedCategory.value, selectedSubCategory.value);
 
   // Format dates for API
@@ -220,6 +242,7 @@ const applyFilters = async () => {
   emit('filtersApplied');
   closeDrawer();
 };
+
 
 // Function to remove the selected province
 const removeProvince = () => {
