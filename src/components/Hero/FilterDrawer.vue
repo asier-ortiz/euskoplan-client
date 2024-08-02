@@ -1,9 +1,9 @@
 <template>
   <transition
-      enter-active-class="slide-enter-active"
-      leave-active-class="slide-leave-active"
-      enter-class="slide-enter"
-      leave-to-class="slide-leave-to"
+    enter-active-class="slide-enter-active"
+    leave-active-class="slide-leave-active"
+    enter-class="slide-enter"
+    leave-to-class="slide-leave-to"
   >
     <div class="drawer" v-if="visible">
       <div class="drawer-header">
@@ -11,7 +11,7 @@
       </div>
       <div class="filter-content">
         <!-- Chips for selected filters -->
-        <div class="chips" v-if="selectedProvince || selectedLocality || startDate || endDate">
+        <div class="chips" v-if="selectedProvince || selectedLocality || startDate || endDate || selectedSubCategory">
           <span v-if="selectedProvince" class="chip">
             {{ selectedProvince }}
             <button class="chip-close" @click="removeProvince">&times;</button>
@@ -27,6 +27,10 @@
           <span v-if="endDate" class="chip">
             End: {{ formattedEndDate }}
             <button class="chip-close" @click="removeEndDate">&times;</button>
+          </span>
+          <span v-if="selectedSubCategory" class="chip">
+            {{ selectedSubCategory }}
+            <button class="chip-close" @click="removeSelectedCategory">&times;</button>
           </span>
         </div>
 
@@ -46,24 +50,36 @@
           </option>
         </select>
 
-        <!-- Date Pickers -->
-        <div class="date-picker">
-          <label for="start-date">Start Date:</label>
-          <DatePicker
+        <!-- Dynamic Category Selector -->
+        <select v-if="currentCategories.length" v-model="selectedSubCategory">
+          <option value="" disabled>Select {{ selectedCategoryName }} Category</option>
+          <option v-for="category in currentCategories" :key="category" :value="category">
+            {{ category }}
+          </option>
+        </select>
+
+        <!-- Date Pickers, visible only if "Eventos" is selected -->
+        <div v-if="selectedCategory === 'Eventos'">
+          <div class="date-picker">
+            <label for="start-date">Start Date:</label>
+            <DatePicker
               v-model="startDate"
               id="start-date"
               placeholder="Select start date"
-              format="YYYY-MM-DD"
-          />
-        </div>
-        <div class="date-picker">
-          <label for="end-date">End Date:</label>
-          <DatePicker
+              :format="'yyyy-MM-dd'"
+              :value-type="'format'"
+            />
+          </div>
+          <div class="date-picker">
+            <label for="end-date">End Date:</label>
+            <DatePicker
               v-model="endDate"
               id="end-date"
               placeholder="Select end date"
-              format="YYYY-MM-DD"
-          />
+              :format="'yyyy-MM-dd'"
+              :value-type="'format'"
+            />
+          </div>
         </div>
 
         <!-- Apply Filters Button -->
@@ -74,10 +90,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useFilterStore } from '@/stores/filter';
-import DatePicker from 'vue-datepicker-next';
-import 'vue-datepicker-next/index.css';
+import { useCollectionsStore } from '@/stores/collections';
+import DatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
@@ -90,11 +107,15 @@ const props = defineProps({
 const emit = defineEmits(['close', 'filtersApplied']);
 
 const filterStore = useFilterStore();
+const collectionsStore = useCollectionsStore();
 
-// Fetch localities when the component is mounted
+// Ensure categories are fetched when component mounts
 onMounted(() => {
   if (!filterStore.localities.length) {
     filterStore.fetchLocalities();
+  }
+  if (!filterStore.categories.accommodation.length) {
+    filterStore.fetchCategories();
   }
 });
 
@@ -102,8 +123,34 @@ onMounted(() => {
 const provinces = filterStore.provinces;
 
 // Filtered localities according to the selected province
-const filteredLocalities = computed(() => {
-  return filterStore.filteredLocalities;
+const filteredLocalities = computed(() => filterStore.filteredLocalities);
+
+// Watch the selected category in the collections store
+const selectedCategory = computed(() => collectionsStore.selectedCategory);
+
+// Determine current categories based on the selected collection category
+const currentCategories = computed(() => {
+  switch (selectedCategory.value) {
+    case 'Alojamientos':
+      return filterStore.categories.accommodation;
+    case 'Cuevas y Restos Arqueológicos':
+      return filterStore.categories.cave;
+    case 'Edificios Religiosos y Castillos':
+      return filterStore.categories.cultural;
+    case 'Eventos':
+      return filterStore.categories.event;
+    case 'Museos y Centros de Interpretación':
+      return filterStore.categories.museum;
+    case 'Espacios Naturales':
+      return [
+        ...filterStore.categories.natural.espacio_natural,
+        ...filterStore.categories.natural.playas_pantanos_rios
+      ];
+    case 'Restaurantes':
+      return filterStore.categories.restaurant;
+    default:
+      return [];
+  }
 });
 
 // References for the selected province and locality
@@ -113,6 +160,10 @@ const selectedLocality = ref(filterStore.selectedLocality);
 // Variables for selected dates
 const startDate = ref(filterStore.startDate);
 const endDate = ref(filterStore.endDate);
+
+// Variable for selected subcategory
+const selectedCategoryName = computed(() => selectedCategory.value);
+const selectedSubCategory = ref(filterStore.selectedCategories[selectedCategory.value?.toLowerCase()]);
 
 // Formatted dates for displaying in chips
 const formattedStartDate = computed(() => startDate.value ? new Date(startDate.value).toLocaleDateString() : '');
@@ -129,15 +180,16 @@ const applyFilters = () => {
   filterStore.selectedLocality = selectedLocality.value;
   filterStore.startDate = startDate.value;
   filterStore.endDate = endDate.value;
-  emit('filtersApplied'); // Emit event when filters are applied
-  closeDrawer(); // Optionally close the drawer after applying filters
+  filterStore.setSelectedCategory(selectedCategory.value, selectedSubCategory.value);
+  emit('filtersApplied');
+  closeDrawer();
 };
 
 // Function to remove the selected province
 const removeProvince = () => {
   selectedProvince.value = null;
-  selectedLocality.value = null; // Clear locality if province is removed
-  filterStore.filterLocalitiesByProvince(null); // Clear filtered localities
+  selectedLocality.value = null;
+  filterStore.filterLocalitiesByProvince(null);
 };
 
 // Function to remove the selected locality
@@ -148,7 +200,7 @@ const removeLocality = () => {
 // Function to change the province
 const changeProvince = () => {
   filterStore.filterLocalitiesByProvince(selectedProvince.value);
-  selectedLocality.value = null; // Reset locality when changing province
+  selectedLocality.value = null;
 };
 
 // Function to remove the start date
@@ -159,6 +211,11 @@ const removeStartDate = () => {
 // Function to remove the end date
 const removeEndDate = () => {
   endDate.value = null;
+};
+
+// Function to remove the selected category
+const removeSelectedCategory = () => {
+  selectedSubCategory.value = null;
 };
 </script>
 
@@ -208,7 +265,7 @@ const removeEndDate = () => {
 }
 
 .chip {
-  background-color: #e7f3fe; /* A softer blue to match the button */
+  background-color: #e7f3fe;
   color: #0056b3;
   padding: 0.25rem 0.5rem;
   border-radius: 20px;
