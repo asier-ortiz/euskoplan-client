@@ -36,6 +36,29 @@ export const useFilterStore = defineStore('region', {
             restaurant: null,
         },
     }),
+    getters: {
+        filterCount: (state) => {
+            let count = 0;
+            if (state.selectedProvince) count++;
+            if (state.selectedLocality) count++;
+            if (state.startDate) count++;
+            if (state.endDate) count++;
+            for (const key in state.selectedCategories) {
+                if (state.selectedCategories[key]) {
+                    if (typeof state.selectedCategories[key] === 'string' && state.selectedCategories[key]) {
+                        count++;
+                    } else if (typeof state.selectedCategories[key] === 'object') {
+                        for (const subKey in state.selectedCategories[key]) {
+                            if (state.selectedCategories[key][subKey]) {
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+            return count;
+        },
+    },
     actions: {
         async fetchLocalities() {
             try {
@@ -104,5 +127,20 @@ export const useFilterStore = defineStore('region', {
                 this.selectedCategories[collection] = category;
             }
         },
+        clearFilters() {
+            this.selectedProvince = null;
+            this.selectedLocality = null;
+            this.startDate = null;
+            this.endDate = null;
+            for (const key in this.selectedCategories) {
+                if (typeof this.selectedCategories[key] === 'string') {
+                    this.selectedCategories[key] = null;
+                } else if (typeof this.selectedCategories[key] === 'object') {
+                    for (const subKey in this.selectedCategories[key]) {
+                        this.selectedCategories[key][subKey] = null;
+                    }
+                }
+            }
+        }
     },
 });

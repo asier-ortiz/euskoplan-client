@@ -15,8 +15,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
+import { useFilterStore } from '@/stores/filter';
 
 const collectionsStore = useCollectionsStore();
+const filterStore = useFilterStore();
 
 const categories = [
   'Alojamientos',
@@ -31,11 +33,13 @@ const categories = [
 
 const selectCategory = (category) => {
   if (collectionsStore.selectedCategory === category) {
-    collectionsStore.setSelectedCategory(null); // Deselect if already selected
+    collectionsStore.setSelectedCategory(null);
+    filterStore.clearFilters();
   } else {
     collectionsStore.setSelectedCategory(category);
+    filterStore.clearFilters();
   }
-  collectionsStore.filterResultsByCategory(category, 'es');
+  collectionsStore.filterResultsByCategory(category, {}, 'es');
 };
 </script>
 
@@ -48,15 +52,15 @@ const selectCategory = (category) => {
 }
 
 .chip {
-  padding: 0.2rem 0.5rem; /* Smaller padding */
-  border-radius: 15px; /* Smaller border radius */
+  padding: 0.2rem 0.5rem;
+  border-radius: 15px;
   cursor: pointer;
-  background-color: #f8f9fa; /* Light background color */
-  color: #343a40; /* Darker text color for better readability */
-  font-size: 0.9rem; /* Smaller font size */
+  background-color: #f8f9fa;
+  color: #343a40;
+  font-size: 0.9rem;
   transition: background-color 0.3s, color 0.3s;
-  white-space: nowrap; /* Prevent text from wrapping */
-  border: 1px solid #007bff; /* Border to improve visibility */
+  white-space: nowrap;
+  border: 1px solid #007bff;
 }
 
 .chip:hover {
@@ -69,11 +73,10 @@ const selectCategory = (category) => {
   color: white;
 }
 
-/* Media query to adjust the font size and padding for smaller screens */
 @media (max-width: 600px) {
   .chip {
     font-size: 0.8rem;
-    padding: 0.2rem 0.4rem; /* Adjust padding for smaller screens */
+    padding: 0.2rem 0.4rem;
   }
 }
 </style>

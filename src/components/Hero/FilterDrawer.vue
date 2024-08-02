@@ -34,8 +34,11 @@
           </span>
         </div>
 
+        <hr />
+
         <!-- Province Selector -->
-        <select v-model="selectedProvince" @change="changeProvince">
+        <label for="province">Provincia</label>
+        <select id="province" v-model="selectedProvince" @change="changeProvince">
           <option value="" disabled>Select Province</option>
           <option v-for="province in provinces" :key="province" :value="province">
             {{ province }}
@@ -43,25 +46,31 @@
         </select>
 
         <!-- Locality Selector -->
-        <select v-model="selectedLocality" :disabled="!selectedProvince">
+        <label for="locality">Municipio</label>
+        <select id="locality" v-model="selectedLocality" :disabled="!selectedProvince">
           <option value="" disabled>Select Locality</option>
           <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.nombre">
             {{ locality.nombre }}
           </option>
         </select>
 
+        <hr />
+
         <!-- Dynamic Category Selector -->
-        <select v-if="currentCategories.length" v-model="selectedSubCategory">
+        <label v-if="currentCategories.length" for="category">{{ selectedCategoryName }} Categoría</label>
+        <select v-if="currentCategories.length" id="category" v-model="selectedSubCategory">
           <option value="" disabled>Select {{ selectedCategoryName }} Category</option>
           <option v-for="category in currentCategories" :key="category" :value="category">
             {{ category }}
           </option>
         </select>
 
+        <hr v-if="selectedCategory === 'Eventos'" />
+
         <!-- Date Pickers, visible only if "Eventos" is selected -->
         <div v-if="selectedCategory === 'Eventos'">
           <div class="date-picker">
-            <label for="start-date">Start Date:</label>
+            <label for="start-date">Fecha de Inicio:</label>
             <DatePicker
               v-model="startDate"
               id="start-date"
@@ -71,7 +80,7 @@
             />
           </div>
           <div class="date-picker">
-            <label for="end-date">End Date:</label>
+            <label for="end-date">Fecha de Fin:</label>
             <DatePicker
               v-model="endDate"
               id="end-date"
@@ -82,8 +91,10 @@
           </div>
         </div>
 
+        <hr />
+
         <!-- Apply Filters Button -->
-        <button @click="applyFilters" class="apply-button">Apply Filters</button>
+        <button @click="applyFilters" class="apply-button">Aplicar Filtros</button>
       </div>
     </div>
   </transition>
@@ -169,18 +180,43 @@ const selectedSubCategory = ref(filterStore.selectedCategories[selectedCategory.
 const formattedStartDate = computed(() => startDate.value ? new Date(startDate.value).toLocaleDateString() : '');
 const formattedEndDate = computed(() => endDate.value ? new Date(endDate.value).toLocaleDateString() : '');
 
+// Helper function to format date as YYYY/MM/DD
+const formatDateForApi = (date) => {
+  if (!date) return null;
+  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+  return new Intl.DateTimeFormat('es-ES', options).format(new Date(date)).split('/').reverse().join('/');
+};
+
 // Function to close the drawer
 const closeDrawer = () => {
   emit('close');
 };
 
 // Function to apply filters and update the store
-const applyFilters = () => {
+const applyFilters = async () => {
   filterStore.selectedProvince = selectedProvince.value;
   filterStore.selectedLocality = selectedLocality.value;
   filterStore.startDate = startDate.value;
   filterStore.endDate = endDate.value;
   filterStore.setSelectedCategory(selectedCategory.value, selectedSubCategory.value);
+
+  // Format dates for API
+  const formattedStart = formatDateForApi(filterStore.startDate);
+  const formattedEnd = formatDateForApi(filterStore.endDate);
+
+  // Build query parameters dynamically
+  const filters = {
+    idioma: 'es',
+    ...(filterStore.selectedProvince && { nombre_provincia: filterStore.selectedProvince }),
+    ...(filterStore.selectedLocality && { nombre_municipio: filterStore.selectedLocality }),
+    ...(selectedSubCategory.value && { nombre_subtipo_recurso: selectedSubCategory.value }),
+    ...(formattedStart && { fecha_inicio: formattedStart }),
+    ...(formattedEnd && { fecha_fin: formattedEnd }),
+  };
+
+  // Perform filtering by category with filters
+  await collectionsStore.filterResultsByCategory(selectedCategoryName.value, filters);
+
   emit('filtersApplied');
   closeDrawer();
 };
@@ -306,5 +342,11 @@ select {
 
 .apply-button:hover {
   background-color: #0056b3;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 1rem 0;
 }
 </style>

@@ -12,16 +12,10 @@ import { useFilterStore } from '@/stores/filter';
 
 const emit = defineEmits(['toggleFilterDrawer']);
 
-// Obtener el store para acceder a los filtros seleccionados
 const filterStore = useFilterStore();
 
 // Calcular el número de filtros aplicados
-const filterCount = computed(() => {
-  let count = 0;
-  if (filterStore.selectedProvince) count++;
-  if (filterStore.selectedLocality) count++;
-  return count;
-});
+const filterCount = computed(() => filterStore.filterCount);
 
 // Emitir el evento para abrir/cerrar el drawer
 const toggleFilterDrawer = () => {
@@ -31,7 +25,7 @@ const toggleFilterDrawer = () => {
 
 <style scoped>
 .filter-button {
-  position: relative; /* Para posicionar el contador de filtros */
+  position: relative;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 25px;
