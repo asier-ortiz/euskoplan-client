@@ -17,6 +17,8 @@ export const useCollectionsStore = defineStore('collections', {
     currentDetail: null,
     cache: new Map(), // Cache for filtered results
     searchCache: new Map(), // Cache for search results
+    sortField: useLocalStorage('sortField', 'name'), // Added sort field
+    sortOrder: useLocalStorage('sortOrder', 'asc'), // Added sort order
   }),
 
   actions: {
@@ -324,6 +326,15 @@ export const useCollectionsStore = defineStore('collections', {
 
     setSelectedCategory(category) {
       this.selectedCategory = category;
+    },
+
+    // Add actions to update sortField and sortOrder
+    setSortField(field) {
+      this.sortField = field;
+    },
+
+    setSortOrder(order) {
+      this.sortOrder = order;
     },
   },
 });

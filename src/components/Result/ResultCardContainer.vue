@@ -1,25 +1,25 @@
 <template>
   <div class="results-container">
     <div class="sorting-buttons">
-      <button @click="sortByName" :class="{ active: sortField === 'name' }">
+      <button @click="sortByName" :class="{ active: collectionsStore.sortField === 'name' }">
         Nombre
-        <i :class="sortOrder === 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'"></i>
+        <i :class="collectionsStore.sortOrder === 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'"></i>
       </button>
-      <button @click="sortByDistance" :class="{ active: sortField === 'distance' }">
+      <button @click="sortByDistance" :class="{ active: collectionsStore.sortField === 'distance' }">
         Distancia
-        <i :class="sortOrder === 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'"></i>
+        <i :class="collectionsStore.sortOrder === 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'"></i>
       </button>
     </div>
     <div v-if="!collectionsStore.loading" class="cards-grid">
       <ResultCard
-          v-for="item in sortedResults"
-          :key="`${item.coleccion}-${item.id}`"
-          :collection="item.coleccion"
-          :name="item.nombre"
-          :images="item.imagenes"
-          :itemId="Number(item.codigo)"
-          :longitud="Number(item.longitud)"
-          :latitud="Number(item.latitud)"
+        v-for="item in sortedResults"
+        :key="`${item.coleccion}-${item.id}`"
+        :collection="item.coleccion"
+        :name="item.nombre"
+        :images="item.imagenes"
+        :itemId="Number(item.codigo)"
+        :longitud="Number(item.longitud)"
+        :latitud="Number(item.latitud)"
       />
     </div>
   </div>
@@ -36,9 +36,6 @@ import { calculateDistance } from '@/utils/distance';
 const collectionsStore = useCollectionsStore();
 const locationStore = useLocationStore();
 
-const sortField = ref('name');
-const sortOrder = ref('asc');
-
 // Compute the results to display
 const results = computed(() => {
   if (collectionsStore.searchQuery.length >= 3) {
@@ -53,26 +50,26 @@ const results = computed(() => {
 // Add computed property for sorted results
 const sortedResults = computed(() => {
   const sorted = [...results.value];
-  if (sortField.value === 'name') {
+  if (collectionsStore.sortField === 'name') {
     sorted.sort((a, b) => {
       const result = a.nombre.localeCompare(b.nombre);
-      return sortOrder.value === 'asc' ? result : -result;
+      return collectionsStore.sortOrder === 'asc' ? result : -result;
     });
-  } else if (sortField.value === 'distance' && locationStore.userLocation) {
+  } else if (collectionsStore.sortField === 'distance' && locationStore.userLocation) {
     sorted.sort((a, b) => {
       const distanceA = calculateDistance(
-          locationStore.userLocation.latitude,
-          locationStore.userLocation.longitude,
-          a.latitud,
-          a.longitud
+        locationStore.userLocation.latitude,
+        locationStore.userLocation.longitude,
+        a.latitud,
+        a.longitud
       );
       const distanceB = calculateDistance(
-          locationStore.userLocation.latitude,
-          locationStore.userLocation.longitude,
-          b.latitud,
-          b.longitud
+        locationStore.userLocation.latitude,
+        locationStore.userLocation.longitude,
+        b.latitud,
+        b.longitud
       );
-      return sortOrder.value === 'asc' ? distanceA - distanceB : distanceB - distanceA;
+      return collectionsStore.sortOrder === 'asc' ? distanceA - distanceB : distanceB - distanceA;
     });
   }
   return sorted;
@@ -80,20 +77,20 @@ const sortedResults = computed(() => {
 
 // Sort functions
 const sortByName = () => {
-  if (sortField.value === 'name') {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  if (collectionsStore.sortField === 'name') {
+    collectionsStore.sortOrder = collectionsStore.sortOrder === 'asc' ? 'desc' : 'asc';
   } else {
-    sortField.value = 'name';
-    sortOrder.value = 'asc';
+    collectionsStore.setSortField('name');
+    collectionsStore.setSortOrder('asc');
   }
 };
 
 const sortByDistance = () => {
-  if (sortField.value === 'distance') {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  if (collectionsStore.sortField === 'distance') {
+    collectionsStore.sortOrder = collectionsStore.sortOrder === 'asc' ? 'desc' : 'asc';
   } else {
-    sortField.value = 'distance';
-    sortOrder.value = 'asc';
+    collectionsStore.setSortField('distance');
+    collectionsStore.setSortOrder('asc');
   }
 };
 </script>
