@@ -47,16 +47,7 @@ const results = computed(() => {
   if (collectionsStore.selectedCategory) {
     return collectionsStore.filteredResults;
   }
-  return [
-    ...collectionsStore.randomAccommodations,
-    ...collectionsStore.randomCaves,
-    ...collectionsStore.randomCulturals,
-    ...collectionsStore.randomEvents,
-    ...collectionsStore.randomFairs,
-    ...collectionsStore.randomMuseums,
-    ...collectionsStore.randomNaturals,
-    ...collectionsStore.randomRestaurants,
-  ];
+  return [];
 });
 
 // Add computed property for sorted results

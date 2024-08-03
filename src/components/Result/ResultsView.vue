@@ -56,16 +56,7 @@ const resultsCount = computed(() => {
   if (collectionsStore.selectedCategory) {
     return collectionsStore.filteredResults.length;
   }
-  return (
-      collectionsStore.randomAccommodations.length +
-      collectionsStore.randomCaves.length +
-      collectionsStore.randomCulturals.length +
-      collectionsStore.randomEvents.length +
-      collectionsStore.randomFairs.length +
-      collectionsStore.randomMuseums.length +
-      collectionsStore.randomNaturals.length +
-      collectionsStore.randomRestaurants.length
-  );
+  return 0;
 });
 </script>
 

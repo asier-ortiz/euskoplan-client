@@ -130,14 +130,6 @@ onMounted(() => {
   }
 });
 
-// Watch for changes in the selected category to clear filters
-watch(() => collectionsStore.selectedCategory, (newCategory, oldCategory) => {
-  if (newCategory !== oldCategory) {
-    filterStore.clearFilters();
-    clearLocalFilters();  // Clear local state as well
-  }
-});
-
 // Fixed provinces options
 const provinces = filterStore.provinces;
 
@@ -182,7 +174,17 @@ const endDate = ref(filterStore.endDate);
 
 // Variable for selected subcategory
 const selectedCategoryName = computed(() => selectedCategory.value);
-const selectedSubCategory = ref(filterStore.selectedCategories[selectedCategory.value?.toLowerCase()]);
+
+// Synchronize subcategory selection with the filter store
+const selectedSubCategory = ref(
+  filterStore.selectedCategories[selectedCategory.value?.toLowerCase()]
+);
+
+// Watch for changes in selected category and clear local filters
+watch(selectedCategory, () => {
+  clearLocalFilters();
+  filterStore.clearFilters();
+});
 
 // Check if any filter is selected
 const anyFilterSelected = computed(() => {
@@ -216,11 +218,12 @@ const closeDrawer = () => {
 
 // Function to apply filters and update the store
 const applyFilters = async () => {
+  // Update the filter store with the current selections
   filterStore.setSelectedLocality(selectedLocality.value);
   filterStore.setStartDate(startDate.value);
   filterStore.setEndDate(endDate.value);
   filterStore.selectedProvince = selectedProvince.value;
-  filterStore.setSelectedCategory(selectedCategory.value, selectedSubCategory.value);
+  filterStore.setSelectedCategory(selectedCategory.value?.toLowerCase(), selectedSubCategory.value);
 
   // Format dates for API
   const formattedStart = formatDateForApi(filterStore.startDate);
@@ -236,45 +239,50 @@ const applyFilters = async () => {
     ...(formattedEnd && { fecha_fin: formattedEnd }),
   };
 
-  // Perform filtering by category with filters
+  // Update filtered results in the store
   await collectionsStore.filterResultsByCategory(selectedCategoryName.value, filters);
 
   emit('filtersApplied');
   closeDrawer();
 };
 
-
 // Function to remove the selected province
 const removeProvince = () => {
   selectedProvince.value = null;
   selectedLocality.value = null;
   filterStore.filterLocalitiesByProvince(null);
+  applyFilters(); // Update results after removal
 };
 
 // Function to remove the selected locality
 const removeLocality = () => {
   selectedLocality.value = null;
+  applyFilters(); // Update results after removal
 };
 
 // Function to change the province
 const changeProvince = () => {
   filterStore.filterLocalitiesByProvince(selectedProvince.value);
   selectedLocality.value = null;
+  applyFilters(); // Update results after change
 };
 
 // Function to remove the start date
 const removeStartDate = () => {
   startDate.value = null;
+  applyFilters(); // Update results after removal
 };
 
 // Function to remove the end date
 const removeEndDate = () => {
   endDate.value = null;
+  applyFilters(); // Update results after removal
 };
 
 // Function to remove the selected category
 const removeSelectedCategory = () => {
   selectedSubCategory.value = null;
+  applyFilters(); // Update results after removal
 };
 </script>
 

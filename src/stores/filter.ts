@@ -1,15 +1,17 @@
+// src/store/filter.ts
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import { useLocalStorage } from '@vueuse/core';
 
 export const useFilterStore = defineStore('filter', {
     state: () => ({
         provinces: ['Araba/Álava', 'Gipuzkoa', 'Bizkaia'],
         localities: [],
         filteredLocalities: [],
-        selectedProvince: null,
-        selectedLocality: null,
-        startDate: null,
-        endDate: null,
+        selectedProvince: useLocalStorage('selectedProvince', null),
+        selectedLocality: useLocalStorage('selectedLocality', null),
+        startDate: useLocalStorage('startDate', null),
+        endDate: useLocalStorage('endDate', null),
         categories: {
             accommodation: [],
             cave: [],
@@ -22,7 +24,8 @@ export const useFilterStore = defineStore('filter', {
             },
             restaurant: [],
         },
-        selectedCategories: {
+        // Store each collection's category in local storage
+        selectedCategories: useLocalStorage('selectedCategories', {
             accommodation: null,
             cave: null,
             cultural: null,
@@ -33,7 +36,7 @@ export const useFilterStore = defineStore('filter', {
                 playas_pantanos_rios: null,
             },
             restaurant: null,
-        },
+        }),
     }),
     getters: {
         filterCount: (state) => {
@@ -44,7 +47,10 @@ export const useFilterStore = defineStore('filter', {
             if (state.endDate) count++;
             for (const category in state.selectedCategories) {
                 if (category === 'natural') {
-                    if (state.selectedCategories.natural.espacio_natural || state.selectedCategories.natural.playas_pantanos_rios) {
+                    if (
+                      state.selectedCategories.natural.espacio_natural ||
+                      state.selectedCategories.natural.playas_pantanos_rios
+                    ) {
                         count++;
                     }
                 } else if (state.selectedCategories[category]) {
@@ -166,4 +172,3 @@ export const useFilterStore = defineStore('filter', {
         },
     },
 });
-
