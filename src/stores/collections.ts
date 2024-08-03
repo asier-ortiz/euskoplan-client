@@ -15,6 +15,7 @@ export const useCollectionsStore = defineStore('collections', {
     searchCancelToken: null,
     loading: false,
     currentDetail: null,
+    relatedResources: [], // Add state for related resources
     cache: new Map(), // Cache for filtered results
     searchCache: new Map(), // Cache for search results
     sortField: useLocalStorage('sortField', 'name'), // Added sort field
@@ -22,6 +23,22 @@ export const useCollectionsStore = defineStore('collections', {
   }),
 
   actions: {
+
+    async fetchRelatedResources(category, language = 'es') {
+      try {
+        const response = await axios.get(`/${category}/results/filter`, {
+          params: {
+            idioma: language,
+            aleatorio: 'si', // Fetch random resources
+            limite: 3,       // Limit to 3 results
+          },
+        });
+        this.relatedResources = response.data;
+      } catch (error) {
+        console.error(`Error fetching related resources for category ${category}:`, error);
+      }
+    },
+
     async filterResultsByCategory(category, filters) {
       if (!category) {
         this.filteredResults = [];

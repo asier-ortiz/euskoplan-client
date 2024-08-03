@@ -39,6 +39,20 @@
         <div v-if="resource.latitud && resource.longitud" class="detail-map">
           <div ref="mapContainer" class="map-container"></div>
         </div>
+
+        <!-- New Related Resources Section -->
+        <div class="related-resources" v-if="relatedResources.length > 0">
+          <h3>Related Resources</h3>
+          <div class="related-cards">
+            <div v-for="(related, index) in relatedResources" :key="index" class="related-card" @click="navigateToResource(related)">
+              <img :src="related.imagenes[0]?.fuente || getDefaultImage(related.coleccion)" alt="Related resource image" />
+              <div class="related-content">
+                <h4>{{ related.nombre }}</h4>
+                <p>{{ related.nombre_municipio }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -46,15 +60,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useCollectionsStore } from '@/stores/collections';
 import mapboxgl from 'mapbox-gl';
 import Spinner from '@/components/Spinner.vue';
 
-mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Reemplaza con tu token de Mapbox
+mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Replace with your Mapbox access token
 
-// Get the current route
+// Get the current route and router
 const route = useRoute();
+const router = useRouter();
 
 // Access your collections store
 const collectionsStore = useCollectionsStore();
@@ -71,6 +86,9 @@ const mapContainer = ref(null);
 // Define loading state
 const loading = ref(true);
 
+// Define a ref for related resources
+const relatedResources = ref([]);
+
 // Fetch the resource based on the ID and category from the route parameters
 const fetchResource = async () => {
   const { id, category } = route.params;
@@ -78,6 +96,10 @@ const fetchResource = async () => {
 
   await collectionsStore.fetchResourceById(category, Number(id), language);
   resource.value = collectionsStore.currentDetail;
+
+  // Fetch related resources
+  await collectionsStore.fetchRelatedResources(category, language);
+  relatedResources.value = collectionsStore.relatedResources;
 
   // Set loading to false once the resource is loaded
   loading.value = false;
@@ -100,8 +122,8 @@ const initializeMap = () => {
     });
 
     new mapboxgl.Marker()
-        .setLngLat([parseFloat(resource.value.longitud), parseFloat(resource.value.latitud)])
-        .addTo(map);
+      .setLngLat([parseFloat(resource.value.longitud), parseFloat(resource.value.latitud)])
+      .addTo(map);
   }
 };
 
@@ -121,6 +143,28 @@ const nextSlide = () => {
   if (currentIndex.value < resource.value.imagenes.length - 1) {
     currentIndex.value++;
   }
+};
+
+// Navigate to a related resource detail page
+const navigateToResource = (related) => {
+  router.push({ name: 'Detail', params: { id: Number(related.codigo), category: related.coleccion } });
+};
+
+// Function to get a default image based on the collection type
+const getDefaultImage = (collection) => {
+  const defaultImages = {
+    accommodation: '/images/default/default-accommodation.jpg',
+    cave: '/images/default/default-cave.jpg',
+    cultural: '/images/default/default-cultural.jpg',
+    event: '/images/default/default-event.jpg',
+    fair: '/images/default/default-fair.jpg',
+    museum: '/images/default/default-museum.jpg',
+    natural: '/images/default/default-natural.jpg',
+    restaurant: '/images/default/default-restaurant.jpg',
+    default: '/images/default/default-image.jpg',
+  };
+
+  return defaultImages[collection.toLowerCase()] || defaultImages.default;
 };
 </script>
 
@@ -290,5 +334,60 @@ const nextSlide = () => {
   align-items: center;
   height: 100vh;
   background-color: #f9f9f9;
+}
+
+/* Related Resources Styling */
+.related-resources {
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.related-resources h3 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.related-cards {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.related-card {
+  width: 200px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  cursor: pointer;
+  background-color: white;
+  transition: transform 0.3s;
+}
+
+.related-card:hover {
+  transform: translateY(-5px);
+}
+
+.related-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.related-content {
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.related-content h4 {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0.5rem 0;
+}
+
+.related-content p {
+  font-size: 0.9rem;
+  color: #666;
 }
 </style>
