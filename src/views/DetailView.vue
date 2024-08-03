@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCollectionsStore } from '@/stores/collections';
 import mapboxgl from 'mapbox-gl';
@@ -89,8 +89,17 @@ const loading = ref(true);
 // Define a ref for related resources
 const relatedResources = ref([]);
 
+// Watch for changes in route params and refetch resources
+watch(
+  () => [route.params.id, route.params.category],
+  () => {
+    fetchResource();
+  }
+);
+
 // Fetch the resource based on the ID and category from the route parameters
 const fetchResource = async () => {
+  loading.value = true;
   const { id, category } = route.params;
   const language = 'es'; // Replace with the desired language
 
