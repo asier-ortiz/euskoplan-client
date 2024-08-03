@@ -4,9 +4,13 @@
       <img :src="imageUrl" @error="handleImageError" class="hidden-image" alt="Image of {{ name }}" />
     </div>
     <div class="card-content">
-      <h3>{{ collection }}</h3>
+      <h3>{{ subtype }}</h3> <!-- Display subtype -->
       <h2>{{ name }}</h2>
-      <p v-if="distance !== null">{{ distance.toFixed(2) }} km</p>
+      <p v-if="municipio">{{ municipio }}</p> <!-- Display municipio -->
+      <p v-if="distance !== null">
+        <font-awesome-icon icon="location-dot" class="location-icon" /> <!-- Add location icon -->
+        {{ distance.toFixed(2) }} km
+      </p>
     </div>
   </div>
 </template>
@@ -16,11 +20,12 @@ import { ref, defineProps, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLocationStore } from '@/stores/location';
 import { calculateDistance } from '@/utils/distance';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'; // Import FontAwesomeIcon
 
 // Define props with TypeScript types
 const props = defineProps({
   itemId: {
-    type: [Number, String], // Aceptar tanto Number como String
+    type: [Number, String], // Accept both Number and String
     required: true,
   },
   collection: {
@@ -36,11 +41,19 @@ const props = defineProps({
     default: () => [],
   },
   longitud: {
-    type: [Number, String], // Aceptar tanto Number como String
+    type: [Number, String], // Accept both Number and String
     required: true,
   },
   latitud: {
-    type: [Number, String], // Aceptar tanto Number como String
+    type: [Number, String], // Accept both Number and String
+    required: true,
+  },
+  subtype: { // Add subtype prop
+    type: String,
+    required: true,
+  },
+  municipio: { // Add municipio prop
+    type: String,
     required: true,
   },
 });
@@ -58,10 +71,10 @@ const imageUrl = ref('');
 const distance = computed(() => {
   if (locationStore.userLocation && props.longitud && props.latitud) {
     return calculateDistance(
-        locationStore.userLocation.latitude,
-        locationStore.userLocation.longitude,
-        Number(props.latitud), // Convertir a número
-        Number(props.longitud)  // Convertir a número
+      locationStore.userLocation.latitude,
+      locationStore.userLocation.longitude,
+      Number(props.latitud), // Convert to number
+      Number(props.longitud)  // Convert to number
     );
   }
   return null;
@@ -86,15 +99,15 @@ const getDefaultImageUrl = (collection: string) => {
 
 // Set initial image URL or default if none is available
 watch(
-    () => props.images,
-    (newImages) => {
-      if (newImages.length > 0 && newImages[0].fuente) {
-        imageUrl.value = newImages[0].fuente;
-      } else {
-        imageUrl.value = getDefaultImageUrl(props.collection);
-      }
-    },
-    { immediate: true }
+  () => props.images,
+  (newImages) => {
+    if (newImages.length > 0 && newImages[0].fuente) {
+      imageUrl.value = newImages[0].fuente;
+    } else {
+      imageUrl.value = getDefaultImageUrl(props.collection);
+    }
+  },
+  { immediate: true }
 );
 
 // Handle image loading errors by setting the default image URL
@@ -104,7 +117,7 @@ const handleImageError = () => {
 
 // Navigate to detail page on card click
 const navigateToDetail = () => {
-  router.push({ name: 'Detail', params: { id: Number(props.itemId), category: props.collection } }); // Convertir itemId a número
+  router.push({ name: 'Detail', params: { id: Number(props.itemId), category: props.collection } }); // Convert itemId to number
 };
 </script>
 
@@ -113,7 +126,7 @@ const navigateToDetail = () => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 300px; /* Increased height for more visual appeal */
+  height: 320px; /* Increased height for more visual appeal */
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -152,12 +165,12 @@ const navigateToDetail = () => {
 }
 
 .card-content h3 {
-  margin: 0 0 0.5rem; /* Add margin-bottom for spacing */
-  font-size: 0.9rem; /* Smaller font size for collection text */
-  color: #888888; /* Gray color for the collection text */
+  margin: 0 0 0.25rem; /* Add margin-bottom for spacing */
+  font-size: 0.8rem; /* Smaller font size for subtype text */
+  color: #666666; /* Gray color for the subtype text */
   text-transform: uppercase;
   font-weight: normal;
-  letter-spacing: 1px; /* Add letter spacing for a cleaner look */
+  letter-spacing: 0.5px; /* Add letter spacing for a cleaner look */
 }
 
 .card-content h2 {
@@ -169,9 +182,14 @@ const navigateToDetail = () => {
 }
 
 .card-content p {
-  margin: 0; /* Ensure no margin for the distance text */
-  font-size: 1rem; /* Adjust font size for distance text */
-  color: #555555; /* Slightly lighter color for distance text */
+  margin: 0.25rem 0; /* Ensure some margin for the municipio text */
+  font-size: 1rem; /* Adjust font size for municipio and distance text */
+  color: #555555; /* Slightly lighter color for text */
+}
+
+.card-content .location-icon {
+  margin-right: 0.5rem; /* Space between icon and text */
+  color: #007bff; /* Color for the location icon */
 }
 
 .card-content h3,

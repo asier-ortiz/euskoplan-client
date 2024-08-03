@@ -20,6 +20,8 @@
         :itemId="Number(item.codigo)"
         :longitud="Number(item.longitud)"
         :latitud="Number(item.latitud)"
+        :subtype="getSubtype(item)"
+        :municipio="item.nombre_municipio"
       />
     </div>
   </div>
@@ -46,6 +48,14 @@ const results = computed(() => {
   }
   return [];
 });
+
+// Determine the subtype based on collection type
+const getSubtype = (item) => {
+  if (item.coleccion.toLowerCase() === 'natural') {
+    return item.nombre_subtipo_recurso_espacio_natural || item.nombre_subtipo_recurso_playas_pantanos_rios || '';
+  }
+  return item.nombre_subtipo_recurso || '';
+};
 
 // Add computed property for sorted results
 const sortedResults = computed(() => {
