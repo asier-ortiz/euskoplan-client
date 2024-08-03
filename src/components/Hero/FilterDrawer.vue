@@ -7,7 +7,7 @@
   >
     <div class="drawer" v-if="visible">
       <div class="drawer-header">
-        <button class="close-button" @click="closeDrawer">Cerrar</button>
+        <button class="close-button" @click="closeDrawer">&times;</button>
       </div>
       <div class="filter-content">
         <!-- Chips for selected filters -->
@@ -45,14 +45,24 @@
           </option>
         </select>
 
-        <!-- Locality Selector -->
+        <!-- Locality Selector with Filter Input Inside -->
         <label for="locality">Municipio</label>
-        <select id="locality" v-model="selectedLocality" :disabled="!selectedProvince">
-          <option value="" disabled>Select Locality</option>
-          <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.nombre">
-            {{ locality.nombre }}
-          </option>
-        </select>
+        <div class="select-wrapper" :class="{ disabled: !selectedProvince }">
+          <input
+            type="text"
+            v-model="localitySearch"
+            placeholder="Filter Localities"
+            class="locality-search-input"
+            :disabled="!selectedProvince"
+            @input="filterLocalities"
+          />
+          <select id="locality" v-model="selectedLocality" :disabled="!selectedProvince">
+            <option value="" disabled>Select Locality</option>
+            <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.nombre">
+              {{ locality.nombre }}
+            </option>
+          </select>
+        </div>
 
         <hr />
 
@@ -133,8 +143,17 @@ onMounted(() => {
 // Fixed provinces options
 const provinces = filterStore.provinces;
 
-// Filtered localities according to the selected province
-const filteredLocalities = computed(() => filterStore.filteredLocalities);
+// Locality search input for filtering
+const localitySearch = ref('');
+
+// Filtered localities according to the selected province and search input
+const filteredLocalities = computed(() => {
+  if (!selectedProvince.value) return [];
+  const search = localitySearch.value.toLowerCase();
+  return filterStore.filteredLocalities.filter(locality =>
+    locality.nombre.toLowerCase().includes(search)
+  );
+});
 
 // Watch the selected category in the collections store
 const selectedCategory = computed(() => collectionsStore.selectedCategory);
@@ -209,6 +228,7 @@ const clearLocalFilters = () => {
   startDate.value = null;
   endDate.value = null;
   selectedSubCategory.value = null;
+  localitySearch.value = ''; // Clear locality search input
 };
 
 // Function to close the drawer
@@ -243,46 +263,51 @@ const applyFilters = async () => {
   await collectionsStore.filterResultsByCategory(selectedCategoryName.value, filters);
 
   emit('filtersApplied');
-  closeDrawer();
+};
+
+// Function to filter localities based on input
+const filterLocalities = () => {
+  // This function doesn't need to do anything as the filtering is handled in computed property
 };
 
 // Function to remove the selected province
-const removeProvince = () => {
+const removeProvince = async () => {
   selectedProvince.value = null;
   selectedLocality.value = null;
   filterStore.filterLocalitiesByProvince(null);
-  applyFilters(); // Update results after removal
+  localitySearch.value = ''; // Clear locality search input
+  await applyFilters(); // Trigger query after removal
 };
 
 // Function to remove the selected locality
-const removeLocality = () => {
+const removeLocality = async () => {
   selectedLocality.value = null;
-  applyFilters(); // Update results after removal
+  await applyFilters(); // Trigger query after removal
 };
 
 // Function to change the province
 const changeProvince = () => {
   filterStore.filterLocalitiesByProvince(selectedProvince.value);
   selectedLocality.value = null;
-  applyFilters(); // Update results after change
+  localitySearch.value = ''; // Clear locality search input
 };
 
 // Function to remove the start date
-const removeStartDate = () => {
+const removeStartDate = async () => {
   startDate.value = null;
-  applyFilters(); // Update results after removal
+  await applyFilters(); // Trigger query after removal
 };
 
 // Function to remove the end date
-const removeEndDate = () => {
+const removeEndDate = async () => {
   endDate.value = null;
-  applyFilters(); // Update results after removal
+  await applyFilters(); // Trigger query after removal
 };
 
 // Function to remove the selected category
-const removeSelectedCategory = () => {
+const removeSelectedCategory = async () => {
   selectedSubCategory.value = null;
-  applyFilters(); // Update results after removal
+  await applyFilters(); // Trigger query after removal
 };
 </script>
 
@@ -309,14 +334,22 @@ const removeSelectedCategory = () => {
 .close-button {
   background: none;
   border: none;
-  font-size: 1rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   cursor: pointer;
-  color: #007bff;
-  transition: color 0.3s;
+  color: #ffffff;
+  background-color: #007bff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .close-button:hover {
-  color: #0056b3;
+  background-color: #0056b3;
 }
 
 .filter-content {
@@ -349,11 +382,30 @@ const removeSelectedCategory = () => {
   cursor: pointer;
 }
 
+.select-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.locality-search-input {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
 select {
   width: 100%;
   padding: 0.5rem;
   border-radius: 5px;
   border: 1px solid #ccc;
+}
+
+select:disabled,
+.locality-search-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
 }
 
 .date-picker {
