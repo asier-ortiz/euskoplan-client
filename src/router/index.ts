@@ -1,3 +1,4 @@
+// router/index.ts
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import Home from '@/views/HomeView.vue';
@@ -7,10 +8,11 @@ import EmailVerify from '@/views/Auth/EmailVerifyView.vue';
 import PasswordReset from '@/views/Auth/PasswordResetView.vue';
 import PasswordRecovery from '@/views/Auth/PasswordRecoveryView.vue';
 import Results from '@/views/ResultsView.vue';
-import Detail from '@/views/DetailView.vue'; // Ensure this import is correct
+import Detail from '@/views/DetailView.vue';
 import Account from '@/views/AccountView.vue';
 import PlanEdit from '@/views/PlanEditView.vue';
 import { useAuthStore } from '@/stores/auth';
+import { useScrollStore } from '@/stores/scroll';
 
 const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'Home', component: Home },
@@ -29,21 +31,25 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    if (to.name === 'Detail') {
-      // Scroll to top when navigating to the detail page
-      return { top: 0 };
-    } else if (savedPosition) {
-      // Return to saved position on back/forward navigation
+    const scrollStore = useScrollStore();
+    if (savedPosition) {
       return savedPosition;
+    } else if (to.name === 'Home' && from.name === 'Detail') {
+      // Use the stored scroll position for home view
+      return { left: 0, top: scrollStore.getScrollPosition() };
     } else {
-      // Do nothing, remain in the current position
-      return false;
+      return { top: 0 };
     }
   },
 });
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
+  const scrollStore = useScrollStore();
+  if (from.name === 'Home') {
+    // Save the scroll position when leaving the home view
+    scrollStore.setScrollPosition(window.scrollY);
+  }
   if (to.name === 'Login' && authStore.isLoggedIn()) {
     next({ path: '/' });
   } else {

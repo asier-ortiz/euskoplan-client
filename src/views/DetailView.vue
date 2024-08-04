@@ -2,6 +2,10 @@
   <div class="detail-view-container">
     <Spinner v-if="loading" :visible="loading" />
     <div v-else class="detail-view">
+      <!-- Back to Home Button -->
+      <button @click="goBackHome" class="back-home-button">
+        ← Home
+      </button>
       <div class="detail-header">
         <h1>{{ resource.nombre }}</h1>
         <h2>{{ resource.coleccion }}</h2>
@@ -44,7 +48,12 @@
         <div class="related-resources" v-if="relatedResources.length > 0">
           <h3>Related Resources</h3>
           <div class="related-cards">
-            <div v-for="(related, index) in relatedResources" :key="index" class="related-card" @click="navigateToResource(related)">
+            <div
+              v-for="(related, index) in relatedResources"
+              :key="index"
+              class="related-card"
+              @click="navigateToResource(related)"
+            >
               <img :src="related.imagenes[0]?.fuente || getDefaultImage(related.coleccion)" alt="Related resource image" />
               <div class="related-content">
                 <h4>{{ related.nombre }}</h4>
@@ -175,6 +184,11 @@ const getDefaultImage = (collection) => {
 
   return defaultImages[collection.toLowerCase()] || defaultImages.default;
 };
+
+// Function to navigate back to the home page
+const goBackHome = () => {
+  router.push({ name: 'Home' }); // Use push to navigate directly to the Home page
+};
 </script>
 
 <style scoped>
@@ -194,6 +208,7 @@ const getDefaultImage = (collection) => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   max-width: 800px;
   margin: 2rem auto;
+  position: relative; /* Added to contain the button */
 }
 
 .detail-header {
@@ -209,6 +224,25 @@ const getDefaultImage = (collection) => {
 .detail-header h2 {
   font-size: 1.5rem;
   color: #666;
+}
+
+.back-home-button {
+  position: fixed; /* Use fixed positioning to make it appear at the top left of the viewport */
+  top: 10px; /* Adjust the top position */
+  left: 10px; /* Adjust the left position */
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+  z-index: 10; /* Ensure the button is on top */
+}
+
+.back-home-button:hover {
+  background-color: #0056b3;
 }
 
 .detail-content {
