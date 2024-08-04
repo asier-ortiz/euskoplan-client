@@ -7,13 +7,15 @@
         <button @click="goBackHome" class="header-button">
           ← Inicio
         </button>
-        <!-- Placeholder Buttons -->
         <div class="action-buttons">
-          <button class="header-button">
-            <font-awesome-icon :icon="['fas', 'heart']" /> Favoritos
-          </button>
+          <!-- Add to Plan Button -->
           <button class="header-button">
             <font-awesome-icon :icon="['fas', 'map']" /> Añadir al Plan
+          </button>
+          <!-- Favorite Button -->
+          <button @click="toggleFavorite" class="header-button">
+            <font-awesome-icon :icon="[isFavorite ? 'fas' : 'far', 'heart']" />
+            {{ isFavorite ? 'Eliminar de Favoritos' : 'Añadir a Favoritos' }}
           </button>
         </div>
       </div>
@@ -157,8 +159,11 @@ import { ref, onMounted, nextTick, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
+import { useFavoritesStore } from '@/stores/favorites'; // Import Favorites Store
+import { useAuthStore } from '@/stores/auth'; // Import Auth Store
 import { calculateDistance } from '@/utils/distance';
 import mapboxgl from 'mapbox-gl';
+import Swal from 'sweetalert2';
 import Spinner from '@/components/Spinner.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'; // Import FontAwesomeIcon
 
@@ -171,21 +176,23 @@ const router = useRouter();
 // Access your collections store
 const collectionsStore = useCollectionsStore();
 const locationStore = useLocationStore(); // Access location store
+const favoritesStore = useFavoritesStore(); // Access favorites store
+const authStore = useAuthStore(); // Access auth store
 
 // Define a ref to store the current resource
-const resource = ref(null);
+const resource = ref<any>(null);
 
 // Define a ref to store the current slide index
-const currentIndex = ref(0);
+const currentIndex = ref<number>(0);
 
 // Define a ref to store the map container
-const mapContainer = ref(null);
+const mapContainer = ref<HTMLDivElement | null>(null);
 
 // Define loading state
-const loading = ref(true);
+const loading = ref<boolean>(true);
 
 // Define a ref for related resources
-const relatedResources = ref([]);
+const relatedResources = ref<any[]>([]);
 
 // Compute distance
 const distance = computed(() => {
@@ -203,6 +210,14 @@ const distance = computed(() => {
     );
   }
   return null;
+});
+
+// Compute if the resource is a favorite (only when authenticated)
+const isFavorite = computed(() => {
+  if (!authStore.isAuthenticated) {
+    return false; // Do not compute favorites if not authenticated
+  }
+  return favoritesStore.isFavorite(resource.value?.id, resource.value?.coleccion);
 });
 
 // Watch for changes in route params and refetch resources
@@ -255,7 +270,34 @@ const initializeMap = () => {
 // Fetch the resource when the component is mounted
 onMounted(() => {
   fetchResource();
+  if (authStore.isAuthenticated) {
+    favoritesStore.fetchFavorites(); // Fetch favorites only if authenticated
+  }
 });
+
+// Toggle favorite status
+const toggleFavorite = () => {
+  if (!authStore.isAuthenticated) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Login Required',
+      text: 'Please log in or create an account to add this resource to your favorites.',
+      confirmButtonText: 'Log In',
+    }).then(() => {
+      router.push('/login'); // Navigate to login page
+    });
+    return;
+  }
+
+  if (!isFavorite.value) {
+    favoritesStore.addFavorite(resource.value.id, resource.value.coleccion);
+  } else {
+    const favoriteId = favoritesStore.getFavoriteId(resource.value.id, resource.value.coleccion);
+    if (favoriteId) {
+      favoritesStore.removeFavorite(favoriteId);
+    }
+  }
+};
 
 // Functions to navigate the carousel
 const prevSlide = () => {
@@ -271,12 +313,12 @@ const nextSlide = () => {
 };
 
 // Navigate to a related resource detail page
-const navigateToResource = (related) => {
+const navigateToResource = (related: any) => {
   router.push({ name: 'Detail', params: { id: Number(related.codigo), category: related.coleccion } });
 };
 
 // Function to get a default image based on the collection type
-const getDefaultImage = (collection) => {
+const getDefaultImage = (collection: string) => {
   const defaultImages = {
     accommodation: '/images/default/default-accommodation.jpg',
     cave: '/images/default/default-cave.jpg',
@@ -298,8 +340,8 @@ const goBackHome = () => {
 };
 
 // Function to format the date from the API
-const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+const formatDate = (dateString: string) => {
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('es-ES', options);
 };
 </script>
