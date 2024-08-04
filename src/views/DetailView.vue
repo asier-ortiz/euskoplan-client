@@ -2,14 +2,31 @@
   <div class="detail-view-container">
     <Spinner v-if="loading" :visible="loading" />
     <div v-else class="detail-view">
-      <!-- Back to Home Button -->
-      <button @click="goBackHome" class="back-home-button">
-        ← Inicio
-      </button>
+      <div class="header-buttons">
+        <!-- Back to Home Button -->
+        <button @click="goBackHome" class="header-button">
+          ← Inicio
+        </button>
+        <!-- Placeholder Buttons -->
+        <div class="action-buttons">
+          <button class="header-button">
+            <font-awesome-icon :icon="['fas', 'heart']" /> Favoritos
+          </button>
+          <button class="header-button">
+            <font-awesome-icon :icon="['fas', 'map']" /> Añadir al Plan
+          </button>
+        </div>
+      </div>
+
+      <hr class="section-separator" />
+
       <div class="detail-header">
         <h1>{{ resource.nombre }}</h1>
         <h2>{{ resource.nombre_subtipo_recurso || resource.nombre_subtipo_recurso_espacio_natural || resource.nombre_subtipo_recurso_playas_pantanos_rios }}</h2>
       </div>
+
+      <hr class="section-separator" />
+
       <div class="detail-content">
         <!-- Carousel or Single Image Display -->
         <div v-if="resource.imagenes && resource.imagenes.length > 1" class="detail-carousel">
@@ -29,8 +46,12 @@
           <img :src="resource.imagenes[0].fuente" :alt="resource.imagenes[0].titulo || 'Imagen del recurso'" />
         </div>
 
+        <hr class="section-separator" />
+
         <!-- Description -->
         <p v-html="resource.descripcion" class="description"></p>
+
+        <hr class="section-separator" />
 
         <!-- Dynamic Resource Information -->
         <div class="dynamic-info">
@@ -78,6 +99,8 @@
           </template>
         </div>
 
+        <hr class="section-separator" />
+
         <!-- Services Section -->
         <div v-if="resource.servicios && resource.servicios.length > 0" class="detail-services">
           <h3>Servicios</h3>
@@ -86,10 +109,14 @@
           </div>
         </div>
 
+        <hr class="section-separator" />
+
         <!-- Map Display -->
         <div v-if="resource.latitud && resource.longitud" class="detail-map">
           <div ref="mapContainer" class="map-container"></div>
         </div>
+
+        <hr class="section-separator" />
 
         <!-- Related Resources Section -->
         <div class="related-resources" v-if="relatedResources.length > 0">
@@ -120,6 +147,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useCollectionsStore } from '@/stores/collections';
 import mapboxgl from 'mapbox-gl';
 import Spinner from '@/components/Spinner.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'; // Import FontAwesomeIcon
 
 mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Replace with your Mapbox access token
 
@@ -260,8 +288,44 @@ const formatDate = (dateString) => {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   max-width: 800px;
+  width: 100%;
   margin: 2rem auto;
   position: relative; /* Added to contain the button */
+}
+
+.header-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.header-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.header-button:hover {
+  background-color: #0056b3;
+}
+
+.header-button svg {
+  margin-right: 0.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .detail-header {
@@ -279,23 +343,10 @@ const formatDate = (dateString) => {
   color: #666;
 }
 
-.back-home-button {
-  position: fixed; /* Use fixed positioning to make it appear at the top left of the viewport */
-  top: 50px; /* Adjust the top position to avoid navbar */
-  left: 10px; /* Adjust the left position */
-  background-color: #007bff;
-  color: white;
+.section-separator {
   border: none;
-  border-radius: 5px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s;
-  z-index: 10; /* Ensure the button is on top */
-}
-
-.back-home-button:hover {
-  background-color: #0056b3;
+  border-top: 1px solid #ddd;
+  margin: 1.5rem 0;
 }
 
 .detail-content {
@@ -461,6 +512,7 @@ const formatDate = (dateString) => {
   display: flex;
   gap: 1rem;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .related-card {
