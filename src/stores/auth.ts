@@ -3,6 +3,7 @@ import axios from 'axios';
 import router from '../router';
 import config from '../config';
 import Swal from 'sweetalert2';
+import { useFavoritesStore } from './favorites'; // Import Favorites Store
 
 // Configurar la base URL de Axios
 axios.defaults.baseURL = config.apiBaseUrl;
@@ -36,6 +37,11 @@ export const useAuthStore = defineStore('auth', {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         delete axios.defaults.headers.common['Authorization'];
+
+        // Clear the favorites store on logout
+        const favoritesStore = useFavoritesStore();
+        favoritesStore.clearFavorites();
+
         router.push('/');
         Swal.fire({
           icon: 'success',

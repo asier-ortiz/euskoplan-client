@@ -96,20 +96,40 @@ export const useFavoritesStore = defineStore('favorites', {
 
     isFavorite(favoritableId: number, favoritableType: string): boolean {
       return Object.values(this.favorites).some((fav) =>
-        fav.some((item) => item.recurso.id === favoritableId && item.recurso.coleccion === favoritableType)
+        fav.some(
+          (item) =>
+            item.recurso.id === favoritableId &&
+            item.recurso.coleccion === favoritableType
+        )
       );
     },
 
-    getFavoriteId(favoritableId: number, favoritableType: string): number | null {
-      const categoryFavorites = Object.entries(this.favorites).find(([_, items]) =>
-        items.some((item) => item.recurso.id === favoritableId && item.recurso.coleccion === favoritableType)
+    getFavoriteId(
+      favoritableId: number,
+      favoritableType: string
+    ): number | null {
+      const categoryFavorites = Object.entries(this.favorites).find(
+        ([_, items]) =>
+          items.some(
+            (item) =>
+              item.recurso.id === favoritableId &&
+              item.recurso.coleccion === favoritableType
+          )
       );
       if (categoryFavorites) {
         const [, items] = categoryFavorites;
-        const favoriteItem = items.find((item) => item.recurso.id === favoritableId && item.recurso.coleccion === favoritableType);
+        const favoriteItem = items.find(
+          (item) =>
+            item.recurso.id === favoritableId &&
+            item.recurso.coleccion === favoritableType
+        );
         return favoriteItem ? favoriteItem.id : null;
       }
       return null;
+    },
+
+    clearFavorites() {
+      this.favorites = {}; // Clear the favorites state
     },
   },
 });

@@ -3,13 +3,9 @@
     <Spinner v-if="loading" :visible="loading" />
     <div v-else class="detail-view">
       <div class="header-buttons">
-        <!-- Back to Home Button -->
-        <button @click="goBackHome" class="header-button">
-          ← Inicio
-        </button>
         <div class="action-buttons">
           <!-- Add to Plan Button -->
-          <button class="header-button">
+          <button class="header-button" @click="handleAddToPlan">
             <font-awesome-icon :icon="['fas', 'map']" /> Añadir al Plan
           </button>
           <!-- Favorite Button -->
@@ -18,6 +14,10 @@
             {{ isFavorite ? 'Eliminar de Favoritos' : 'Añadir a Favoritos' }}
           </button>
         </div>
+        <!-- Back to Home Button -->
+        <button @click="goBackHome" class="header-button">
+          ← Inicio
+        </button>
       </div>
 
       <hr class="section-separator" />
@@ -42,21 +42,52 @@
 
       <div class="detail-content">
         <!-- Carousel or Single Image Display -->
-        <div v-if="resource.imagenes && resource.imagenes.length > 1" class="detail-carousel">
+        <div
+          v-if="resource.imagenes && resource.imagenes.length > 1"
+          class="detail-carousel"
+        >
           <div class="carousel-container">
-            <div class="carousel-slide" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-              <div v-for="(imagen, index) in resource.imagenes" :key="index" class="carousel-image">
-                <img :src="imagen.fuente" :alt="imagen.titulo || 'Imagen del recurso'" />
+            <div
+              class="carousel-slide"
+              :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
+            >
+              <div
+                v-for="(imagen, index) in resource.imagenes"
+                :key="index"
+                class="carousel-image"
+              >
+                <img
+                  :src="imagen.fuente"
+                  :alt="imagen.titulo || 'Imagen del recurso'"
+                />
               </div>
             </div>
           </div>
-          <button v-if="currentIndex > 0" @click="prevSlide" class="carousel-button prev-button">‹</button>
-          <button v-if="currentIndex < resource.imagenes.length - 1" @click="nextSlide" class="carousel-button next-button">›</button>
+          <button
+            v-if="currentIndex > 0"
+            @click="prevSlide"
+            class="carousel-button prev-button"
+          >
+            ‹
+          </button>
+          <button
+            v-if="currentIndex < resource.imagenes.length - 1"
+            @click="nextSlide"
+            class="carousel-button next-button"
+          >
+            ›
+          </button>
         </div>
 
         <!-- Single Image Display -->
-        <div v-else-if="resource.imagenes && resource.imagenes.length === 1" class="single-image">
-          <img :src="resource.imagenes[0].fuente" :alt="resource.imagenes[0].titulo || 'Imagen del recurso'" />
+        <div
+          v-else-if="resource.imagenes && resource.imagenes.length === 1"
+          class="single-image"
+        >
+          <img
+            :src="resource.imagenes[0].fuente"
+            :alt="resource.imagenes[0].titulo || 'Imagen del recurso'"
+          />
         </div>
 
         <hr class="section-separator" />
@@ -68,57 +99,105 @@
 
         <!-- Dynamic Resource Information -->
         <div class="dynamic-info">
-          <p v-if="resource.direccion"><strong>Dirección:</strong> {{ resource.direccion }}</p>
-          <p v-if="resource.codigo_postal"><strong>Código Postal:</strong> {{ resource.codigo_postal }}</p>
-          <p v-if="resource.numero_telefono"><strong>Teléfono:</strong> {{ resource.numero_telefono }}</p>
+          <p v-if="resource.direccion">
+            <strong>Dirección:</strong> {{ resource.direccion }}
+          </p>
+          <p v-if="resource.codigo_postal">
+            <strong>Código Postal:</strong> {{ resource.codigo_postal }}
+          </p>
+          <p v-if="resource.numero_telefono">
+            <strong>Teléfono:</strong> {{ resource.numero_telefono }}
+          </p>
           <p v-if="resource.email"><strong>Email:</strong> {{ resource.email }}</p>
-          <p v-if="resource.pagina_web"><strong>Sitio Web:</strong> <a :href="resource.pagina_web" target="_blank">{{ resource.pagina_web }}</a></p>
+          <p v-if="resource.pagina_web">
+            <strong>Sitio Web:</strong>
+            <a :href="resource.pagina_web" target="_blank">{{
+                resource.pagina_web
+              }}</a>
+          </p>
 
           <!-- Accommodation Specific Fields -->
           <template v-if="resource.coleccion === 'accommodation'">
-            <p v-if="resource.categoria"><strong>Categoría:</strong> {{ resource.categoria }}</p>
-            <p v-if="resource.capacidad"><strong>Capacidad:</strong> {{ resource.capacidad }}</p>
-            <p v-if="resource.anno_apertura"><strong>Año de Apertura:</strong> {{ resource.anno_apertura }}</p>
-            <p v-if="resource.num_hab_individuales"><strong>Habitaciones Individuales:</strong> {{ resource.num_hab_individuales }}</p>
-            <p v-if="resource.num_hab_dobles"><strong>Habitaciones Dobles:</strong> {{ resource.num_hab_dobles }}</p>
+            <p v-if="resource.categoria">
+              <strong>Categoría:</strong> {{ resource.categoria }}
+            </p>
+            <p v-if="resource.capacidad">
+              <strong>Capacidad:</strong> {{ resource.capacidad }}
+            </p>
+            <p v-if="resource.anno_apertura">
+              <strong>Año de Apertura:</strong> {{ resource.anno_apertura }}
+            </p>
+            <p v-if="resource.num_hab_individuales">
+              <strong>Habitaciones Individuales:</strong>
+              {{ resource.num_hab_individuales }}
+            </p>
+            <p v-if="resource.num_hab_dobles">
+              <strong>Habitaciones Dobles:</strong> {{ resource.num_hab_dobles }}
+            </p>
           </template>
 
           <!-- Cultural Specific Fields -->
           <template v-if="resource.coleccion === 'cultural'">
-            <p v-if="resource.tipo_monumento"><strong>Tipo de Monumento:</strong> {{ resource.tipo_monumento }}</p>
-            <p v-if="resource.estilo_artistico"><strong>Estilo Artístico:</strong> {{ resource.estilo_artistico }}</p>
+            <p v-if="resource.tipo_monumento">
+              <strong>Tipo de Monumento:</strong> {{ resource.tipo_monumento }}
+            </p>
+            <p v-if="resource.estilo_artistico">
+              <strong>Estilo Artístico:</strong> {{ resource.estilo_artistico }}
+            </p>
           </template>
 
           <!-- Event Specific Fields -->
           <template v-if="resource.coleccion === 'event'">
-            <p v-if="resource.fecha_inicio"><strong>Fecha de Inicio:</strong> {{ formatDate(resource.fecha_inicio) }}</p>
-            <p v-if="resource.fecha_fin"><strong>Fecha de Fin:</strong> {{ formatDate(resource.fecha_fin) }}</p>
+            <p v-if="resource.fecha_inicio">
+              <strong>Fecha de Inicio:</strong>
+              {{ formatDate(resource.fecha_inicio) }}
+            </p>
+            <p v-if="resource.fecha_fin">
+              <strong>Fecha de Fin:</strong> {{ formatDate(resource.fecha_fin) }}
+            </p>
           </template>
 
           <!-- Fair Specific Fields -->
           <template v-if="resource.coleccion === 'fair'">
-            <p v-if="resource.atracciones"><strong>Atracciones:</strong> {{ resource.atracciones }}</p>
-            <p v-if="resource.horario"><strong>Horario:</strong> <span v-html="resource.horario"></span></p>
+            <p v-if="resource.atracciones">
+              <strong>Atracciones:</strong> {{ resource.atracciones }}
+            </p>
+            <p v-if="resource.horario">
+              <strong>Horario:</strong> <span v-html="resource.horario"></span>
+            </p>
           </template>
 
           <!-- Natural Specific Fields -->
           <template v-if="resource.coleccion === 'natural'">
-            <p v-if="resource.actividades"><strong>Actividades:</strong> <span v-html="resource.actividades"></span></p>
+            <p v-if="resource.actividades">
+              <strong>Actividades:</strong>
+              <span v-html="resource.actividades"></span>
+            </p>
           </template>
 
           <!-- Restaurant Specific Fields -->
           <template v-if="resource.coleccion === 'restaurant'">
-            <p v-if="resource.capacidad"><strong>Capacidad:</strong> {{ resource.capacidad }}</p>
+            <p v-if="resource.capacidad">
+              <strong>Capacidad:</strong> {{ resource.capacidad }}
+            </p>
           </template>
         </div>
 
         <hr class="section-separator" />
 
         <!-- Services Section -->
-        <div v-if="resource.servicios && resource.servicios.length > 0" class="detail-services">
+        <div
+          v-if="resource.servicios && resource.servicios.length > 0"
+          class="detail-services"
+        >
           <h3>Servicios</h3>
           <div class="service-tags">
-            <span v-for="(service, index) in resource.servicios" :key="index" class="service-tag">{{ service.nombre }}</span>
+            <span
+              v-for="(service, index) in resource.servicios"
+              :key="index"
+              class="service-tag"
+            >{{ service.nombre }}</span
+            >
           </div>
         </div>
 
@@ -141,7 +220,11 @@
               class="related-card"
               @click="navigateToResource(related)"
             >
-              <img :src="related.imagenes[0]?.fuente || getDefaultImage(related.coleccion)" alt="Imagen del recurso relacionado" />
+              <img
+                :src="related.imagenes[0]?.fuente ||
+                  getDefaultImage(related.coleccion)"
+                alt="Imagen del recurso relacionado"
+              />
               <div class="related-content">
                 <h4>{{ related.nombre }}</h4>
                 <p>{{ related.nombre_municipio }}</p>
@@ -214,7 +297,7 @@ const distance = computed(() => {
 
 // Compute if the resource is a favorite (only when authenticated)
 const isFavorite = computed(() => {
-  if (!authStore.isAuthenticated) {
+  if (!authStore.isLoggedIn()) {
     return false; // Do not compute favorites if not authenticated
   }
   return favoritesStore.isFavorite(resource.value?.id, resource.value?.coleccion);
@@ -270,21 +353,21 @@ const initializeMap = () => {
 // Fetch the resource when the component is mounted
 onMounted(() => {
   fetchResource();
-  if (authStore.isAuthenticated) {
+  if (authStore.isLoggedIn()) {
     favoritesStore.fetchFavorites(); // Fetch favorites only if authenticated
   }
 });
 
 // Toggle favorite status
 const toggleFavorite = () => {
-  if (!authStore.isAuthenticated) {
+  if (!authStore.isLoggedIn()) {
     Swal.fire({
       icon: 'info',
-      title: 'Login Required',
-      text: 'Please log in or create an account to add this resource to your favorites.',
-      confirmButtonText: 'Log In',
+      title: 'Necesitas iniciar sesión',
+      text: 'Regístrate o inicia sesión para poder guardar este recurso en tus favoritos.',
+      confirmButtonText: 'Iniciar sesión',
     }).then(() => {
-      router.push('/login'); // Navigate to login page
+      router.push('/auth/login'); // Navigate to login page
     });
     return;
   }
@@ -296,6 +379,27 @@ const toggleFavorite = () => {
     if (favoriteId) {
       favoritesStore.removeFavorite(favoriteId);
     }
+  }
+};
+
+// Handle add to plan action
+const handleAddToPlan = () => {
+  if (!authStore.isLoggedIn()) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Necesitas iniciar sesión',
+      text: 'Regístrate o inicia sesión para poder añadir este recurso a tu plan.',
+      confirmButtonText: 'Iniciar sesión',
+    }).then(() => {
+      router.push('/auth/login'); // Navigate to login page
+    });
+  } else {
+    // Add to plan logic here
+    Swal.fire({
+      icon: 'success',
+      title: 'Añadido al plan',
+      text: 'Este recurso ha sido añadido a tu plan.',
+    });
   }
 };
 
