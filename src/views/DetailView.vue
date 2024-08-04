@@ -22,7 +22,18 @@
 
       <div class="detail-header">
         <h1>{{ resource.nombre }}</h1>
-        <h2>{{ resource.nombre_subtipo_recurso || resource.nombre_subtipo_recurso_espacio_natural || resource.nombre_subtipo_recurso_playas_pantanos_rios }}</h2>
+        <h2>
+          {{
+            resource.nombre_subtipo_recurso ||
+            resource.nombre_subtipo_recurso_espacio_natural ||
+            resource.nombre_subtipo_recurso_playas_pantanos_rios
+          }}
+        </h2>
+        <!-- Display distance from the user -->
+        <p v-if="distance !== null">
+          <font-awesome-icon icon="location-dot" class="location-icon" />
+          {{ distance.toFixed(2) }} km
+        </p>
       </div>
 
       <hr class="section-separator" />
@@ -142,9 +153,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, onMounted, nextTick, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCollectionsStore } from '@/stores/collections';
+import { useLocationStore } from '@/stores/location';
+import { calculateDistance } from '@/utils/distance';
 import mapboxgl from 'mapbox-gl';
 import Spinner from '@/components/Spinner.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'; // Import FontAwesomeIcon
@@ -157,6 +170,7 @@ const router = useRouter();
 
 // Access your collections store
 const collectionsStore = useCollectionsStore();
+const locationStore = useLocationStore(); // Access location store
 
 // Define a ref to store the current resource
 const resource = ref(null);
@@ -172,6 +186,24 @@ const loading = ref(true);
 
 // Define a ref for related resources
 const relatedResources = ref([]);
+
+// Compute distance
+const distance = computed(() => {
+  if (
+    locationStore.userLocation &&
+    resource.value &&
+    resource.value.longitud &&
+    resource.value.latitud
+  ) {
+    return calculateDistance(
+      locationStore.userLocation.latitude,
+      locationStore.userLocation.longitude,
+      Number(resource.value.latitud),
+      Number(resource.value.longitud)
+    );
+  }
+  return null;
+});
 
 // Watch for changes in route params and refetch resources
 watch(
@@ -279,6 +311,7 @@ const formatDate = (dateString) => {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 1rem;
 }
 
 .detail-view {
@@ -287,10 +320,11 @@ const formatDate = (dateString) => {
   background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  max-width: 800px;
+  max-width: 1200px;
   width: 100%;
   margin: 2rem auto;
   position: relative; /* Added to contain the button */
+  box-sizing: border-box;
 }
 
 .header-buttons {
@@ -336,11 +370,19 @@ const formatDate = (dateString) => {
 .detail-header h1 {
   font-size: 2.5rem;
   color: #333;
+  margin: 0.5rem 0;
 }
 
 .detail-header h2 {
   font-size: 1.5rem;
   color: #666;
+  margin: 0.5rem 0;
+}
+
+.detail-header p {
+  font-size: 1.1rem;
+  color: #007bff;
+  margin-top: 0.5rem;
 }
 
 .section-separator {
@@ -549,5 +591,52 @@ const formatDate = (dateString) => {
 .related-content p {
   font-size: 0.9rem;
   color: #666;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .detail-header h1 {
+    font-size: 2rem;
+  }
+
+  .detail-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .detail-content {
+    padding: 0 1rem;
+  }
+
+  .dynamic-info {
+    font-size: 0.9rem;
+  }
+
+  .service-tag {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-button {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .carousel-button {
+    font-size: 1.5rem;
+  }
+
+  .detail-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .detail-header h2 {
+    font-size: 1rem;
+  }
 }
 </style>
