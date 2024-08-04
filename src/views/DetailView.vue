@@ -466,8 +466,8 @@ const formatDate = (dateString: string) => {
   background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  max-width: 1200px;
-  width: 100%;
+  max-width: 960px; /* Reduced max-width for a narrower view */
+  width: 90%;
   margin: 2rem auto;
   position: relative; /* Added to contain the button */
   box-sizing: border-box;
@@ -514,19 +514,19 @@ const formatDate = (dateString: string) => {
 }
 
 .detail-header h1 {
-  font-size: 2.5rem;
+  font-size: 2.2rem; /* Slightly reduced for better fit */
   color: #333;
   margin: 0.5rem 0;
 }
 
 .detail-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.3rem; /* Slightly reduced for better fit */
   color: #666;
   margin: 0.5rem 0;
 }
 
 .detail-header p {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #007bff;
   margin-top: 0.5rem;
 }
@@ -609,7 +609,7 @@ const formatDate = (dateString: string) => {
 
 .description {
   text-align: justify;
-  font-size: 1.1rem;
+  font-size: 1rem; /* Slightly reduced for better fit */
   line-height: 1.6;
   color: #444;
   margin: 1rem 0;
@@ -619,7 +619,7 @@ const formatDate = (dateString: string) => {
   margin-top: 1rem;
   text-align: left;
   width: 100%;
-  font-size: 1rem;
+  font-size: 0.95rem; /* Slightly reduced for better fit */
   color: #333;
 }
 
