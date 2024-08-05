@@ -9,6 +9,11 @@
         Distancia
         <i :class="collectionsStore.sortOrder === 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'"></i>
       </button>
+      <!-- New Sort by Date Button for Events -->
+      <button v-if="isEventCollection" @click="sortByDate" :class="{ active: collectionsStore.sortField === 'date' }">
+        Fecha
+        <i :class="collectionsStore.sortOrder === 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'"></i>
+      </button>
     </div>
     <div v-if="!collectionsStore.loading" class="cards-grid">
       <ResultCard
@@ -22,6 +27,7 @@
         :latitud="Number(item.latitud)"
         :subtype="getSubtype(item)"
         :municipio="item.nombre_municipio"
+        :fechaInicio="item.fecha_inicio"
       />
     </div>
   </div>
@@ -81,9 +87,18 @@ const sortedResults = computed(() => {
       );
       return collectionsStore.sortOrder === 'asc' ? distanceA - distanceB : distanceB - distanceA;
     });
+  } else if (collectionsStore.sortField === 'date') {
+    sorted.sort((a, b) => {
+      const dateA = new Date(a.fecha_inicio);
+      const dateB = new Date(b.fecha_inicio);
+      return collectionsStore.sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
   }
   return sorted;
 });
+
+// Determine if the current collection is an event
+const isEventCollection = computed(() => collectionsStore.selectedCategory.toLowerCase() === 'eventos');
 
 // Sort functions
 const sortByName = () => {
@@ -100,6 +115,15 @@ const sortByDistance = () => {
     collectionsStore.sortOrder = collectionsStore.sortOrder === 'asc' ? 'desc' : 'asc';
   } else {
     collectionsStore.setSortField('distance');
+    collectionsStore.setSortOrder('asc');
+  }
+};
+
+const sortByDate = () => {
+  if (collectionsStore.sortField === 'date') {
+    collectionsStore.sortOrder = collectionsStore.sortOrder === 'asc' ? 'desc' : 'asc';
+  } else {
+    collectionsStore.setSortField('date');
     collectionsStore.setSortOrder('asc');
   }
 };

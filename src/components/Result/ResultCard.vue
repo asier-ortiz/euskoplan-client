@@ -2,11 +2,13 @@
   <div class="result-card" @click="navigateToDetail">
     <div class="card-image" :style="{ backgroundImage: `url(${imageUrl})` }">
       <img :src="imageUrl" @error="handleImageError" class="hidden-image" alt="Image of {{ name }}" />
+      <!-- Event Date Overlay -->
+      <div v-if="isEvent" class="event-date">{{ formattedDate }}</div>
     </div>
     <div class="card-content">
       <h3>{{ subtype }}</h3> <!-- Display subtype -->
       <h2>{{ name }}</h2>
-      <p v-if="municipio">{{ municipio }}</p> <!-- Display municipio -->
+      <p v-if="municipio" class="municipio-text">{{ municipio }}</p> <!-- Display municipio -->
       <p v-if="distance !== null">
         <font-awesome-icon icon="location-dot" class="location-icon" /> <!-- Add location icon -->
         {{ distance.toFixed(2) }} km
@@ -56,6 +58,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  fechaInicio: { // Add fechaInicio prop
+    type: String,
+    default: null,
+  }
 });
 
 // Use Vue Router for navigation
@@ -119,6 +125,16 @@ const handleImageError = () => {
 const navigateToDetail = () => {
   router.push({ name: 'Detail', params: { id: Number(props.itemId), category: props.collection } }); // Convert itemId to number
 };
+
+// Check if the collection is an event
+const isEvent = computed(() => props.collection.toLowerCase() === 'event');
+
+// Format the event date
+const formattedDate = computed(() => {
+  if (!props.fechaInicio) return '';
+  const date = new Date(props.fechaInicio);
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+});
 </script>
 
 <style scoped>
@@ -199,5 +215,27 @@ const navigateToDetail = () => {
 
 .result-card:hover .card-content h2 {
   color: #007bff; /* Highlight title on hover */
+}
+
+/* Add a style for limiting municipio text to 3 lines */
+.municipio-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Limit to 3 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+/* Style for the event date overlay */
+.event-date {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 0.8rem;
 }
 </style>
