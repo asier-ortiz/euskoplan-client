@@ -9,7 +9,7 @@ axios.defaults.baseURL = config.apiBaseUrl;
 export const useCollectionsStore = defineStore('collections', {
   state: () => ({
     filteredResults: [],
-    selectedCategory: useLocalStorage('selectedCategory', null),
+    selectedCategory: useLocalStorage('selectedCategory', ''), // Default to an empty string
     searchQuery: useLocalStorage('searchQuery', ''),
     searchResults: [],
     searchCancelToken: null,
@@ -23,9 +23,13 @@ export const useCollectionsStore = defineStore('collections', {
   }),
 
   actions: {
-
     async fetchRelatedResources(category, language = 'es') {
       try {
+        if (!category) {
+          console.warn('No category provided for fetching related resources.');
+          this.relatedResources = [];
+          return;
+        }
         const response = await axios.get(`/${category}/results/filter`, {
           params: {
             idioma: language,
@@ -41,6 +45,7 @@ export const useCollectionsStore = defineStore('collections', {
 
     async filterResultsByCategory(category, filters) {
       if (!category) {
+        console.warn('No category provided for filtering results.');
         this.filteredResults = [];
         return;
       }
@@ -342,7 +347,7 @@ export const useCollectionsStore = defineStore('collections', {
     },
 
     setSelectedCategory(category) {
-      this.selectedCategory = category;
+      this.selectedCategory = category || ''; // Set to empty string if null
     },
 
     // Add actions to update sortField and sortOrder
