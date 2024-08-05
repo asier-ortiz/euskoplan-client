@@ -7,6 +7,7 @@
   >
     <div class="drawer" v-if="visible">
       <div class="drawer-header">
+        <span class="drawer-title">Filtros</span>
         <button class="close-button" @click="closeDrawer">&times;</button>
       </div>
       <div class="filter-content">
@@ -38,7 +39,7 @@
 
         <!-- Province Selector -->
         <label for="province">Provincia</label>
-        <select id="province" v-model="selectedProvince" @change="changeProvince">
+        <select id="province" v-model="selectedProvince" @change="applyFilters">
           <option value="" disabled>Select Province</option>
           <option v-for="province in provinces" :key="province" :value="province">
             {{ province }}
@@ -56,7 +57,7 @@
             :disabled="!selectedProvince"
             @input="filterLocalities"
           />
-          <select id="locality" v-model="selectedLocality" :disabled="!selectedProvince">
+          <select id="locality" v-model="selectedLocality" @change="applyFilters" :disabled="!selectedProvince">
             <option value="" disabled>Select Locality</option>
             <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.nombre">
               {{ locality.nombre }}
@@ -68,7 +69,7 @@
 
         <!-- Dynamic Category Selector -->
         <label v-if="currentCategories.length" for="category">{{ selectedCategoryName }} Categoría</label>
-        <select v-if="currentCategories.length" id="category" v-model="selectedSubCategory">
+        <select v-if="currentCategories.length" id="category" v-model="selectedSubCategory" @change="applyFilters">
           <option value="" disabled>Select {{ selectedCategoryName }} Category</option>
           <option v-for="category in currentCategories" :key="category" :value="category">
             {{ category }}
@@ -100,11 +101,6 @@
             />
           </div>
         </div>
-
-        <hr />
-
-        <!-- Apply Filters Button -->
-        <button @click="applyFilters" class="apply-button">Aplicar Filtros</button>
       </div>
     </div>
   </transition>
@@ -205,6 +201,11 @@ watch(selectedCategory, () => {
   filterStore.clearFilters();
 });
 
+// Watch for changes in date inputs and apply filters automatically
+watch([startDate, endDate], () => {
+  applyFilters();
+});
+
 // Check if any filter is selected
 const anyFilterSelected = computed(() => {
   return selectedProvince.value || selectedLocality.value || startDate.value || endDate.value || selectedSubCategory.value;
@@ -239,10 +240,10 @@ const closeDrawer = () => {
 // Function to apply filters and update the store
 const applyFilters = async () => {
   // Update the filter store with the current selections
+  filterStore.selectedProvince = selectedProvince.value;
   filterStore.setSelectedLocality(selectedLocality.value);
   filterStore.setStartDate(startDate.value);
   filterStore.setEndDate(endDate.value);
-  filterStore.selectedProvince = selectedProvince.value;
   filterStore.setSelectedCategory(selectedCategory.value?.toLowerCase(), selectedSubCategory.value);
 
   // Format dates for API
@@ -285,13 +286,6 @@ const removeLocality = async () => {
   await applyFilters(); // Trigger query after removal
 };
 
-// Function to change the province
-const changeProvince = () => {
-  filterStore.filterLocalitiesByProvince(selectedProvince.value);
-  selectedLocality.value = null;
-  localitySearch.value = ''; // Clear locality search input
-};
-
 // Function to remove the start date
 const removeStartDate = async () => {
   startDate.value = null;
@@ -327,8 +321,15 @@ const removeSelectedCategory = async () => {
 
 .drawer-header {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
+}
+
+.drawer-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
 }
 
 .close-button {
