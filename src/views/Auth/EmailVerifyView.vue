@@ -1,15 +1,17 @@
 <template>
-  <div class="container mt-5">
-    <h2>Email Verification</h2>
-    <div v-if="loading" class="text-center">
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
+  <div class="email-verify-container d-flex justify-content-center align-items-center">
+    <div class="card p-4 shadow text-center" style="width: 100%; max-width: 400px;">
+      <h2>Verificación de Correo Electrónico</h2>
+      <div v-if="loading">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p>Verificando tu correo electrónico...</p>
       </div>
-      <p>Verifying your email...</p>
-    </div>
-    <div v-else>
-      <p v-if="error">{{ error }}</p>
-      <p v-else-if="success">{{ success }}</p>
+      <div v-else>
+        <p v-if="error">{{ error }}</p>
+        <p v-else-if="success">{{ success }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -30,19 +32,19 @@ const error = ref<string | null>(null);
 onMounted(async () => {
   const token = route.query.token as string;
   if (!token) {
-    error.value = 'Invalid token';
+    error.value = 'Token inválido';
     loading.value = false;
     return;
   }
 
   try {
     await authStore.verifyEmail(token);
-    success.value = 'Your email has been verified. You will be redirected to the home page.';
+    success.value = 'Tu correo electrónico ha sido verificado. Serás redirigido a la página principal.';
     setTimeout(() => {
       router.push('/');
     }, 3000);
   } catch (err) {
-    error.value = 'There was an error verifying your email. A new verification email has been sent to you.';
+    error.value = 'Hubo un error al verificar tu correo electrónico. Se te ha enviado un nuevo correo de verificación.';
   } finally {
     loading.value = false;
   }
@@ -50,7 +52,21 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.email-verify-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background-color: #f0f0f0;
+  min-height: calc(100vh - 160px); /* Adjusted to account for both navbar and footer height */
+}
+
 .spinner-border {
   margin-bottom: 20px;
+}
+
+.card {
+  border-radius: 10px;
 }
 </style>
