@@ -17,11 +17,10 @@ import { useFilterStore } from '@/stores/filter';
 const collectionsStore = useCollectionsStore();
 const filterStore = useFilterStore();
 
-// Centralize search logic in a function
+// Perform the search based on current state
 const performSearch = async () => {
   const { searchQuery, selectedCategory } = collectionsStore;
 
-  // Construct filters from the filter store
   const filters = {
     idioma: 'es',
     ...(filterStore.selectedProvince && { nombre_provincia: filterStore.selectedProvince }),
@@ -40,7 +39,6 @@ const performSearch = async () => {
       await collectionsStore.searchAllCollections(searchQuery, 'es');
     }
   } else if (selectedCategory) {
-    // Pass the filters to the filterResultsByCategory method
     await collectionsStore.filterResultsByCategory(selectedCategory, filters);
   }
 };
@@ -52,30 +50,30 @@ const formatDateForApi = (date) => {
   return new Intl.DateTimeFormat('es-ES', options).format(new Date(date)).split('/').reverse().join('/');
 };
 
-// Execute the search if there is a search term or category selected on the initial load
+// Execute the search on initial load
 onMounted(() => {
   if (collectionsStore.searchQuery || collectionsStore.selectedCategory) {
     performSearch();
   }
 });
 
+// Handle category chip selection
 const handleChipSelected = async (category) => {
-  // Reset filters when a new category is selected
   filterStore.clearFilters();
-  collectionsStore.selectedCategory = category;
+  collectionsStore.setSelectedCategory(category);
   await performSearch();
 };
 
+// Handle search input
 const handleSearch = async (query) => {
   collectionsStore.searchQuery = query;
   await performSearch();
 };
 
-// Watch for changes in searchQuery and selectedCategory and trigger appropriate search
+// Watch for changes in searchQuery and selectedCategory
 watch(
   () => [collectionsStore.searchQuery, collectionsStore.selectedCategory],
   async ([newQuery, newCategory], [oldQuery, oldCategory]) => {
-    // Perform search when searchQuery is updated or when selectedCategory changes
     if (newQuery !== oldQuery || newCategory !== oldCategory) {
       await performSearch();
     }

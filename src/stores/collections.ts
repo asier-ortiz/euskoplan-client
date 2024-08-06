@@ -1,4 +1,5 @@
 // src/store/collections.ts
+
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import config from '../config';
@@ -20,7 +21,11 @@ export const useCollectionsStore = defineStore('collections', {
     searchCache: new Map(), // Cache for search results
     sortField: useLocalStorage('sortField', 'name'),
     sortOrder: useLocalStorage('sortOrder', 'asc'),
-    activeTab: useLocalStorage('activeTab', 'cards'),
+    activeTab: useLocalStorage('activeTab', 'cards'), // Store active tab state
+    mapCenter: useLocalStorage('mapCenter', { lat: 0, lng: 0 }), // Store map center
+    mapZoom: useLocalStorage('mapZoom', 5), // Store map zoom level
+    mapMarkers: useLocalStorage('mapMarkers', []), // Store map markers
+    mapMode: useLocalStorage('mapMode', 'light'), // Store map mode (light or dark)
   }),
 
   actions: {
@@ -35,7 +40,7 @@ export const useCollectionsStore = defineStore('collections', {
           params: {
             idioma: language,
             aleatorio: 'si', // Fetch random resources
-            limite: 3,       // Limit to 3 results
+            limite: 3, // Limit to 3 results
           },
         });
         this.relatedResources = response.data;
@@ -363,5 +368,21 @@ export const useCollectionsStore = defineStore('collections', {
     setActiveTab(tab) {
       this.activeTab = tab;
     },
+
+    setMapCenter(center) {
+      this.mapCenter = center;
+    },
+
+    setMapZoom(zoom) {
+      this.mapZoom = zoom;
+    },
+
+    setMapMarkers(markers) {
+      this.mapMarkers = markers;
+    },
+
+    setMapMode(mode) {
+      this.mapMode = mode;
+    }
   },
 });
