@@ -3,6 +3,10 @@
     <Spinner v-if="loading" :visible="loading" />
     <div v-else class="detail-view">
       <div class="header-buttons">
+        <!-- Back to Home Button -->
+        <button @click="goBackHome" class="header-button">
+          ← Inicio
+        </button>
         <div class="action-buttons">
           <!-- Add to Plan Button -->
           <button class="header-button" @click="handleAddToPlan">
@@ -14,10 +18,6 @@
             {{ isFavorite ? 'Eliminar de Favoritos' : 'Añadir a Favoritos' }}
           </button>
         </div>
-        <!-- Back to Home Button -->
-        <button @click="goBackHome" class="header-button">
-          ← Inicio
-        </button>
       </div>
 
       <hr class="section-separator" />
@@ -217,17 +217,37 @@
             <div
               v-for="(related, index) in relatedResources"
               :key="index"
-              class="related-card"
+              class="result-card"
               @click="navigateToResource(related)"
             >
-              <img
-                :src="related.imagenes[0]?.fuente ||
-                  getDefaultImage(related.coleccion)"
-                alt="Imagen del recurso relacionado"
-              />
-              <div class="related-content">
-                <h4>{{ related.nombre }}</h4>
-                <p>{{ related.nombre_municipio }}</p>
+              <div
+                class="card-image"
+                :style="{ backgroundImage: `url(${related.imagenes[0]?.fuente || getDefaultImage(related.coleccion)})` }"
+              >
+                <img
+                  :src="related.imagenes[0]?.fuente || getDefaultImage(related.coleccion)"
+                  alt="Imagen del recurso relacionado"
+                  class="hidden-image"
+                  @error="handleRelatedImageError(index)"
+                />
+                <!-- Event Date Overlay -->
+                <div v-if="related.coleccion.toLowerCase() === 'event'" class="event-date">{{ formatDate(related.fecha_inicio) }}</div>
+              </div>
+              <div class="card-content">
+                <h3>
+                  {{
+                    related.nombre_subtipo_recurso ||
+                    related.nombre_subtipo_recurso_espacio_natural ||
+                    related.nombre_subtipo_recurso_playas_pantanos_rios ||
+                    'Sin subtipo'
+                  }}
+                </h3> <!-- Mostrar subtipo utilizando la misma lógica -->
+                <h2>{{ related.nombre }}</h2>
+                <p v-if="related.nombre_municipio" class="municipio-text">{{ related.nombre_municipio }}</p>
+                <p v-if="related.distancia !== null">
+                  <font-awesome-icon icon="location-dot" class="location-icon" />
+                  {{ related.distancia.toFixed(2) }} km
+                </p>
               </div>
             </div>
           </div>
@@ -323,6 +343,22 @@ const fetchResource = async () => {
   // Fetch related resources
   await collectionsStore.fetchRelatedResources(category, language);
   relatedResources.value = collectionsStore.relatedResources;
+
+  // Calculate distance for related resources
+  relatedResources.value.forEach((related) => {
+    if (
+      locationStore.userLocation &&
+      related.longitud &&
+      related.latitud
+    ) {
+      related.distancia = calculateDistance(
+        locationStore.userLocation.latitude,
+        locationStore.userLocation.longitude,
+        Number(related.latitud),
+        Number(related.longitud)
+      );
+    }
+  });
 
   // Set loading to false once the resource is loaded
   loading.value = false;
@@ -447,6 +483,11 @@ const goBackHome = () => {
 const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('es-ES', options);
+};
+
+// Handle image loading errors for related resources
+const handleRelatedImageError = (index: number) => {
+  relatedResources.value[index].imagenes[0].fuente = getDefaultImage(relatedResources.value[index].coleccion);
 };
 </script>
 
@@ -703,40 +744,105 @@ const formatDate = (dateString: string) => {
   flex-wrap: wrap;
 }
 
-.related-card {
+.result-card {
+  display: flex;
+  flex-direction: column;
   width: 200px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 320px; /* Increased height for more visual appeal */
+  border-radius: 15px;
   overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s; /* Added transition effects */
   cursor: pointer;
-  background-color: white;
-  transition: transform 0.3s;
+  background-color: white; /* Background color for the card */
 }
 
-.related-card:hover {
+.result-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.related-card img {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
+.card-image {
+  flex: 2;
+  background-size: cover;
+  background-position: center;
+  height: 60%;
+  position: relative;
+  border-bottom: 1px solid #ddd; /* Divider between image and content */
 }
 
-.related-content {
-  padding: 0.5rem;
-  text-align: center;
+.hidden-image {
+  display: none;
 }
 
-.related-content h4 {
-  font-size: 1.2rem;
-  color: #333;
-  margin: 0.5rem 0;
+.card-content {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff; /* White background for card content */
+  text-align: center; /* Center align content */
 }
 
-.related-content p {
-  font-size: 0.9rem;
-  color: #666;
+.card-content h3 {
+  margin: 0 0 0.25rem; /* Add margin-bottom for spacing */
+  font-size: 0.8rem; /* Smaller font size for subtype text */
+  color: #666666; /* Gray color for the subtype text */
+  text-transform: uppercase;
+  font-weight: normal;
+  letter-spacing: 0.5px; /* Add letter spacing for a cleaner look */
+}
+
+.card-content h2 {
+  margin: 0 0 0.5rem; /* Add margin-bottom for spacing */
+  font-size: 1.4rem; /* Slightly reduced font size for better balance */
+  color: #333333; /* Darker color for the name text */
+  font-weight: bold;
+  line-height: 1.2; /* Improved line spacing */
+}
+
+.card-content p {
+  margin: 0.25rem 0; /* Ensure some margin for the municipio text */
+  font-size: 1rem; /* Adjust font size for municipio and distance text */
+  color: #555555; /* Slightly lighter color for text */
+}
+
+.card-content .location-icon {
+  margin-right: 0.5rem; /* Space between icon and text */
+  color: #007bff; /* Color for the location icon */
+}
+
+.card-content h3,
+.card-content h2 {
+  transition: color 0.3s; /* Smooth color transition */
+}
+
+.result-card:hover .card-content h2 {
+  color: #007bff; /* Highlight title on hover */
+}
+
+/* Add a style for limiting municipio text to 3 lines */
+.municipio-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Limit to 3 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+/* Style for the event date overlay */
+.event-date {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 0.8rem;
 }
 
 /* Media Queries */
