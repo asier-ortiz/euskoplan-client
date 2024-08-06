@@ -3,10 +3,10 @@
     <Spinner :visible="collectionsStore.loading" />
     <div class="tabs-and-filter">
       <div class="tabs">
-        <button :class="{ active: activeTab === 'cards' }" @click="activeTab = 'cards'">
+        <button :class="{ active: collectionsStore.activeTab === 'cards' }" @click="setActiveTab('cards')">
           <i class="bi bi-card-text"></i> Cards
         </button>
-        <button :class="{ active: activeTab === 'map' }" @click="activeTab = 'map'">
+        <button :class="{ active: collectionsStore.activeTab === 'map' }" @click="setActiveTab('map')">
           <i class="bi bi-geo-alt"></i> Map
         </button>
       </div>
@@ -22,8 +22,8 @@
     </div>
 
     <div class="tab-content">
-      <ResultCardContainer v-if="activeTab === 'cards'" />
-      <ResultMap v-if="activeTab === 'map'" />
+      <ResultCardContainer v-if="collectionsStore.activeTab === 'cards'" />
+      <ResultMap v-if="collectionsStore.activeTab === 'map'" />
     </div>
 
     <FilterDrawer :visible="isFilterDrawerVisible" @close="toggleFilterDrawer" />
@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue'
 import ResultCardContainer from './ResultCardContainer.vue';
 import ResultMap from './ResultMap.vue';
 import FilterDrawer from '@/components/Hero/FilterDrawer.vue';
@@ -39,13 +39,16 @@ import FilterButton from '@/components/Hero/FilterButton.vue';
 import { useCollectionsStore } from '@/stores/collections';
 import Spinner from '@/components/Spinner.vue';
 
-// Manage active tab state
-const activeTab = ref('cards');
-const isFilterDrawerVisible = ref(false);
 const collectionsStore = useCollectionsStore();
+const isFilterDrawerVisible = ref(false);
 
 const toggleFilterDrawer = () => {
   isFilterDrawerVisible.value = !isFilterDrawerVisible.value;
+};
+
+// Function to set the active tab
+const setActiveTab = (tab) => {
+  collectionsStore.setActiveTab(tab);
 };
 
 // Compute the number of results

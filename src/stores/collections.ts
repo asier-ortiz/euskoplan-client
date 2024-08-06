@@ -18,8 +18,9 @@ export const useCollectionsStore = defineStore('collections', {
     relatedResources: [], // Add state for related resources
     cache: new Map(), // Cache for filtered results
     searchCache: new Map(), // Cache for search results
-    sortField: useLocalStorage('sortField', 'name'), // Added sort field
-    sortOrder: useLocalStorage('sortOrder', 'asc'), // Added sort order
+    sortField: useLocalStorage('sortField', 'name'),
+    sortOrder: useLocalStorage('sortOrder', 'asc'),
+    activeTab: useLocalStorage('activeTab', 'cards'),
   }),
 
   actions: {
@@ -357,6 +358,10 @@ export const useCollectionsStore = defineStore('collections', {
 
     setSortOrder(order) {
       this.sortOrder = order;
+    },
+
+    setActiveTab(tab) {
+      this.activeTab = tab;
     },
   },
 });
