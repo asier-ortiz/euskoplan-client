@@ -1,7 +1,7 @@
 <template>
   <div v-show="isMapTabActive" ref="mapContainer" class="map-container">
-    <button class="toggle-style-button" @click="toggleMapStyle">
-      {{ isDarkMode.value === 'dark' ? 'Modo Claro' : 'Modo Oscuro' }}
+    <button class="toggle-style-button" @click="toggleMapStyle" title="Toggle Dark/Light Mode">
+      <FontAwesomeIcon :icon="[isDarkMode === 'dark' ? 'fas' : 'fas', isDarkMode === 'dark' ? 'sun' : 'moon']" />
     </button>
     <div v-show="showZoomMessage" class="zoom-message">Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom</div>
   </div>
@@ -11,6 +11,7 @@
 import { onMounted, ref, watch, computed, onUnmounted } from 'vue';
 import mapboxgl, { Map, LngLatBounds } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { FontAwesomeIcon } from '@/font-awesome';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import { useFilterStore } from '@/stores/filter'; // Import the filter store
@@ -480,6 +481,10 @@ onUnmounted(() => {
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 2;
+}
+
+.toggle-style-button:hover {
+  background-color: #f0f0f0;
 }
 
 .zoom-message {
