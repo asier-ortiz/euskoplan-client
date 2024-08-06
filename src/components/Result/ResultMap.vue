@@ -1,5 +1,8 @@
 <template>
   <div ref="mapContainer" class="map-container"></div>
+  <button class="toggle-style-button" @click="toggleMapStyle">
+    {{ isDarkMode ? 'Modo Claro' : 'Modo Oscuro' }}
+  </button>
 </template>
 
 <script setup lang="ts">
@@ -7,39 +10,49 @@ import { onMounted, ref, watch, computed, onUnmounted } from 'vue';
 import mapboxgl, { Map, LngLatBounds } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useCollectionsStore } from '@/stores/collections';
+import { useLocationStore } from '@/stores/location'; // Importar el store de ubicación
 
-// Get the Mapbox access token from the environment
+// Obtener el token de acceso de Mapbox desde el entorno
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// Initialize the map container reference
+// Referencia al contenedor del mapa
 const mapContainer = ref<HTMLElement | null>(null);
 
-// Access the collections store
+// Acceso al store de colecciones
 const collectionsStore = useCollectionsStore();
 
-// Define the default center of the map to be the Basque Country
-const defaultCenter: [number, number] = [-2.6189, 43.25]; // Coordinates for the Basque Country
+// Acceso al store de ubicación
+const locationStore = useLocationStore();
 
-// Set up options for the map
+// Estado para el modo oscuro
+const isDarkMode = ref(false);
+
+// Definir el centro predeterminado del mapa en el País Vasco
+const defaultCenter: [number, number] = [-2.6189, 43.25]; // Coordenadas para el País Vasco
+
+// Configurar las opciones del mapa
 const mapOptions = {
-  style: 'mapbox://styles/mapbox/streets-v11',
+  style: isDarkMode.value
+    ? 'mapbox://styles/mapbox/dark-v10'
+    : 'mapbox://styles/mapbox/streets-v11',
   center: defaultCenter,
   zoom: 7,
+  pitch: 45, // Inclinación de la cámara
 };
 
-// Map categories to their corresponding marker images
+// Mapear categorías a sus correspondientes imágenes de marcador
 const categoryMarkerMap = {
-  alojamientos: '/images/map/accommodations-marker-large.png',
-  'cuevas y restos arqueológicos': '/images/map/caves-marker-large.png',
-  'edificios religiosos y castillos': '/images/map/culturals-marker-large.png',
-  eventos: '/images/map/events-marker-large.png',
-  'parques temáticos': '/images/map/fairs-marker-large.png',
-  'museos y centros de interpretación': '/images/map/museums-marker-large.png',
-  'espacios naturales': '/images/map/naturals-marker-large.png',
-  restaurantes: '/images/map/restaurants-marker-large.png',
+  alojamientos: '/images/map/accommodations-marker.png',
+  'cuevas y restos arqueológicos': '/images/map/caves-marker.png',
+  'edificios religiosos y castillos': '/images/map/culturals-marker.png',
+  eventos: '/images/map/events-marker.png',
+  'parques temáticos': '/images/map/fairs-marker.png',
+  'museos y centros de interpretación': '/images/map/museums-marker.png',
+  'espacios naturales': '/images/map/naturals-marker.png',
+  restaurantes: '/images/map/restaurants-marker.png',
 };
 
-// Compute the results used for both cards and markers
+// Computar los resultados usados para las tarjetas y marcadores
 const mapResults = computed(() => {
   if (collectionsStore.searchQuery.length >= 3) {
     return collectionsStore.searchResults;
@@ -52,9 +65,9 @@ const mapResults = computed(() => {
 
 let map: Map;
 
-// Function to initialize the map
+// Función para inicializar el mapa
 const initializeMap = (markersData: any[], markerImageUrl: string) => {
-  // Convert markersData to GeoJSON format
+  // Convertir los datos de marcadores a formato GeoJSON
   const geojson = {
     type: 'FeatureCollection',
     features: markersData.map((markerData) => ({
@@ -65,42 +78,53 @@ const initializeMap = (markersData: any[], markerImageUrl: string) => {
       },
       properties: {
         title: markerData.nombre,
+        subtype: markerData.subtype || '',
         municipality: markerData.municipio,
         code: markerData.codigo,
         images: markerData.imagenes ? JSON.stringify(markerData.imagenes) : '[]',
+        collection: collectionsStore.selectedCategory,
+        fechaInicio: markerData.fechaInicio || null,
       },
     })),
   };
 
-  // Remove existing layers and sources
+  // Eliminar capas y fuentes existentes
   if (map.getLayer('clusters')) map.removeLayer('clusters');
   if (map.getLayer('cluster-count')) map.removeLayer('cluster-count');
   if (map.getLayer('unclustered-points')) map.removeLayer('unclustered-points');
   if (map.getSource('resources')) map.removeSource('resources');
+  if (map.hasImage('custom-marker')) map.removeImage('custom-marker');
 
-  // Add a source for the markers
+  // Añadir una fuente para los marcadores
   map.addSource('resources', {
     type: 'geojson',
     data: geojson,
     cluster: true,
-    clusterMaxZoom: 14, // Max zoom to cluster points on
-    clusterRadius: 50,  // Radius of each cluster when clustering points
+    clusterMaxZoom: 14, // Zoom máximo para agrupar puntos
+    clusterRadius: 50,  // Radio de cada grupo al agrupar puntos
   });
 
-  // Add a layer for the clusters
+  // Añadir una capa para los clusters
   map.addLayer({
     id: 'clusters',
     type: 'circle',
     source: 'resources',
     filter: ['has', 'point_count'],
     paint: {
-      'circle-color': '#51bbd6',
-      'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40],
-      'circle-opacity': 0.6,
+      // Cambiar color del círculo según número de elementos en el cluster
+      'circle-color': [
+        'step',
+        ['get', 'point_count'],
+        '#51bbd6', 10, // Azul para <= 10
+        '#f1f075', 100, // Amarillo para <= 100
+        '#f28cb1' // Rojo para > 100
+      ],
+      'circle-radius': ['step', ['get', 'point_count'], 15, 100, 20, 750, 25],
+      'circle-opacity': 1, // Sin transparencia
     },
   });
 
-  // Add a layer for the cluster count labels
+  // Añadir una capa para las etiquetas de conteo de clusters
   map.addLayer({
     id: 'cluster-count',
     type: 'symbol',
@@ -113,14 +137,15 @@ const initializeMap = (markersData: any[], markerImageUrl: string) => {
     },
   });
 
-  // Add a layer for individual (unclustered) points
+  // Asegurarse de que la imagen del marcador se cargue antes de usarla
   map.loadImage(markerImageUrl, (error, image) => {
-    if (error) throw error;
-
-    // Check if the image is already added
-    if (!map.hasImage('custom-marker')) {
-      map.addImage('custom-marker', image);
+    if (error) {
+      console.error('Error loading image:', error);
+      return;
     }
+
+    // Añadir la nueva imagen para los marcadores
+    map.addImage('custom-marker', image);
 
     map.addLayer({
       id: 'unclustered-points',
@@ -129,14 +154,13 @@ const initializeMap = (markersData: any[], markerImageUrl: string) => {
       filter: ['!', ['has', 'point_count']],
       layout: {
         'icon-image': 'custom-marker',
-        'icon-size': 0.8, // Adjust icon size here
+        'icon-size': 0.2, // Ajustar el tamaño del ícono aquí para hacer los marcadores mucho más pequeños
         'icon-allow-overlap': true,
       },
-      minzoom: 14, // Set the minimum zoom level for displaying individual markers
     });
   });
 
-  // Fit the map to the bounds of the markers only if there are valid markers
+  // Ajustar el mapa a los límites de los marcadores solo si hay marcadores válidos
   const bounds = new LngLatBounds();
   markersData.forEach((markerData) => {
     bounds.extend([markerData.longitud, markerData.latitud]);
@@ -144,14 +168,14 @@ const initializeMap = (markersData: any[], markerImageUrl: string) => {
   if (!bounds.isEmpty()) {
     map.fitBounds(bounds, {
       padding: { top: 50, bottom: 50, left: 50, right: 50 },
-      maxZoom: 12,
+      maxZoom: 14,
     });
   } else {
     console.warn('No valid markers to fit bounds.');
   }
 };
 
-// Function to handle map click events
+// Función para manejar eventos de clic en el mapa
 const handleMapClick = (e) => {
   const features = map.queryRenderedFeatures(e.point, { layers: ['unclustered-points'] });
   if (!features.length) {
@@ -160,14 +184,25 @@ const handleMapClick = (e) => {
 
   const feature = features[0];
 
-  // Remove existing popup if any
-  const popup = new mapboxgl.Popup({ offset: 25 })
+  // Centrar la cámara en el marcador seleccionado
+  map.easeTo({
+    center: feature.geometry.coordinates,
+    zoom: 14,
+    pitch: 45,
+  });
+
+  // Crear popup con botón de cierre
+  const popup = new mapboxgl.Popup({
+    offset: 25,
+    closeButton: true, // Botón de cierre
+    closeOnClick: true,
+  })
     .setLngLat(feature.geometry.coordinates)
     .setHTML(getPopupHTML(feature))
     .addTo(map);
 };
 
-// Function to handle cluster click events
+// Función para manejar eventos de clic en clusters
 const handleClusterClick = (e) => {
   const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
   if (!features.length) return;
@@ -184,41 +219,76 @@ const handleClusterClick = (e) => {
   });
 };
 
-// Function to get the HTML content for a popup
+// Función para obtener el contenido HTML de un popup
 const getPopupHTML = (feature) => {
-  const collectionName = feature.properties.coleccion;
+  const collectionName = feature.properties.collection;
   const resourceCode = feature.properties.code;
 
-  const imgSource = JSON.parse(feature.properties.images)[0]?.fuente || `/images/generic-${collectionName}.jpg`;
+  const imgSource = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
   const imgAlt = JSON.parse(feature.properties.images)[0]?.titulo || '';
 
+  // Verificar si la ubicación del usuario está disponible
+  const userLocation = locationStore.userLocation;
+  let distanceText = '';
+  if (userLocation) {
+    const distance = calculateDistance(
+      userLocation.latitude,
+      userLocation.longitude,
+      feature.geometry.coordinates[1],
+      feature.geometry.coordinates[0]
+    ).toFixed(2);
+    distanceText = `<p><i class="fas fa-map-marker-alt"></i> ${distance} km</p>`;
+  }
+
   return `
-    <div class="card map-card shadow-lg">
-      <img class="card-img-top map-card-img-top text-light text-center" src='${imgSource}' alt='${imgAlt}'>
-      <div class="card-body map-card-body">
-        <h6 class="card-title map-card-title">${feature.properties.title}</h6>
-        <p class="card-text text-secondary lh-sm my-1">${feature.properties.nombre_subtipo_recurso || ''}</p>
-        <p class="card-text text-primary mb-0">${feature.properties.municipality || ''}</p>
-        <a role="button" href="${'/resource/' + collectionName + '/' + resourceCode}" class="btn btn-sm btn-primary mt-1 w-100">View Details</a>
+    <div class="result-card">
+      <div class="card-image" style="background-image: url(${imgSource});"></div>
+      <div class="card-content">
+        <h3>${feature.properties.subtype}</h3>
+        <h2>${feature.properties.title}</h2>
+        <p class="municipio-text">${feature.properties.municipality}</p>
+        ${distanceText}
+        <a role="button" href="/resource/${collectionName}/${resourceCode}" class="btn btn-sm btn-primary mt-1 w-100">Ver Detalles</a>
       </div>
     </div>
   `;
 };
 
+// Función para calcular la distancia entre dos puntos
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const radlat1 = Math.PI * lat1 / 180;
+  const radlat2 = Math.PI * lat2 / 180;
+  const theta = lon1 - lon2;
+  const radtheta = Math.PI * theta / 180;
+  let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+  if (dist > 1) dist = 1;
+  dist = Math.acos(dist);
+  dist = dist * 180 / Math.PI;
+  dist = dist * 60 * 1.1515;
+  dist = dist * 1.609344; // Convertir millas a kilómetros
+  return dist;
+};
+
+// Función para alternar el estilo del mapa
+const toggleMapStyle = () => {
+  isDarkMode.value = !isDarkMode.value;
+  map.setStyle(isDarkMode.value ? 'mapbox://styles/mapbox/dark-v10' : 'mapbox://styles/mapbox/streets-v11');
+};
+
 onMounted(() => {
   mapboxgl.accessToken = accessToken;
 
-  // Initialize the map
+  // Inicializar el mapa
   map = new mapboxgl.Map({
     container: mapContainer.value!,
     ...mapOptions,
   });
 
-  // Add controls to the map
+  // Añadir controles al mapa
   map.addControl(new mapboxgl.NavigationControl());
   map.addControl(new mapboxgl.FullscreenControl());
 
-  // Add geolocate control
+  // Añadir control de geolocalización
   const locateControl = new mapboxgl.GeolocateControl({
     positionOptions: { enableHighAccuracy: true },
     showUserHeading: true,
@@ -226,14 +296,17 @@ onMounted(() => {
   });
   map.addControl(locateControl);
 
-  // Watch for changes in the computed map results and update clusters accordingly
+  // Obtener la ubicación del usuario cuando el componente se monta
+  locationStore.fetchUserLocation();
+
+  // Observar cambios en los resultados del mapa y actualizar clusters
   watch(
     [mapResults, () => collectionsStore.selectedCategory],
     ([newResults, selectedCategory]) => {
-      // Get the corresponding marker image URL for the selected category
+      // Obtener la URL de la imagen del marcador correspondiente a la categoría seleccionada
       const markerImageUrl = categoryMarkerMap[selectedCategory.toLowerCase()] || '/images/map/default-marker.png';
 
-      // Ensure the map is fully loaded before adding clusters and markers
+      // Asegurarse de que el mapa esté completamente cargado antes de añadir clusters y marcadores
       if (map.isStyleLoaded()) {
         initializeMap(newResults, markerImageUrl);
       }
@@ -241,13 +314,13 @@ onMounted(() => {
     { immediate: true }
   );
 
-  // Add event listeners
+  // Añadir eventos de clic
   map.on('click', handleMapClick);
   map.on('click', 'clusters', handleClusterClick);
 });
 
 onUnmounted(() => {
-  // Clean up map and event listeners when component is destroyed
+  // Limpiar el mapa y los eventos cuando el componente es destruido
   if (map) {
     map.remove();
   }
@@ -262,11 +335,90 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.custom-html-marker {
-  background-size: cover;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
+.toggle-style-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #fff;
+  border: none;
+  padding: 10px;
   cursor: pointer;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.result-card {
+  display: flex;
+  flex-direction: column;
+  width: 200px; /* Ancho del popup */
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+.card-image {
+  background-size: cover;
+  background-position: center;
+  height: 120px; /* Altura ajustada para la imagen */
+  position: relative;
+}
+
+.hidden-image {
+  display: none;
+}
+
+.card-content {
+  padding: 10px;
+  text-align: center;
+}
+
+.card-content h3 {
+  margin: 0 0 5px;
+  font-size: 0.8rem;
+  color: #666666;
+  text-transform: uppercase;
+  font-weight: normal;
+  letter-spacing: 0.5px;
+}
+
+.card-content h2 {
+  margin: 0 0 10px;
+  font-size: 1rem; /* Tamaño de fuente ajustado */
+  color: #333333;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.card-content p {
+  margin: 5px 0;
+  font-size: 0.9rem;
+  color: #555555;
+}
+
+.card-content .location-icon {
+  margin-right: 5px;
+  color: #007bff;
+}
+
+.municipio-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+.event-date {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 3px 5px;
+  border-radius: 3px;
+  font-size: 0.7rem;
 }
 </style>
