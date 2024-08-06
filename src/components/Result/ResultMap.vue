@@ -1,8 +1,9 @@
 <template>
-  <div ref="mapContainer" class="map-container"></div>
-  <button class="toggle-style-button" @click="toggleMapStyle">
-    {{ isDarkMode ? 'Modo Claro' : 'Modo Oscuro' }}
-  </button>
+  <div ref="mapContainer" class="map-container">
+    <button class="toggle-style-button" @click="toggleMapStyle">
+      {{ isDarkMode ? 'Modo Claro' : 'Modo Oscuro' }}
+    </button>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -10,7 +11,7 @@ import { onMounted, ref, watch, computed, onUnmounted } from 'vue';
 import mapboxgl, { Map, LngLatBounds } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useCollectionsStore } from '@/stores/collections';
-import { useLocationStore } from '@/stores/location'; // Importar el store de ubicación
+import { useLocationStore } from '@/stores/location';
 
 // Obtener el token de acceso de Mapbox desde el entorno
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -37,7 +38,6 @@ const mapOptions = {
     : 'mapbox://styles/mapbox/streets-v11',
   center: defaultCenter,
   zoom: 7,
-  pitch: 45, // Inclinación de la cámara
 };
 
 // Mapear categorías a sus correspondientes imágenes de marcador
@@ -184,11 +184,15 @@ const handleMapClick = (e) => {
 
   const feature = features[0];
 
-  // Centrar la cámara en el marcador seleccionado
+  // Calcular el nuevo nivel de zoom y offset
+  const targetZoom = 13; // Ajustar para asegurar que el marcador y la tarjeta se vean
+  const popupOffset = 200; // Ajusta esta variable para posicionar la tarjeta adecuadamente
+
   map.easeTo({
     center: feature.geometry.coordinates,
-    zoom: 14,
-    pitch: 45,
+    zoom: targetZoom,
+    offset: [0, -popupOffset], // Desplaza el centro para dejar espacio a la tarjeta
+    duration: 1500, // Animación más lenta
   });
 
   // Crear popup con botón de cierre
@@ -212,9 +216,16 @@ const handleClusterClick = (e) => {
 
   source.getClusterExpansionZoom(clusterId, (err, zoom) => {
     if (err) return;
+
+    // Calcular el nuevo centro para que el cluster se expanda adecuadamente
+    const newCenter = features[0].geometry.coordinates;
+    const popupOffset = 200; // Ajusta esta variable para posicionar la tarjeta adecuadamente
+
     map.easeTo({
-      center: features[0].geometry.coordinates,
-      zoom,
+      center: newCenter,
+      zoom: zoom + 1, // Aumentar el zoom para dividir el cluster
+      offset: [0, -popupOffset], // Desplaza el centro para dejar espacio a la tarjeta
+      duration: 1000, // Animación más rápida
     });
   });
 };
@@ -284,6 +295,9 @@ onMounted(() => {
     ...mapOptions,
   });
 
+  // Deshabilitar zoom de desplazamiento por defecto
+  map.scrollZoom.disable();
+
   // Añadir controles al mapa
   map.addControl(new mapboxgl.NavigationControl());
   map.addControl(new mapboxgl.FullscreenControl());
@@ -295,6 +309,31 @@ onMounted(() => {
     showAccuracyCircle: true,
   });
   map.addControl(locateControl);
+
+  // Remover atribución del mapa
+  map.on('load', () => {
+    const attributionControl = map.getContainer().getElementsByClassName('mapboxgl-ctrl-attrib')[0];
+    if (attributionControl) {
+      attributionControl.parentNode.removeChild(attributionControl);
+    }
+  });
+
+  // Cambiar cursor cuando se pasa el mouse sobre un marcador o cluster
+  map.on('mouseenter', 'clusters', () => {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+
+  map.on('mouseleave', 'clusters', () => {
+    map.getCanvas().style.cursor = '';
+  });
+
+  map.on('mouseenter', 'unclustered-points', () => {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+
+  map.on('mouseleave', 'unclustered-points', () => {
+    map.getCanvas().style.cursor = '';
+  });
 
   // Obtener la ubicación del usuario cuando el componente se monta
   locationStore.fetchUserLocation();
@@ -317,6 +356,40 @@ onMounted(() => {
   // Añadir eventos de clic
   map.on('click', handleMapClick);
   map.on('click', 'clusters', handleClusterClick);
+
+  // Añadir manejo de eventos para zoom con tecla
+  const enableZoomWithKey = (event) => {
+    if (event.ctrlKey || event.metaKey) {
+      map.scrollZoom.enable();
+    } else {
+      map.scrollZoom.disable();
+      if (event.type === 'wheel') {
+        // Mostrar mensaje de instrucción para el usuario
+        const message = document.createElement('div');
+        message.textContent = 'Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom';
+        message.style.position = 'absolute';
+        message.style.top = '50%';
+        message.style.left = '50%';
+        message.style.transform = 'translate(-50%, -50%)';
+        message.style.padding = '10px 20px';
+        message.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        message.style.color = 'white';
+        message.style.borderRadius = '5px';
+        message.style.zIndex = '1000';
+        mapContainer.value.appendChild(message);
+
+        // Remover el mensaje después de 2 segundos
+        setTimeout(() => {
+          mapContainer.value.removeChild(message);
+        }, 2000);
+      }
+    }
+  };
+
+  // Manejar eventos del mouse y teclado
+  mapContainer.value.addEventListener('wheel', enableZoomWithKey);
+  mapContainer.value.addEventListener('keydown', enableZoomWithKey);
+  mapContainer.value.addEventListener('keyup', enableZoomWithKey);
 });
 
 onUnmounted(() => {
@@ -333,19 +406,20 @@ onUnmounted(() => {
   height: 500px;
   border-radius: 8px;
   overflow: hidden;
+  position: relative; /* Asegura que el botón se posicione sobre el mapa */
 }
 
 .toggle-style-button {
   position: absolute;
   top: 10px;
-  right: 10px;
+  left: 10px;
   background-color: #fff;
   border: none;
   padding: 10px;
   cursor: pointer;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+  z-index: 2; /* Asegura que el botón esté encima del mapa */
 }
 
 .result-card {
