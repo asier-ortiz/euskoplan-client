@@ -3,6 +3,7 @@
     <button class="toggle-style-button" @click="toggleMapStyle">
       {{ isDarkMode.value === 'dark' ? 'Modo Claro' : 'Modo Oscuro' }}
     </button>
+    <div v-show="showZoomMessage" class="zoom-message">Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom</div>
   </div>
 </template>
 
@@ -21,6 +22,10 @@ const filterStore = useFilterStore(); // Initialize the filter store
 const locationStore = useLocationStore();
 const isDarkMode = ref(collectionsStore.mapMode); // Get initial map mode from the store
 let map: Map | null = null;
+
+// State for displaying the zoom message
+const showZoomMessage = ref(false);
+let zoomMessageTimeout: number | null = null;
 
 // Watch for active tab to ensure map is initialized properly
 const isMapTabActive = computed(() => collectionsStore.activeTab === 'map');
@@ -110,6 +115,9 @@ const initializeMap = () => {
       collectionsStore.setMapCenter({ lat: center.lat, lng: center.lng });
       collectionsStore.setMapZoom(map.getZoom());
     });
+
+    // Listen for wheel events to control zoom with the Ctrl key
+    mapContainer.value?.addEventListener('wheel', handleWheelZoom);
   } else {
     map.resize();
     addMarkersAndClusters();
@@ -216,6 +224,23 @@ const addMarkersAndClusters = () => {
     });
   } else {
     console.warn('No valid markers to fit bounds.');
+  }
+};
+
+// Handle wheel zoom with Ctrl/Cmd key
+const handleWheelZoom = (event: WheelEvent) => {
+  if (event.ctrlKey || event.metaKey) {
+    map?.scrollZoom.enable();
+    event.preventDefault(); // Prevent page scroll
+  } else {
+    map?.scrollZoom.disable();
+    showZoomMessage.value = true;
+    if (zoomMessageTimeout) {
+      clearTimeout(zoomMessageTimeout);
+    }
+    zoomMessageTimeout = setTimeout(() => {
+      showZoomMessage.value = false;
+    }, 2000);
   }
 };
 
@@ -430,6 +455,7 @@ onMounted(async () => {
 onUnmounted(() => {
   if (map) {
     map.remove();
+    mapContainer.value?.removeEventListener('wheel', handleWheelZoom);
   }
 });
 </script>
@@ -454,6 +480,20 @@ onUnmounted(() => {
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 2;
+}
+
+.zoom-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  z-index: 3;
+  text-align: center;
+  font-size: 1rem;
 }
 
 .result-card {
