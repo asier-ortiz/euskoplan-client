@@ -15,6 +15,9 @@
         </div>
         <button type="submit" class="btn btn-primary w-100">Enviar Correo de Recuperación</button>
       </form>
+      <div class="mt-3 text-center">
+        <p>Volver a  <RouterLink to="/auth/login">Iniciar Sesión</RouterLink></p>
+      </div>
     </div>
   </div>
 </template>
