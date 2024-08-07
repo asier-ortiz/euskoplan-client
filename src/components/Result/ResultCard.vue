@@ -158,15 +158,19 @@ const formattedDate = computed(() => {
 
 .card-image {
   flex: 2;
-  background-size: cover;
-  background-position: center;
   height: 60%;
   position: relative;
   border-bottom: 1px solid #ddd; /* Divider between image and content */
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
 }
 
 .hidden-image {
-  display: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures image covers the entire container */
 }
 
 .card-content {
@@ -187,6 +191,11 @@ const formattedDate = computed(() => {
   text-transform: uppercase;
   font-weight: normal;
   letter-spacing: 0.5px; /* Add letter spacing for a cleaner look */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-content h2 {
@@ -195,6 +204,11 @@ const formattedDate = computed(() => {
   color: #333333; /* Darker color for the name text */
   font-weight: bold;
   line-height: 1.2; /* Improved line spacing */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-content p {
@@ -208,19 +222,9 @@ const formattedDate = computed(() => {
   color: #007bff; /* Color for the location icon */
 }
 
-.card-content h3,
-.card-content h2 {
-  transition: color 0.3s; /* Smooth color transition */
-}
-
-.result-card:hover .card-content h2 {
-  color: #007bff; /* Highlight title on hover */
-}
-
-/* Add a style for limiting municipio text to 3 lines */
 .municipio-text {
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Limit to 3 lines */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
