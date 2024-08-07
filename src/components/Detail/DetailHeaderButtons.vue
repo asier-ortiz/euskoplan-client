@@ -19,7 +19,7 @@
 import { defineProps } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-const props = defineProps<{
+defineProps<{
   goBackHome: () => void;
   handleAddToPlan: () => void;
   toggleFavorite: () => void;

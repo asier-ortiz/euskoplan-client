@@ -18,7 +18,8 @@
 
     <hr class="section-separator" />
 
-    <p v-html="resource.descripcion" class="description"></p>
+    <!-- Filtramos el contenido HTML para eliminar párrafos vacíos -->
+    <p v-html="filteredDescription" class="description"></p>
 
     <hr class="section-separator" />
 
@@ -73,6 +74,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { defineProps } from 'vue';
 
 const props = defineProps<{
@@ -82,6 +84,12 @@ const props = defineProps<{
   nextSlide: () => void;
   formatDate: (date: string) => string;
 }>();
+
+// Computed property to filter out empty paragraphs from the description
+const filteredDescription = computed(() => {
+  // Eliminar los párrafos vacíos o que solo contienen espacios no separables
+  return props.resource.descripcion.replace(/<p>&nbsp;<\/p>/g, '');
+});
 </script>
 
 <style scoped>
@@ -94,7 +102,7 @@ const props = defineProps<{
 .detail-carousel {
   position: relative;
   width: 100%;
-  max-width: 600px; /* Ensure this matches the map width */
+  max-width: 600px;
   margin-bottom: 1rem;
   overflow: hidden;
   border-radius: 8px;
@@ -124,7 +132,7 @@ const props = defineProps<{
   display: flex;
   justify-content: center;
   width: 100%;
-  max-width: 600px; /* Ensure this matches the map width */
+  max-width: 600px;
   margin-bottom: 1rem;
 }
 
@@ -161,6 +169,11 @@ const props = defineProps<{
   line-height: 1.6;
   color: #444;
   margin: 1rem 0;
+}
+
+/* Ajusta el espacio entre párrafos dentro del contenido HTML */
+.description p {
+  margin: 0.5rem 0; /* Ajusta este valor para cambiar el espacio entre párrafos */
 }
 
 .dynamic-info {
