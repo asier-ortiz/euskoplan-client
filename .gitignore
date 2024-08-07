@@ -111,3 +111,22 @@ public
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Local environment settings
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor-specific files
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Other build output
+out/
+temp/
+
+# Ignoring dist and build outputs for production
+dist/
+build/
