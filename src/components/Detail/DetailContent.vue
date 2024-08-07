@@ -123,6 +123,9 @@ const nextSlide = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
 }
 
 .detail-carousel {
@@ -195,11 +198,15 @@ const nextSlide = () => {
   line-height: 1.6;
   color: #444;
   margin: 1rem 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word; /* Ensure long words or URLs break to fit the container */
+  word-break: break-word; /* Ensure long words or URLs break to fit the container */
 }
 
 /* Ajusta el espacio entre párrafos dentro del contenido HTML */
 .description p {
-  margin: 0.5rem 0; /* Ajusta este valor para cambiar el espacio entre párrafos */
+  margin: 0.5rem 0;
 }
 
 .dynamic-info {
@@ -208,9 +215,9 @@ const nextSlide = () => {
   width: 100%;
   font-size: 0.95rem;
   color: #333;
-  background-color: #f0f8ff; /* Light blue background for a soft tone */
-  padding: 1rem; /* Add some padding for visual space */
-  border-radius: 8px; /* Add rounded corners */
+  background-color: #f0f8ff;
+  padding: 1rem;
+  border-radius: 8px;
 }
 
 .dynamic-info p {
@@ -250,5 +257,19 @@ const nextSlide = () => {
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
   font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+  .detail-content {
+    padding: 0 0.5rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
+  }
+
+  .dynamic-info {
+    font-size: 0.85rem;
+  }
 }
 </style>
