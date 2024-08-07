@@ -49,8 +49,9 @@
       </template>
 
       <template v-if="resource.coleccion === 'fair'">
-        <p v-if="resource.atracciones"><strong>Atracciones:</strong> {{ resource.atracciones }}</p>
+        <p v-if="resource.atracciones"><strong>Atracciones:</strong> <span v-html="resource.atracciones"></span></p>
         <p v-if="resource.horario"><strong>Horario:</strong> <span v-html="resource.horario"></span></p>
+        <p v-if="resource.tarifas"><strong>Tarifas:</strong> <span v-html="resource.tarifas"></span></p>
       </template>
 
       <template v-if="resource.coleccion === 'natural'">
@@ -182,6 +183,9 @@ const filteredDescription = computed(() => {
   width: 100%;
   font-size: 0.95rem;
   color: #333;
+  background-color: #f0f8ff; /* Light blue background for a soft tone */
+  padding: 1rem; /* Add some padding for visual space */
+  border-radius: 8px; /* Add rounded corners */
 }
 
 .dynamic-info p {
@@ -198,7 +202,7 @@ const filteredDescription = computed(() => {
 }
 
 .detail-services {
-
+  margin-bottom: 2rem;
   text-align: center;
 }
 
