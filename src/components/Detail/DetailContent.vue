@@ -8,6 +8,7 @@
           </div>
         </div>
       </div>
+      <!-- Flechas de navegación para cambiar entre imágenes -->
       <button v-if="currentIndex > 0" @click="prevSlide" class="carousel-button prev-button">‹</button>
       <button v-if="currentIndex < resource.imagenes.length - 1" @click="nextSlide" class="carousel-button next-button">›</button>
     </div>
@@ -75,22 +76,46 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { defineProps } from 'vue';
 
 const props = defineProps<{
   resource: any;
-  currentIndex: number;
-  prevSlide: () => void;
-  nextSlide: () => void;
   formatDate: (date: string) => string;
 }>();
+
+// Define the currentIndex as a ref to manage its state locally
+const currentIndex = ref(0);
 
 // Computed property to filter out empty paragraphs from the description
 const filteredDescription = computed(() => {
   // Eliminar los párrafos vacíos o que solo contienen espacios no separables
   return props.resource.descripcion.replace(/<p>&nbsp;<\/p>/g, '');
 });
+
+// Watch for changes in the resource to reset the currentIndex
+watch(
+  () => props.resource,
+  (newResource, oldResource) => {
+    if (newResource !== oldResource) {
+      currentIndex.value = 0; // Reset the index to 0 when the resource changes
+    }
+  },
+  { immediate: true } // Ensure the watcher runs immediately when the component is mounted
+);
+
+// Functions to change the slide index
+const prevSlide = () => {
+  if (currentIndex.value > 0) {
+    currentIndex.value--;
+  }
+};
+
+const nextSlide = () => {
+  if (currentIndex.value < props.resource.imagenes.length - 1) {
+    currentIndex.value++;
+  }
+};
 </script>
 
 <style scoped>

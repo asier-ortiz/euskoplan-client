@@ -23,7 +23,10 @@
           </div>
         </div>
         <div class="card-content">
-          <h3 v-if="related.nombre_subtipo_recurso || related.nombre_subtipo_recurso_espacio_natural || related.nombre_subtipo_recurso_playas_pantanos_rios">
+          <h3 v-if="related.nombre_subtipo_recurso ||
+            related.nombre_subtipo_recurso_espacio_natural ||
+            related.nombre_subtipo_recurso_playas_pantanos_rios"
+          >
             {{
               related.nombre_subtipo_recurso ||
               related.nombre_subtipo_recurso_espacio_natural ||
