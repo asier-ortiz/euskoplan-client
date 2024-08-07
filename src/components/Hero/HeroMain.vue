@@ -15,8 +15,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { defineEmits } from 'vue';
-import SearchInput from '@/components/Hero/SearchInput.vue';
-import CategoryChips from '@/components/Hero/CategoryChips.vue';
+import SearchInput from '@/components/Hero/HeroSearchInput.vue';
+import CategoryChips from '@/components/Hero/HeroCategoryChips.vue';
 
 const emit = defineEmits(['chipSelected', 'search']);
 const overlayColor = ref('rgba(0, 0, 0, 0.4)');

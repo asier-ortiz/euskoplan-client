@@ -55,7 +55,7 @@ import { useAuthStore } from '@/stores/auth';
 import { calculateDistance } from '@/utils/distance';
 import mapboxgl from 'mapbox-gl';
 import Swal from 'sweetalert2';
-import Spinner from '@/components/Spinner.vue';
+import Spinner from '@/components/Misc/LoadingSpinner.vue';
 import { FontAwesomeIcon } from '@/font-awesome';
 import DetailContent from '@/components/Detail/DetailContent.vue';
 import DetailMap from '@/components/Detail/DetailMap.vue';

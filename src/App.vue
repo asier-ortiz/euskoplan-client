@@ -12,9 +12,9 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { RouterView } from 'vue-router';
-import Navbar from '@/components/Layout/Navbar.vue';
-import Footer from '@/components/Layout/Footer.vue';
-import ScrollToTop from '@/components/ScrollToTop.vue';
+import Navbar from '@/components/Layout/NavbarMain.vue';
+import Footer from '@/components/Layout/FooterMain.vue';
+import ScrollToTop from '@/components/Misc/ScrollToTop.vue';
 import { useLocationStore } from '@/stores/location';
 
 const locationStore = useLocationStore();

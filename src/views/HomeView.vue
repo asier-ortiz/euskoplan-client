@@ -9,8 +9,8 @@
 
 <script setup lang="ts">
 import { onMounted, watch } from 'vue';
-import Hero from '@/components/Hero/Hero.vue';
-import ResultsView from '@/components/Result/ResultsView.vue';
+import Hero from '@/components/Hero/HeroMain.vue';
+import ResultsView from '@/components/Result/ResultsMain.vue';
 import { useCollectionsStore } from '@/stores/collections';
 import { useFilterStore } from '@/stores/filter';
 

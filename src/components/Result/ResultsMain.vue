@@ -34,10 +34,10 @@
 import { computed, ref } from 'vue'
 import ResultCardContainer from './ResultCardContainer.vue';
 import ResultMap from './ResultMap.vue';
-import FilterDrawer from '@/components/Hero/FilterDrawer.vue';
-import FilterButton from '@/components/Hero/FilterButton.vue';
+import FilterDrawer from '@/components/Hero/HeroFilterDrawer.vue';
+import FilterButton from '@/components/Hero/HeroFilterButton.vue';
 import { useCollectionsStore } from '@/stores/collections';
-import Spinner from '@/components/Spinner.vue';
+import Spinner from '@/components/Misc/LoadingSpinner.vue';
 
 const collectionsStore = useCollectionsStore();
 const isFilterDrawerVisible = ref(false);

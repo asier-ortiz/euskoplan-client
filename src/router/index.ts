@@ -7,7 +7,6 @@ import Signup from '@/views/Auth/SignupView.vue';
 import EmailVerify from '@/views/Auth/EmailVerifyView.vue';
 import PasswordReset from '@/views/Auth/PasswordResetView.vue';
 import PasswordRecovery from '@/views/Auth/PasswordRecoveryView.vue';
-import Results from '@/views/ResultsView.vue';
 import Detail from '@/views/DetailView.vue';
 import Account from '@/views/AccountView.vue';
 import PlanEdit from '@/views/PlanEditView.vue';
@@ -21,7 +20,6 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/auth/email-verify', name: 'EmailVerify', component: EmailVerify },
   { path: '/auth/password-reset', name: 'PasswordReset', component: PasswordReset },
   { path: '/auth/password-recovery', name: 'PasswordRecovery', component: PasswordRecovery },
-  { path: '/results', name: 'Results', component: Results },
   { path: '/detail/:category/:id', name: 'Detail', component: Detail },
   { path: '/account', name: 'Account', component: Account },
   { path: '/plan-edit/:id', name: 'PlanEdit', component: PlanEdit },
