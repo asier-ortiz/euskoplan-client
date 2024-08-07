@@ -24,7 +24,8 @@
 
     <hr class="section-separator" />
 
-    <div class="dynamic-info">
+    <!-- Mostrar solo si hay información disponible -->
+    <div v-if="hasDynamicInfo" class="dynamic-info">
       <p v-if="resource.direccion"><strong>Dirección:</strong> {{ resource.direccion }}</p>
       <p v-if="resource.codigo_postal"><strong>Código Postal:</strong> {{ resource.codigo_postal }}</p>
       <p v-if="resource.numero_telefono"><strong>Teléfono:</strong> {{ resource.numero_telefono }}</p>
@@ -116,6 +117,29 @@ const nextSlide = () => {
     currentIndex.value++;
   }
 };
+
+// Computed property to determine if there is any dynamic info to display
+const hasDynamicInfo = computed(() => {
+  return (
+    props.resource.direccion ||
+    props.resource.codigo_postal ||
+    props.resource.numero_telefono ||
+    props.resource.email ||
+    props.resource.pagina_web ||
+    (props.resource.coleccion === 'accommodation' &&
+      (props.resource.categoria || props.resource.capacidad || props.resource.anno_apertura || props.resource.num_hab_individuales || props.resource.num_hab_dobles)) ||
+    (props.resource.coleccion === 'cultural' &&
+      (props.resource.tipo_monumento || props.resource.estilo_artistico)) ||
+    (props.resource.coleccion === 'event' &&
+      (props.resource.fecha_inicio || props.resource.fecha_fin)) ||
+    (props.resource.coleccion === 'fair' &&
+      (props.resource.atracciones || props.resource.horario || props.resource.tarifas)) ||
+    (props.resource.coleccion === 'natural' &&
+      props.resource.actividades) ||
+    (props.resource.coleccion === 'restaurant' &&
+      props.resource.capacidad)
+  );
+});
 </script>
 
 <style scoped>
@@ -123,9 +147,7 @@ const nextSlide = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  padding: 0 1rem;
-  box-sizing: border-box;
+  padding: 1rem; /* Add padding for smaller screens */
 }
 
 .detail-carousel {
@@ -198,15 +220,13 @@ const nextSlide = () => {
   line-height: 1.6;
   color: #444;
   margin: 1rem 0;
+  word-wrap: break-word;
   width: 100%;
-  box-sizing: border-box;
-  overflow-wrap: break-word; /* Ensure long words or URLs break to fit the container */
-  word-break: break-word; /* Ensure long words or URLs break to fit the container */
 }
 
 /* Ajusta el espacio entre párrafos dentro del contenido HTML */
 .description p {
-  margin: 0.5rem 0;
+  margin: 0.5rem 0; /* Ajusta este valor para cambiar el espacio entre párrafos */
 }
 
 .dynamic-info {
@@ -215,9 +235,9 @@ const nextSlide = () => {
   width: 100%;
   font-size: 0.95rem;
   color: #333;
-  background-color: #f0f8ff;
-  padding: 1rem;
-  border-radius: 8px;
+  background-color: #f0f8ff; /* Light blue background for a soft tone */
+  padding: 1rem; /* Add some padding for visual space */
+  border-radius: 8px; /* Add rounded corners */
 }
 
 .dynamic-info p {
@@ -227,6 +247,7 @@ const nextSlide = () => {
 .dynamic-info a {
   color: #007bff;
   text-decoration: none;
+  word-wrap: break-word;
 }
 
 .dynamic-info a:hover {
@@ -257,19 +278,5 @@ const nextSlide = () => {
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
   font-size: 0.9rem;
-}
-
-@media (max-width: 480px) {
-  .detail-content {
-    padding: 0 0.5rem;
-  }
-
-  .description {
-    font-size: 0.9rem;
-  }
-
-  .dynamic-info {
-    font-size: 0.85rem;
-  }
 }
 </style>
