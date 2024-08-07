@@ -46,7 +46,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue';
 
-const props = defineProps<{
+defineProps<{
   relatedResources: any[];
   formatDate: (date: string) => string;
   navigateToResource: (resource: any) => void;
@@ -58,7 +58,7 @@ const props = defineProps<{
 <style scoped>
 .related-resources {
   width: 100%;
-  margin-top: 2rem;
+  margin-top: 3rem;
   padding-bottom: 2rem; /* Add padding to increase space after the heading */
 }
 

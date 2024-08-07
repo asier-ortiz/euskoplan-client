@@ -198,7 +198,7 @@ const filteredDescription = computed(() => {
 }
 
 .detail-services {
-  margin-top: 2rem;
+
   text-align: center;
 }
 

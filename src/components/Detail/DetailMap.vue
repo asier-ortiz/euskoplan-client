@@ -1,5 +1,7 @@
 <template>
   <div v-if="resource.latitud && resource.longitud" class="detail-map">
+    <!-- Add the heading for the map -->
+    <h3 class="map-heading">Ubicación</h3>
     <div ref="mapContainer" class="map-container">
       <div v-show="showZoomMessage" class="zoom-message">
         Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom
@@ -126,11 +128,20 @@ onUnmounted(() => {
 <style scoped>
 .detail-map {
   display: flex;
+  flex-direction: column; /* Ensures the heading and map are in a column layout */
   justify-content: center;
   width: 100%;
   max-width: 600px; /* Consistent width with carousel and images */
-  margin: 2rem auto 1rem; /* Center map horizontally with top margin for spacing */
+  /* Center map horizontally with top margin for spacing */
+  margin: 2rem auto 1rem;
   position: relative;
+}
+
+.map-heading {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center; /* Center align the heading */
 }
 
 .map-container {
