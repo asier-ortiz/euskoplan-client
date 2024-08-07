@@ -59,6 +59,7 @@ const props = defineProps<{
 .related-resources {
   width: 100%;
   margin-top: 2rem;
+  padding-bottom: 2rem; /* Add padding to increase space after the heading */
 }
 
 .related-resources h3 {
@@ -73,7 +74,9 @@ const props = defineProps<{
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+  padding-top: 1rem; /* Add padding to increase space between heading and cards */
 }
+
 
 .result-card {
   display: flex;
