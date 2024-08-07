@@ -1,6 +1,6 @@
 <template>
   <div class="related-resources" v-if="relatedResources.length > 0">
-    <h3>Recursos Relacionados</h3>
+    <h3>Puede que también te interese</h3>
     <div class="related-cards">
       <div
         v-for="(related, index) in relatedResources"

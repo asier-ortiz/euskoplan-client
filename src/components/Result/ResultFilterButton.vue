@@ -1,6 +1,6 @@
 <template>
   <button @click="toggleFilterDrawer" class="filter-button">
-    <font-awesome-icon icon="filter" /> Filter
+    <font-awesome-icon icon="filter" /> Filtros
     <span v-if="filterCount > 0" class="filter-count">{{ filterCount }}</span>
   </button>
 </template>
