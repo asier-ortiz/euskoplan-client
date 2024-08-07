@@ -14,14 +14,14 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { FontAwesomeIcon } from '@/font-awesome';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
-import { useFilterStore } from '@/stores/filter'; // Import the filter store
+import { useFilterStore } from '@/stores/filter';
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 const mapContainer = ref<HTMLElement | null>(null);
 const collectionsStore = useCollectionsStore();
-const filterStore = useFilterStore(); // Initialize the filter store
+const filterStore = useFilterStore();
 const locationStore = useLocationStore();
-const isDarkMode = ref(collectionsStore.mapMode); // Get initial map mode from the store
+const isDarkMode = ref(collectionsStore.mapMode);
 let map: Map | null = null;
 
 // State for displaying the zoom message
@@ -262,10 +262,11 @@ const handleMapClick = (e) => {
     duration: 1500,
   });
 
-  const popup = new mapboxgl.Popup({
+  new mapboxgl.Popup({
     offset: 25,
     closeButton: true,
     closeOnClick: true,
+    className: 'custom-popup', // Add class for custom styling
   })
     .setLngLat(feature.geometry.coordinates)
     .setHTML(getPopupHTML(feature))
@@ -298,10 +299,10 @@ const getPopupHTML = (feature) => {
   const collectionName = feature.properties.collection;
   const resourceCode = feature.properties.code;
 
-  const imgSource =
-    JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
-  const imgAlt = JSON.parse(feature.properties.images)[0]?.titulo || '';
+  // Get the image source or use a default image if not available
+  const imgSource = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
 
+  // Calculate distance
   const userLocation = locationStore.userLocation;
   let distanceText = '';
   if (userLocation) {
@@ -311,12 +312,24 @@ const getPopupHTML = (feature) => {
       feature.geometry.coordinates[1],
       feature.geometry.coordinates[0]
     ).toFixed(2);
-    distanceText = `<p><i class="fas fa-map-marker-alt"></i> ${distance} km</p>`;
+    distanceText = `<p class="distance-text"><i class="fas fa-location-dot"></i> ${distance} km</p>`;
   }
+
+  // Check if the collection is an event
+  const isEvent = collectionName.toLowerCase() === 'event';
+
+  // Format the event date
+  const formattedDate = () => {
+    if (!feature.properties.fechaInicio) return '';
+    const date = new Date(feature.properties.fechaInicio);
+    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+  };
 
   return `
     <div class="result-card">
-      <div class="card-image" style="background-image: url(${imgSource});"></div>
+      <div class="card-image" style="background-image: url(${imgSource});">
+        ${isEvent ? `<div class="event-date">${formattedDate()}</div>` : ''}
+      </div>
       <div class="card-content">
         <h3>${feature.properties.subtype}</h3>
         <h2>${feature.properties.title}</h2>
@@ -327,6 +340,7 @@ const getPopupHTML = (feature) => {
     </div>
   `;
 };
+
 
 const calculateDistance = (
   lat1: number,
@@ -573,5 +587,42 @@ onUnmounted(() => {
   padding: 3px 5px;
   border-radius: 3px;
   font-size: 0.7rem;
+}
+
+/* Custom popup styles */
+.mapboxgl-popup-content {
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+  border-bottom-color: white;
+}
+
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+  border-left-color: white;
+}
+
+.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+  border-right-color: white;
+}
+
+.custom-popup .result-card {
+  width: 250px; /* Adjust width for popup */
+}
+
+.custom-popup .btn-primary {
+  margin-top: 10px;
+  padding: 5px 10px;
+  font-size: 0.9rem;
+}
+
+.distance-text {
+  margin: 5px 0;
+  font-size: 0.9rem;
+  color: #555555;
 }
 </style>
