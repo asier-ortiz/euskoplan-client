@@ -4,10 +4,10 @@
     <div class="tabs-and-filter">
       <div class="tabs">
         <button :class="{ active: collectionsStore.activeTab === 'cards' }" @click="setActiveTab('cards')">
-          <i class="bi bi-card-text"></i> Cards
+          <i class="bi bi-card-text"></i> Tarjetas
         </button>
         <button :class="{ active: collectionsStore.activeTab === 'map' }" @click="setActiveTab('map')">
-          <i class="bi bi-geo-alt"></i> Map
+          <i class="bi bi-geo-alt"></i> Mapa
         </button>
       </div>
       <div class="filter-button-container">
@@ -17,7 +17,7 @@
 
     <div class="results-count">
       <span class="line"></span>
-      <p>{{ resultsCount }} results found</p>
+      <p>{{ resultsCount }} resultados encontrados</p>
       <span class="line"></span>
     </div>
 
@@ -34,8 +34,8 @@
 import { computed, ref } from 'vue'
 import ResultCardContainer from './ResultCardContainer.vue';
 import ResultMap from './ResultMap.vue';
-import FilterDrawer from '@/components/Hero/HeroFilterDrawer.vue';
-import FilterButton from '@/components/Hero/HeroFilterButton.vue';
+import FilterDrawer from '@/components/Result/ResultFilterDrawer.vue';
+import FilterButton from '@/components/Result/ResultFilterButton.vue';
 import { useCollectionsStore } from '@/stores/collections';
 import Spinner from '@/components/Misc/LoadingSpinner.vue';
 

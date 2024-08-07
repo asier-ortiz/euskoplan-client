@@ -2,7 +2,7 @@
   <div>
     <Hero @chipSelected="handleChipSelected" @search="handleSearch" />
     <div class="container">
-      <ResultsView />
+      <ResultsMain />
     </div>
   </div>
 </template>
@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue';
 import Hero from '@/components/Hero/HeroMain.vue';
-import ResultsView from '@/components/Result/ResultsMain.vue';
+import ResultsMain from '@/components/Result/ResultsMain.vue';
 import { useCollectionsStore } from '@/stores/collections';
 import { useFilterStore } from '@/stores/filter';
 
