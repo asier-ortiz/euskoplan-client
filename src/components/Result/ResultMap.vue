@@ -4,18 +4,32 @@
       <FontAwesomeIcon :icon="[isDarkMode === 'dark' ? 'fas' : 'fas', isDarkMode === 'dark' ? 'sun' : 'moon']" />
     </button>
     <div v-show="showZoomMessage" class="zoom-message">Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom</div>
+
+    <!-- Info Panel -->
+    <div v-if="showInfoPanel" class="info-panel visible">
+      <ResultPopupContent
+        :imageSrc="selectedImage"
+        :subtype="selectedSubtype"
+        :title="selectedTitle"
+        :municipality="selectedMunicipality"
+        :distance="selectedDistance"
+        :collection="selectedCollection"
+        :code="selectedCode"
+        @close="closePopup"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch, computed, onUnmounted, h, createApp } from 'vue'
+import { onMounted, ref, watch, computed, onUnmounted } from 'vue';
 import mapboxgl, { Map, LngLatBounds } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { FontAwesomeIcon } from '@/font-awesome';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import { useFilterStore } from '@/stores/filter';
-import PopupContent from './ResultPopupContent.vue'; // Import the new component
+import ResultPopupContent from './ResultPopupContent.vue';
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 const mapContainer = ref<HTMLElement | null>(null);
@@ -24,10 +38,21 @@ const filterStore = useFilterStore();
 const locationStore = useLocationStore();
 const isDarkMode = ref(collectionsStore.mapMode);
 let map: Map | null = null;
+let selectedMarkerElement: HTMLElement | null = null; // Track the selected marker element
 
 // State for displaying the zoom message
 const showZoomMessage = ref(false);
 let zoomMessageTimeout: number | null = null;
+
+// Info panel state
+const showInfoPanel = ref(false);
+const selectedImage = ref('');
+const selectedSubtype = ref('');
+const selectedTitle = ref('');
+const selectedMunicipality = ref('');
+const selectedDistance = ref('');
+const selectedCollection = ref('');
+const selectedCode = ref('');
 
 // Watch for active tab to ensure map is initialized properly
 const isMapTabActive = computed(() => collectionsStore.activeTab === 'map');
@@ -91,6 +116,11 @@ const initializeMap = () => {
 
     map.on('click', handleMapClick);
     map.on('click', 'clusters', handleClusterClick);
+    map.on('click', (e) => {
+      if (!map?.queryRenderedFeatures(e.point, { layers: ['unclustered-points', 'clusters'] }).length) {
+        closePopup();
+      }
+    });
 
     // Handle cursor changes over clusters and markers
     map.on('mouseenter', 'clusters', () => {
@@ -132,8 +162,9 @@ const addMarkersAndClusters = () => {
 
   const geojson = {
     type: 'FeatureCollection',
-    features: mapResults.value.map((markerData) => ({
+    features: mapResults.value.map((markerData, index) => ({
       type: 'Feature',
+      id: index, // Ensure each feature has a unique ID
       geometry: {
         type: 'Point',
         coordinates: [markerData.longitud, markerData.latitud],
@@ -153,6 +184,7 @@ const addMarkersAndClusters = () => {
   if (map?.getLayer('clusters')) map.removeLayer('clusters');
   if (map?.getLayer('cluster-count')) map.removeLayer('cluster-count');
   if (map?.getLayer('unclustered-points')) map.removeLayer('unclustered-points');
+  if (map?.getLayer('resource-names')) map.removeLayer('resource-names'); // Remove existing text layer
   if (map?.getSource('resources')) map.removeSource('resources');
   if (map?.hasImage('custom-marker')) map.removeImage('custom-marker');
 
@@ -213,6 +245,30 @@ const addMarkersAndClusters = () => {
         'icon-allow-overlap': true,
       },
     });
+
+    // Add a text layer for resource names
+    map?.addLayer({
+      id: 'resource-names',
+      type: 'symbol',
+      source: 'resources',
+      filter: ['!', ['has', 'point_count']],
+      layout: {
+        'text-field': ['get', 'title'],
+        'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+        'text-size': 14, // Size of the text
+        'text-variable-anchor': ['top', 'bottom', 'left', 'right'], // Allow text to move around the marker
+        'text-radial-offset': 0.5, // Offset the text from the marker to reduce overlap
+        'text-justify': 'auto', // Let Mapbox decide the best justification
+        'text-anchor': 'center', // Align text relative to the anchor position
+        'text-allow-overlap': false, // Prevent text overlap
+        'text-padding': 2, // Padding between text and other features to reduce collision
+      },
+      paint: {
+        'text-color': isDarkMode.value === 'dark' ? '#ffffff' : '#000000', // Dynamic text color based on map mode
+        'text-halo-color': isDarkMode.value === 'dark' ? '#000000' : '#ffffff', // Adjust halo color based on map mode
+        'text-halo-width': 1, // Halo width for better text visibility
+      },
+    });
   });
 
   const bounds = new LngLatBounds();
@@ -249,40 +305,48 @@ const handleWheelZoom = (event: WheelEvent) => {
 const handleMapClick = (e) => {
   const features = map?.queryRenderedFeatures(e.point, { layers: ['unclustered-points'] });
   if (!features.length) {
+    closePopup();
     return;
   }
 
   const feature = features[0];
 
-  // Create a popup without changing the map zoom or center
-  const popupNode = document.createElement('div');
-  const props = {
-    imageSrc: JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`,
-    subtype: feature.properties.subtype,
-    title: feature.properties.title,
-    municipality: feature.properties.municipality,
-    distance: calculateDistance(
-      locationStore.userLocation.latitude,
-      locationStore.userLocation.longitude,
-      feature.geometry.coordinates[1],
-      feature.geometry.coordinates[0]
-    ).toFixed(2),
-    collection: feature.properties.collection,
-    code: feature.properties.code,
-  };
+  // Restore original appearance of previously selected marker
+  if (selectedMarkerElement) {
+    selectedMarkerElement.classList.remove('selected-marker');
+  }
 
-  // Render the PopupContent component
-  createApp(PopupContent, props).component('font-awesome-icon', FontAwesomeIcon).mount(popupNode);
+  // Select the clicked marker
+  selectedMarkerElement = document.querySelector(`[data-feature-id="${feature.id}"]`);
+  if (selectedMarkerElement) {
+    selectedMarkerElement.classList.add('selected-marker');
+  }
 
-  new mapboxgl.Popup({
-    offset: 25,
-    closeButton: true,
-    closeOnClick: true,
-    className: 'custom-popup', // Add class for custom styling
-  })
-    .setLngLat(feature.geometry.coordinates)
-    .setDOMContent(popupNode)
-    .addTo(map!);
+  // Set selected info for the panel
+  selectedImage.value = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
+  selectedSubtype.value = feature.properties.subtype;
+  selectedTitle.value = feature.properties.title;
+  selectedMunicipality.value = feature.properties.municipality;
+  selectedDistance.value = calculateDistance(
+    locationStore.userLocation.latitude,
+    locationStore.userLocation.longitude,
+    feature.geometry.coordinates[1],
+    feature.geometry.coordinates[0]
+  ).toFixed(2);
+  selectedCollection.value = feature.properties.collection;
+  selectedCode.value = feature.properties.code;
+
+  // Show the info panel
+  showInfoPanel.value = true;
+};
+
+// Close the info panel
+const closePopup = () => {
+  showInfoPanel.value = false;
+  if (selectedMarkerElement) {
+    selectedMarkerElement.classList.remove('selected-marker');
+  }
+  selectedMarkerElement = null;
 };
 
 const handleClusterClick = (e) => {
@@ -480,145 +544,25 @@ onUnmounted(() => {
   font-size: 1rem;
 }
 
-.result-card {
-  display: flex;
-  flex-direction: column;
-  width: 200px;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background-color: white;
-}
-
-.card-image {
-  background-size: cover;
-  background-position: center;
-  height: 80px; /* Smaller height for popup image */
-  position: relative;
-}
-
-.hidden-image {
-  display: none;
-}
-
-.card-content {
-  padding: 10px;
-  text-align: center;
-}
-
-.card-content h3 {
-  margin: 0 0 5px;
-  font-size: 0.6rem; /* Smaller font size */
-  color: #666666;
-  text-transform: uppercase;
-  font-weight: normal;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-content h2 {
-  margin: 0 0 10px;
-  font-size: 0.8rem; /* Smaller font size */
-  color: #333333;
-  font-weight: bold;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-content p {
-  margin: 5px 0;
-  font-size: 0.8rem; /* Smaller font size */
-  color: #555555;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-content .location-icon {
-  margin-right: 5px;
-  color: #007bff;
-}
-
-.municipio-text {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: normal;
-}
-
-.event-date {
+.info-panel {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 3px 5px;
-  border-radius: 3px;
-  font-size: 0.7rem;
+  bottom: 10px;
+  left: 10px;
+  width: 250px;
+  z-index: 4;
 }
 
-/* Custom popup styles */
-.mapboxgl-popup-content {
-  padding: 0;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+@media screen and (max-width: 768px) {
+  .info-panel {
+    width: 200px;
+  }
 }
 
-.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
-  border-bottom-color: white;
-}
-
-.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
-  border-left-color: white;
-}
-
-.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
-  border-right-color: white;
-}
-
-.mapboxgl-popup-close-button {
-  font-size: 1rem;
-  background-color: #f44336; /* Red background */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 3px 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.mapboxgl-popup-close-button:hover {
-  background-color: #d32f2f; /* Darker red */
-}
-
-.custom-popup .result-card {
-  width: 250px; /* Adjust width for popup */
-}
-
-.custom-popup .btn-primary {
-  margin-top: 10px;
-  padding: 5px 10px;
-  font-size: 0.8rem; /* Smaller font size */
-}
-
-.distance-text {
-  margin: 5px 0;
-  font-size: 0.8rem; /* Smaller font size */
-  color: #555555;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.distance-text i {
-  margin-right: 3px;
+/* Custom styles for selected marker */
+.selected-marker {
+  transition: transform 0.2s, filter 0.2s; /* Add transition for animation */
+  transform: scale(1.2);
+  filter: hue-rotate(120deg); /* Change the color */
+  z-index: 10; /* Bring selected marker to front */
 }
 </style>

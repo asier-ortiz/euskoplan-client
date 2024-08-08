@@ -1,5 +1,6 @@
 <template>
   <div class="result-card">
+    <button class="close-btn" @click="$emit('close')">×</button>
     <div class="card-image" :style="{ backgroundImage: `url(${imageSrc})` }" />
     <div class="card-content">
       <h3 class="popup-subtype">{{ subtype }}</h3>
@@ -34,17 +35,39 @@ const props = defineProps<{
 .result-card {
   display: flex;
   flex-direction: column;
-  width: 250px;
+  width: 100%;
+  max-width: 100%;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: white;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: #007bff; /* Blue background for close button */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 5;
+}
+
+.close-btn:hover {
+  background-color: #0056b3; /* Darker blue */
 }
 
 .card-image {
   background-size: cover;
   background-position: center;
-  height: 80px;
+  height: 120px;
   position: relative;
 }
 
@@ -55,7 +78,7 @@ const props = defineProps<{
 
 .card-content h3 {
   margin: 0 0 5px;
-  font-size: 0.6rem;
+  font-size: 0.8rem; /* Slightly larger font size */
   color: #666666;
   text-transform: uppercase;
   font-weight: normal;
@@ -67,7 +90,7 @@ const props = defineProps<{
 
 .card-content h2 {
   margin: 0 0 10px;
-  font-size: 0.7rem;
+  font-size: 0.9rem; /* Slightly larger font size */
   color: #333333;
   font-weight: bold;
   line-height: 1.2;
@@ -78,7 +101,7 @@ const props = defineProps<{
 
 .card-content p {
   margin: 5px 0;
-  font-size: 0.7rem;
+  font-size: 0.8rem; /* Slightly larger font size */
   color: #555555;
   white-space: nowrap;
   overflow: hidden;
@@ -97,5 +120,23 @@ const props = defineProps<{
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
+}
+
+@media screen and (max-width: 768px) {
+  .card-image {
+    height: 80px;
+  }
+
+  .card-content h3 {
+    font-size: 0.7rem;
+  }
+
+  .card-content h2 {
+    font-size: 0.8rem;
+  }
+
+  .card-content p {
+    font-size: 0.7rem;
+  }
 }
 </style>
