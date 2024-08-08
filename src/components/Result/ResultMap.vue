@@ -8,13 +8,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch, computed, onUnmounted } from 'vue';
+import { onMounted, ref, watch, computed, onUnmounted, h, createApp } from 'vue'
 import mapboxgl, { Map, LngLatBounds } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { FontAwesomeIcon } from '@/font-awesome';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import { useFilterStore } from '@/stores/filter';
+import PopupContent from './ResultPopupContent.vue'; // Import the new component
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 const mapContainer = ref<HTMLElement | null>(null);
@@ -139,11 +140,11 @@ const addMarkersAndClusters = () => {
       },
       properties: {
         title: markerData.nombre,
-        subtype: markerData.subtype || '',
-        municipality: markerData.municipio,
+        subtype: markerData.nombre_subtipo_recurso || '',
+        municipality: markerData.nombre_municipio,
         code: markerData.codigo,
         images: markerData.imagenes ? JSON.stringify(markerData.imagenes) : '[]',
-        collection: collectionsStore.selectedCategory,
+        collection: markerData.coleccion,
         fechaInicio: markerData.fechaInicio || null,
       },
     })),
@@ -252,15 +253,26 @@ const handleMapClick = (e) => {
   }
 
   const feature = features[0];
-  const targetZoom = 13;
-  const popupOffset = 200;
 
-  map?.easeTo({
-    center: feature.geometry.coordinates,
-    zoom: targetZoom,
-    offset: [0, -popupOffset],
-    duration: 1500,
-  });
+  // Create a popup without changing the map zoom or center
+  const popupNode = document.createElement('div');
+  const props = {
+    imageSrc: JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`,
+    subtype: feature.properties.subtype,
+    title: feature.properties.title,
+    municipality: feature.properties.municipality,
+    distance: calculateDistance(
+      locationStore.userLocation.latitude,
+      locationStore.userLocation.longitude,
+      feature.geometry.coordinates[1],
+      feature.geometry.coordinates[0]
+    ).toFixed(2),
+    collection: feature.properties.collection,
+    code: feature.properties.code,
+  };
+
+  // Render the PopupContent component
+  createApp(PopupContent, props).component('font-awesome-icon', FontAwesomeIcon).mount(popupNode);
 
   new mapboxgl.Popup({
     offset: 25,
@@ -269,7 +281,7 @@ const handleMapClick = (e) => {
     className: 'custom-popup', // Add class for custom styling
   })
     .setLngLat(feature.geometry.coordinates)
-    .setHTML(getPopupHTML(feature))
+    .setDOMContent(popupNode)
     .addTo(map!);
 };
 
@@ -294,53 +306,6 @@ const handleClusterClick = (e) => {
     });
   });
 };
-
-const getPopupHTML = (feature) => {
-  const collectionName = feature.properties.collection;
-  const resourceCode = feature.properties.code;
-
-  // Get the image source or use a default image if not available
-  const imgSource = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
-
-  // Calculate distance
-  const userLocation = locationStore.userLocation;
-  let distanceText = '';
-  if (userLocation) {
-    const distance = calculateDistance(
-      userLocation.latitude,
-      userLocation.longitude,
-      feature.geometry.coordinates[1],
-      feature.geometry.coordinates[0]
-    ).toFixed(2);
-    distanceText = `<p class="distance-text"><i class="fas fa-location-dot"></i> ${distance} km</p>`;
-  }
-
-  // Check if the collection is an event
-  const isEvent = collectionName.toLowerCase() === 'event';
-
-  // Format the event date
-  const formattedDate = () => {
-    if (!feature.properties.fechaInicio) return '';
-    const date = new Date(feature.properties.fechaInicio);
-    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-  };
-
-  return `
-    <div class="result-card">
-      <div class="card-image" style="background-image: url(${imgSource});">
-        ${isEvent ? `<div class="event-date">${formattedDate()}</div>` : ''}
-      </div>
-      <div class="card-content">
-        <h3>${feature.properties.subtype}</h3>
-        <h2>${feature.properties.title}</h2>
-        <p class="municipio-text">${feature.properties.municipality}</p>
-        ${distanceText}
-        <a role="button" href="/resource/${collectionName}/${resourceCode}" class="btn btn-sm btn-primary mt-1 w-100">Ver Detalles</a>
-      </div>
-    </div>
-  `;
-};
-
 
 const calculateDistance = (
   lat1: number,
@@ -528,7 +493,7 @@ onUnmounted(() => {
 .card-image {
   background-size: cover;
   background-position: center;
-  height: 120px;
+  height: 80px; /* Smaller height for popup image */
   position: relative;
 }
 
@@ -543,25 +508,34 @@ onUnmounted(() => {
 
 .card-content h3 {
   margin: 0 0 5px;
-  font-size: 0.8rem;
+  font-size: 0.6rem; /* Smaller font size */
   color: #666666;
   text-transform: uppercase;
   font-weight: normal;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-content h2 {
   margin: 0 0 10px;
-  font-size: 1rem;
+  font-size: 0.8rem; /* Smaller font size */
   color: #333333;
   font-weight: bold;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-content p {
   margin: 5px 0;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Smaller font size */
   color: #555555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-content .location-icon {
@@ -571,7 +545,7 @@ onUnmounted(() => {
 
 .municipio-text {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -610,6 +584,21 @@ onUnmounted(() => {
   border-right-color: white;
 }
 
+.mapboxgl-popup-close-button {
+  font-size: 1rem;
+  background-color: #f44336; /* Red background */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 3px 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.mapboxgl-popup-close-button:hover {
+  background-color: #d32f2f; /* Darker red */
+}
+
 .custom-popup .result-card {
   width: 250px; /* Adjust width for popup */
 }
@@ -617,12 +606,19 @@ onUnmounted(() => {
 .custom-popup .btn-primary {
   margin-top: 10px;
   padding: 5px 10px;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Smaller font size */
 }
 
 .distance-text {
   margin: 5px 0;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Smaller font size */
   color: #555555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.distance-text i {
+  margin-right: 3px;
 }
 </style>
