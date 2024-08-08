@@ -92,9 +92,8 @@ const onSubmit = handleSubmit(async (values) => {
       icon: 'success',
       title: 'Éxito',
       text: '¡Inicio de sesión exitoso!',
-    }).then(() => {
-      router.push('/');
     });
+    // No necesitamos un redireccionamiento adicional aquí
   } catch (error) {
     if (error.message === 'Invalid credentials') {
       Swal.fire({

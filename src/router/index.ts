@@ -21,8 +21,18 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/auth/password-reset', name: 'PasswordReset', component: PasswordReset },
   { path: '/auth/password-recovery', name: 'PasswordRecovery', component: PasswordRecovery },
   { path: '/detail/:category/:id', name: 'Detail', component: Detail },
-  { path: '/account', name: 'Account', component: Account },
-  { path: '/plan-edit/:id', name: 'PlanEdit', component: PlanEdit },
+  {
+    path: '/account',
+    name: 'Account',
+    component: Account,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/plan-edit/:id',
+    name: 'PlanEdit',
+    component: PlanEdit,
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({
@@ -44,11 +54,20 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   const scrollStore = useScrollStore();
+
   if (from.name === 'Home') {
     // Save the scroll position when leaving the home view
     scrollStore.setScrollPosition(window.scrollY);
   }
-  if (to.name === 'Login' && authStore.isLoggedIn()) {
+
+  // Always set the redirectTo path for any navigation to login
+  if (!authStore.isLoggedIn() && to.name !== 'Login') {
+    authStore.setRedirectTo(to.fullPath);
+  }
+
+  if (to.matched.some((record) => record.meta.requiresAuth) && !authStore.isLoggedIn()) {
+    next({ name: 'Login' });
+  } else if (to.name === 'Login' && authStore.isLoggedIn()) {
     next({ path: '/' });
   } else {
     next();

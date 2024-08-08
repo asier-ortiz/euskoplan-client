@@ -5,13 +5,14 @@ import config from '../config';
 import Swal from 'sweetalert2';
 import { useFavoritesStore } from './favorites'; // Import Favorites Store
 
-// Configurar la base URL de Axios
+// Configure the base URL for Axios
 axios.defaults.baseURL = config.apiBaseUrl;
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: JSON.parse(localStorage.getItem('user') || 'null'),
     token: localStorage.getItem('token'),
+    redirectTo: null, // Add redirectTo to store intended path
   }),
   actions: {
     async login(credentials) {
@@ -21,10 +22,13 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('token', this.token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
 
-        // Llamada adicional para obtener los datos del usuario
+        // Additional call to fetch user data
         await this.fetchUser();
 
-        router.push('/');
+        // Use the redirect path or default to home
+        const redirectTo = this.redirectTo || '/';
+        this.redirectTo = null; // Clear redirect path after use
+        router.push(redirectTo);
       } catch (error) {
         throw new Error('Invalid credentials');
       }
@@ -110,7 +114,7 @@ export const useAuthStore = defineStore('auth', {
     async register(credentials) {
       try {
         await axios.post('/user/register', credentials);
-        await axios.post('/account/sendEmail', { email: credentials.email }); // Enviar correo de verificación
+        await axios.post('/account/sendEmail', { email: credentials.email }); // Send verification email
         Swal.fire({
           icon: 'success',
           title: 'Registration Successful',
@@ -124,6 +128,10 @@ export const useAuthStore = defineStore('auth', {
     },
     isLoggedIn() {
       return !!this.token;
+    },
+    // Method to set redirect path
+    setRedirectTo(path) {
+      this.redirectTo = path;
     },
   },
 });
