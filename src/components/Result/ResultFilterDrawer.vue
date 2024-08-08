@@ -40,7 +40,7 @@
         <!-- Province Selector -->
         <label for="province">Provincia</label>
         <select id="province" v-model="selectedProvince" @change="applyFilters">
-          <option value="" disabled>Select Province</option>
+          <option value="" disabled>Selecciona una Provincia</option>
           <option v-for="province in provinces" :key="province" :value="province">
             {{ province }}
           </option>
@@ -52,13 +52,13 @@
           <input
             type="text"
             v-model="localitySearch"
-            placeholder="Filter Localities"
+            placeholder="Filtrar Municipios"
             class="locality-search-input"
             :disabled="!selectedProvince"
             @input="filterLocalities"
           />
           <select id="locality" v-model="selectedLocality" @change="applyFilters" :disabled="!selectedProvince">
-            <option value="" disabled>Select Locality</option>
+            <option value="" disabled>Selecciona un Municipio</option>
             <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.nombre">
               {{ locality.nombre }}
             </option>
@@ -70,7 +70,7 @@
         <!-- Dynamic Category Selector -->
         <label v-if="currentCategories.length" for="category">{{ selectedCategoryName }} Categoría</label>
         <select v-if="currentCategories.length" id="category" v-model="selectedSubCategory" @change="applyFilters">
-          <option value="" disabled>Select {{ selectedCategoryName }} Category</option>
+          <option value="" disabled>Selecciona una categoría para {{ selectedCategoryName }}</option>
           <option v-for="category in currentCategories" :key="category" :value="category">
             {{ category }}
           </option>
