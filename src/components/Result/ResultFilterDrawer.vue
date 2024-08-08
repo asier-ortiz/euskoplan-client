@@ -199,6 +199,12 @@ const selectedSubCategory = ref(
 watch(selectedCategory, () => {
   clearLocalFilters();
   filterStore.clearFilters();
+  applyFilters();  // Trigger filters application on category change
+});
+
+// Watch for changes in subcategory and apply filters automatically
+watch(selectedSubCategory, () => {
+  applyFilters();
 });
 
 // Watch for changes in date inputs and apply filters automatically
@@ -255,7 +261,7 @@ const applyFilters = async () => {
     idioma: 'es',
     ...(filterStore.selectedProvince && { nombre_provincia: filterStore.selectedProvince }),
     ...(filterStore.selectedLocality && { nombre_municipio: filterStore.selectedLocality }),
-    ...(selectedSubCategory.value && { nombre_subtipo_recurso: selectedSubCategory.value }),
+    ...(getSubCategoryFilter() && getSubCategoryFilter()), // Use helper function to get the correct parameter
     ...(formattedStart && { fecha_inicio: formattedStart }),
     ...(formattedEnd && { fecha_fin: formattedEnd }),
   };
@@ -264,6 +270,23 @@ const applyFilters = async () => {
   await collectionsStore.filterResultsByCategory(selectedCategoryName.value, filters);
 
   emit('filtersApplied');
+};
+
+// Helper function to get the correct subcategory filter parameter
+const getSubCategoryFilter = () => {
+  if (selectedCategory.value === 'Espacios Naturales') {
+    if (selectedSubCategory.value) {
+      if (filterStore.categories.natural.espacio_natural.includes(selectedSubCategory.value)) {
+        return { nombre_subtipo_recurso_espacio_natural: selectedSubCategory.value };
+      }
+      if (filterStore.categories.natural.playas_pantanos_rios.includes(selectedSubCategory.value)) {
+        return { nombre_subtipo_recurso_playas_pantanos_rios: selectedSubCategory.value };
+      }
+    }
+  } else {
+    return selectedSubCategory.value ? { nombre_subtipo_recurso: selectedSubCategory.value } : null;
+  }
+  return null;
 };
 
 // Function to filter localities based on input
