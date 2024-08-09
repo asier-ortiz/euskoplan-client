@@ -57,7 +57,12 @@
             :disabled="!selectedProvince"
             @input="filterLocalities"
           />
-          <select id="locality" v-model="selectedLocality" @change="applyFilters" :disabled="!selectedProvince">
+          <select
+            id="locality"
+            v-model="selectedLocality"
+            @change="applyFilters"
+            :disabled="!selectedProvince"
+          >
             <option value="" disabled>Selecciona un Municipio</option>
             <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.nombre">
               {{ locality.nombre }}
@@ -68,8 +73,15 @@
         <hr />
 
         <!-- Dynamic Category Selector -->
-        <label v-if="currentCategories.length" for="category">{{ selectedCategoryName }} Categoría</label>
-        <select v-if="currentCategories.length" id="category" v-model="selectedSubCategory" @change="applyFilters">
+        <label v-if="currentCategories.length" for="category">
+          {{ selectedCategoryName }} Categoría
+        </label>
+        <select
+          v-if="currentCategories.length"
+          id="category"
+          v-model="selectedSubCategory"
+          @change="applyFilters"
+        >
           <option value="" disabled>Selecciona una categoría para {{ selectedCategoryName }}</option>
           <option v-for="category in currentCategories" :key="category" :value="category">
             {{ category }}
@@ -118,8 +130,8 @@ import { defineProps, defineEmits } from 'vue';
 const props = defineProps({
   visible: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 const emit = defineEmits(['close', 'filtersApplied']);
@@ -148,7 +160,7 @@ const localitySearch = ref('');
 const filteredLocalities = computed(() => {
   if (!selectedProvince.value) return [];
   const search = localitySearch.value.toLowerCase();
-  return filterStore.filteredLocalities.filter(locality =>
+  return filterStore.filteredLocalities.filter((locality) =>
     locality.nombre.toLowerCase().includes(search)
   );
 });
@@ -172,7 +184,7 @@ const currentCategories = computed(() => {
     case 'Espacios Naturales':
       return [
         ...filterStore.categories.natural.espacio_natural,
-        ...filterStore.categories.natural.playas_pantanos_rios
+        ...filterStore.categories.natural.playas_pantanos_rios,
       ];
     case 'Restaurantes':
       return filterStore.categories.restaurant;
@@ -201,7 +213,7 @@ const selectedSubCategory = ref(
 watch(selectedCategory, () => {
   clearLocalFilters();
   filterStore.clearFilters();
-  applyFilters();  // Trigger filters application on category change
+  applyFilters(); // Trigger filters application on category change
 });
 
 // Watch for changes in subcategory and apply filters automatically
@@ -216,18 +228,32 @@ watch([startDate, endDate], () => {
 
 // Check if any filter is selected
 const anyFilterSelected = computed(() => {
-  return selectedProvince.value || selectedLocality.value || startDate.value || endDate.value || selectedSubCategory.value;
+  return (
+    selectedProvince.value ||
+    selectedLocality.value ||
+    startDate.value ||
+    endDate.value ||
+    selectedSubCategory.value
+  );
 });
 
 // Formatted dates for displaying in chips
-const formattedStartDate = computed(() => startDate.value ? new Date(startDate.value).toLocaleDateString() : '');
-const formattedEndDate = computed(() => endDate.value ? new Date(endDate.value).toLocaleDateString() : '');
+const formattedStartDate = computed(() =>
+  startDate.value ? new Date(startDate.value).toLocaleDateString() : ''
+);
+const formattedEndDate = computed(() =>
+  endDate.value ? new Date(endDate.value).toLocaleDateString() : ''
+);
 
 // Helper function to format date as YYYY/MM/DD
 const formatDateForApi = (date) => {
   if (!date) return null;
   const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  return new Intl.DateTimeFormat('es-ES', options).format(new Date(date)).split('/').reverse().join('/');
+  return new Intl.DateTimeFormat('es-ES', options)
+    .format(new Date(date))
+    .split('/')
+    .reverse()
+    .join('/');
 };
 
 // Function to clear local filters and reset UI elements
@@ -252,7 +278,10 @@ const applyFilters = async () => {
   filterStore.setSelectedLocality(selectedLocality.value);
   filterStore.setStartDate(startDate.value);
   filterStore.setEndDate(endDate.value);
-  filterStore.setSelectedCategory(selectedCategory.value?.toLowerCase(), selectedSubCategory.value);
+  filterStore.setSelectedCategory(
+    selectedCategory.value?.toLowerCase(),
+    selectedSubCategory.value
+  );
 
   // Format dates for API
   const formattedStart = formatDateForApi(filterStore.startDate);
@@ -261,8 +290,12 @@ const applyFilters = async () => {
   // Build query parameters dynamically
   const filters = {
     idioma: 'es',
-    ...(filterStore.selectedProvince && { nombre_provincia: filterStore.selectedProvince }),
-    ...(filterStore.selectedLocality && { nombre_municipio: filterStore.selectedLocality }),
+    ...(filterStore.selectedProvince && {
+      nombre_provincia: filterStore.selectedProvince,
+    }),
+    ...(filterStore.selectedLocality && {
+      nombre_municipio: filterStore.selectedLocality,
+    }),
     ...(getSubCategoryFilter() && getSubCategoryFilter()), // Use helper function to get the correct parameter
     ...(formattedStart && { fecha_inicio: formattedStart }),
     ...(formattedEnd && { fecha_fin: formattedEnd }),
@@ -274,6 +307,9 @@ const applyFilters = async () => {
   // Set flag to refit map bounds after filter changes
   mapStore.shouldRefitBounds = true; // Use map store to set refit flag
 
+  // Close any open popups on the map
+  mapStore.setMapPopup(null);
+
   emit('filtersApplied');
 };
 
@@ -281,15 +317,21 @@ const applyFilters = async () => {
 const getSubCategoryFilter = () => {
   if (selectedCategory.value === 'Espacios Naturales') {
     if (selectedSubCategory.value) {
-      if (filterStore.categories.natural.espacio_natural.includes(selectedSubCategory.value)) {
+      if (
+        filterStore.categories.natural.espacio_natural.includes(selectedSubCategory.value)
+      ) {
         return { nombre_subtipo_recurso_espacio_natural: selectedSubCategory.value };
       }
-      if (filterStore.categories.natural.playas_pantanos_rios.includes(selectedSubCategory.value)) {
+      if (
+        filterStore.categories.natural.playas_pantanos_rios.includes(selectedSubCategory.value)
+      ) {
         return { nombre_subtipo_recurso_playas_pantanos_rios: selectedSubCategory.value };
       }
     }
   } else {
-    return selectedSubCategory.value ? { nombre_subtipo_recurso: selectedSubCategory.value } : null;
+    return selectedSubCategory.value
+      ? { nombre_subtipo_recurso: selectedSubCategory.value }
+      : null;
   }
   return null;
 };

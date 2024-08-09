@@ -3,7 +3,9 @@
     <button class="toggle-style-button" @click="toggleMapStyle" title="Toggle Dark/Light Mode">
       <FontAwesomeIcon :icon="[isDarkMode === 'dark' ? 'fas' : 'fas', isDarkMode === 'dark' ? 'sun' : 'moon']" />
     </button>
-    <div v-show="showZoomMessage" class="zoom-message">Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom</div>
+    <div v-show="showZoomMessage" class="zoom-message">
+      Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom
+    </div>
 
     <!-- Info Panel -->
     <div v-if="showInfoPanel" class="info-panel visible">
@@ -61,21 +63,24 @@ const isMapTabActive = computed(() => collectionsStore.activeTab === 'map');
 
 // Map configuration
 const mapOptions = {
-  style: isDarkMode.value === 'dark' ? 'mapbox://styles/mapbox/dark-v10' : 'mapbox://styles/mapbox/streets-v11',
+  style:
+    isDarkMode.value === 'dark'
+      ? 'mapbox://styles/mapbox/dark-v10'
+      : 'mapbox://styles/mapbox/streets-v11',
   center: mapStore.mapCenter || [-2.6189, 43.25], // Use map store for map center
   zoom: mapStore.mapZoom || 7, // Use map store for map zoom
 };
 
 // Map categories to their corresponding marker images
 const categoryMarkerMap = {
-  'alojamientos': '/images/map/accommodations-marker.png',
+  alojamientos: '/images/map/accommodations-marker.png',
   'cuevas y restos arqueológicos': '/images/map/caves-marker.png',
   'edificios religiosos y castillos': '/images/map/culturals-marker.png',
-  'eventos': '/images/map/events-marker.png',
+  eventos: '/images/map/events-marker.png',
   'parques temáticos': '/images/map/fairs-marker.png',
   'museos y centros de interpretación': '/images/map/museums-marker.png',
   'espacios naturales': '/images/map/naturals-marker.png',
-  'restaurantes': '/images/map/restaurants-marker.png',
+  restaurantes: '/images/map/restaurants-marker.png',
 };
 
 // Determine which results to display on the map: filteredResults or searchResults
@@ -125,7 +130,11 @@ const initializeMap = () => {
     map.on('click', handleMapClick);
     map.on('click', 'clusters', handleClusterClick);
     map.on('click', (e) => {
-      if (!map?.queryRenderedFeatures(e.point, { layers: ['unclustered-points', 'clusters'] }).length) {
+      if (
+        !map?.queryRenderedFeatures(e.point, {
+          layers: ['unclustered-points', 'clusters'],
+        }).length
+      ) {
         closePopup();
       }
     });
@@ -166,7 +175,9 @@ const initializeMap = () => {
 
 // Add markers and clusters to the map
 const addMarkersAndClusters = () => {
-  const markerImageUrl = categoryMarkerMap[collectionsStore.selectedCategory?.toLowerCase()] || '/images/map/default-marker.png';
+  const markerImageUrl =
+    categoryMarkerMap[collectionsStore.selectedCategory?.toLowerCase()] ||
+    '/images/map/default-marker.png';
 
   const geojson = {
     type: 'FeatureCollection',
@@ -213,8 +224,10 @@ const addMarkersAndClusters = () => {
       'circle-color': [
         'step',
         ['get', 'point_count'],
-        '#51bbd6', 10,
-        '#f1f075', 100,
+        '#51bbd6',
+        10,
+        '#f1f075',
+        100,
         '#f28cb1',
       ],
       'circle-radius': ['step', ['get', 'point_count'], 15, 100, 20, 750, 25],
@@ -273,7 +286,8 @@ const addMarkersAndClusters = () => {
       },
       paint: {
         'text-color': isDarkMode.value === 'dark' ? '#ffffff' : '#000000', // Dynamic text color based on map mode
-        'text-halo-color': isDarkMode.value === 'dark' ? '#000000' : '#ffffff', // Adjust halo color based on map mode
+        'text-halo-color':
+          isDarkMode.value === 'dark' ? '#000000' : '#ffffff', // Adjust halo color based on map mode
         'text-halo-width': 1, // Halo width for better text visibility
       },
     });
@@ -316,7 +330,9 @@ const handleWheelZoom = (event: WheelEvent) => {
 };
 
 const handleMapClick = (e) => {
-  const features = map?.queryRenderedFeatures(e.point, { layers: ['unclustered-points'] });
+  const features = map?.queryRenderedFeatures(e.point, {
+    layers: ['unclustered-points'],
+  });
   if (!features.length) {
     closePopup();
     return;
@@ -325,7 +341,9 @@ const handleMapClick = (e) => {
   const feature = features[0];
 
   // Set selected info for the panel
-  selectedImage.value = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
+  selectedImage.value =
+    JSON.parse(feature.properties.images)[0]?.fuente ||
+    `/images/default/default-image.jpg`;
   selectedSubtype.value = feature.properties.subtype;
   selectedTitle.value = feature.properties.title;
   selectedMunicipality.value = feature.properties.municipality;
@@ -353,7 +371,9 @@ const closePopup = () => {
 
 // Method to open popup using stored state
 const openPopup = (feature) => {
-  selectedImage.value = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
+  selectedImage.value =
+    JSON.parse(feature.properties.images)[0]?.fuente ||
+    `/images/default/default-image.jpg`;
   selectedSubtype.value = feature.properties.subtype;
   selectedTitle.value = feature.properties.title;
   selectedMunicipality.value = feature.properties.municipality;
@@ -385,7 +405,7 @@ const handleClusterClick = async (e) => {
       if (err) return;
 
       const bounds = new LngLatBounds();
-      leaves.forEach(leaf => {
+      leaves.forEach((leaf) => {
         bounds.extend(leaf.geometry.coordinates);
       });
 
@@ -398,7 +418,6 @@ const handleClusterClick = async (e) => {
   });
 };
 
-
 const toggleMapStyle = () => {
   if (!map) return;
 
@@ -410,7 +429,9 @@ const toggleMapStyle = () => {
   isDarkMode.value = isDarkMode.value === 'dark' ? 'light' : 'dark';
   mapStore.setMapMode(isDarkMode.value); // Use map store to update map mode
   map.setStyle(
-    isDarkMode.value === 'dark' ? 'mapbox://styles/mapbox/dark-v10' : 'mapbox://styles/mapbox/streets-v11'
+    isDarkMode.value === 'dark'
+      ? 'mapbox://styles/mapbox/dark-v10'
+      : 'mapbox://styles/mapbox/streets-v11'
   );
 
   // Restore map state after style change
@@ -427,13 +448,22 @@ const performMapSearch = async () => {
 
   const filters = {
     idioma: 'es',
-    ...(filterStore.selectedProvince && { nombre_provincia: filterStore.selectedProvince }),
-    ...(filterStore.selectedLocality && { nombre_municipio: filterStore.selectedLocality }),
-    ...(filterStore.selectedCategories[selectedCategory?.toLowerCase()] && {
-      nombre_subtipo_recurso: filterStore.selectedCategories[selectedCategory.toLowerCase()],
+    ...(filterStore.selectedProvince && {
+      nombre_provincia: filterStore.selectedProvince,
     }),
-    ...(filterStore.startDate && { fecha_inicio: formatDateForApi(filterStore.startDate) }),
-    ...(filterStore.endDate && { fecha_fin: formatDateForApi(filterStore.endDate) }),
+    ...(filterStore.selectedLocality && {
+      nombre_municipio: filterStore.selectedLocality,
+    }),
+    ...(filterStore.selectedCategories[selectedCategory?.toLowerCase()] && {
+      nombre_subtipo_recurso:
+        filterStore.selectedCategories[selectedCategory.toLowerCase()],
+    }),
+    ...(filterStore.startDate && {
+      fecha_inicio: formatDateForApi(filterStore.startDate),
+    }),
+    ...(filterStore.endDate && {
+      fecha_fin: formatDateForApi(filterStore.endDate),
+    }),
   };
 
   if (searchQuery.length >= 3) {
@@ -451,30 +481,42 @@ const performMapSearch = async () => {
 const formatDateForApi = (date) => {
   if (!date) return null;
   const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  return new Intl.DateTimeFormat('es-ES', options).format(new Date(date)).split('/').reverse().join('/');
+  return new Intl.DateTimeFormat('es-ES', options)
+    .format(new Date(date))
+    .split('/')
+    .reverse()
+    .join('/');
 };
 
 // Watch for changes in the search query
-watch(() => collectionsStore.searchQuery, async () => {
-  if (isMapTabActive.value) {
-    await performMapSearch();
-    addMarkersAndClusters();
+watch(
+  () => collectionsStore.searchQuery,
+  async () => {
+    if (isMapTabActive.value) {
+      await performMapSearch();
+      addMarkersAndClusters();
+    }
   }
-});
+);
 
 // Watch for changes in applied filters
-watch(() => [
-  filterStore.selectedProvince,
-  filterStore.selectedLocality,
-  filterStore.selectedCategories,
-  filterStore.startDate,
-  filterStore.endDate
-], async () => {
-  if (isMapTabActive.value) {
-    await performMapSearch();
-    addMarkersAndClusters();
-  }
-}, { deep: true });
+watch(
+  () => [
+    filterStore.selectedProvince,
+    filterStore.selectedLocality,
+    filterStore.selectedCategories,
+    filterStore.startDate,
+    filterStore.endDate,
+  ],
+  async () => {
+    if (isMapTabActive.value) {
+      await performMapSearch();
+      closePopup(); // Ensure popup is closed when filters are applied
+      addMarkersAndClusters();
+    }
+  },
+  { deep: true }
+);
 
 watch(isMapTabActive, async (isActive) => {
   if (isActive) {
