@@ -1,5 +1,4 @@
 // src/store/collections.ts
-
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import config from '../config';
@@ -26,9 +25,16 @@ export const useCollectionsStore = defineStore('collections', {
     mapZoom: useLocalStorage('mapZoom', 5), // Store map zoom level
     mapMarkers: useLocalStorage('mapMarkers', []), // Store map markers
     mapMode: useLocalStorage('mapMode', 'light'), // Store map mode (light or dark)
+    mapPopup: null, // Add state for map popup
+    didCategoryChange: false, // Track if the category changed
   }),
 
   actions: {
+    // Add this action to manage popup state
+    setMapPopup(popup) {
+      this.mapPopup = popup;
+    },
+
     async fetchRelatedResources(category, language = 'es') {
       try {
         if (!category) {
@@ -354,6 +360,7 @@ export const useCollectionsStore = defineStore('collections', {
 
     setSelectedCategory(category) {
       this.selectedCategory = category || ''; // Set to empty string if null
+      this.didCategoryChange = true; // Flag the category change
     },
 
     // Add actions to update sortField and sortOrder

@@ -29,6 +29,7 @@ import { FontAwesomeIcon } from '@/font-awesome';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import { useFilterStore } from '@/stores/filter';
+import { calculateDistance } from '@/utils/distance';
 import ResultPopupContent from './ResultPopupContent.vue';
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -38,7 +39,6 @@ const filterStore = useFilterStore();
 const locationStore = useLocationStore();
 const isDarkMode = ref(collectionsStore.mapMode);
 let map: Map | null = null;
-let selectedMarkerElement: HTMLElement | null = null; // Track the selected marker element
 
 // State for displaying the zoom message
 const showZoomMessage = ref(false);
@@ -66,14 +66,14 @@ const mapOptions = {
 
 // Map categories to their corresponding marker images
 const categoryMarkerMap = {
-  alojamientos: '/images/map/accommodations-marker.png',
+  'alojamientos': '/images/map/accommodations-marker.png',
   'cuevas y restos arqueológicos': '/images/map/caves-marker.png',
   'edificios religiosos y castillos': '/images/map/culturals-marker.png',
-  eventos: '/images/map/events-marker.png',
+  'eventos': '/images/map/events-marker.png',
   'parques temáticos': '/images/map/fairs-marker.png',
   'museos y centros de interpretación': '/images/map/museums-marker.png',
   'espacios naturales': '/images/map/naturals-marker.png',
-  restaurantes: '/images/map/restaurants-marker.png',
+  'restaurantes': '/images/map/restaurants-marker.png',
 };
 
 // Determine which results to display on the map: filteredResults or searchResults
@@ -112,6 +112,12 @@ const initializeMap = () => {
 
       // Ensure markers and clusters are added on load
       addMarkersAndClusters();
+
+      // Restore popup state if available
+      const popupState = collectionsStore.mapPopup;
+      if (popupState) {
+        openPopup(popupState);
+      }
     });
 
     map.on('click', handleMapClick);
@@ -271,17 +277,21 @@ const addMarkersAndClusters = () => {
     });
   });
 
-  const bounds = new LngLatBounds();
-  mapResults.value.forEach((markerData) => {
-    bounds.extend([markerData.longitud, markerData.latitud]);
-  });
-  if (!bounds.isEmpty()) {
-    map?.fitBounds(bounds, {
-      padding: { top: 50, bottom: 50, left: 50, right: 50 },
-      maxZoom: 14,
+  // Fit bounds only if the category changed
+  if (collectionsStore.didCategoryChange) {
+    const bounds = new LngLatBounds();
+    mapResults.value.forEach((markerData) => {
+      bounds.extend([markerData.longitud, markerData.latitud]);
     });
-  } else {
-    console.warn('No valid markers to fit bounds.');
+    if (!bounds.isEmpty()) {
+      map?.fitBounds(bounds, {
+        padding: { top: 50, bottom: 50, left: 50, right: 50 },
+        maxZoom: 14,
+      });
+    } else {
+      console.warn('No valid markers to fit bounds.');
+    }
+    collectionsStore.didCategoryChange = false; // Reset the flag
   }
 };
 
@@ -311,17 +321,6 @@ const handleMapClick = (e) => {
 
   const feature = features[0];
 
-  // Restore original appearance of previously selected marker
-  if (selectedMarkerElement) {
-    selectedMarkerElement.classList.remove('selected-marker');
-  }
-
-  // Select the clicked marker
-  selectedMarkerElement = document.querySelector(`[data-feature-id="${feature.id}"]`);
-  if (selectedMarkerElement) {
-    selectedMarkerElement.classList.add('selected-marker');
-  }
-
   // Set selected info for the panel
   selectedImage.value = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
   selectedSubtype.value = feature.properties.subtype;
@@ -336,6 +335,9 @@ const handleMapClick = (e) => {
   selectedCollection.value = feature.properties.collection;
   selectedCode.value = feature.properties.code;
 
+  // Save popup state to store
+  collectionsStore.setMapPopup(feature);
+
   // Show the info panel
   showInfoPanel.value = true;
 };
@@ -343,10 +345,25 @@ const handleMapClick = (e) => {
 // Close the info panel
 const closePopup = () => {
   showInfoPanel.value = false;
-  if (selectedMarkerElement) {
-    selectedMarkerElement.classList.remove('selected-marker');
-  }
-  selectedMarkerElement = null;
+  collectionsStore.setMapPopup(null); // Clear popup state
+};
+
+// Method to open popup using stored state
+const openPopup = (feature) => {
+  selectedImage.value = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
+  selectedSubtype.value = feature.properties.subtype;
+  selectedTitle.value = feature.properties.title;
+  selectedMunicipality.value = feature.properties.municipality;
+  selectedDistance.value = calculateDistance(
+    locationStore.userLocation.latitude,
+    locationStore.userLocation.longitude,
+    feature.geometry.coordinates[1],
+    feature.geometry.coordinates[0]
+  ).toFixed(2);
+  selectedCollection.value = feature.properties.collection;
+  selectedCode.value = feature.properties.code;
+
+  showInfoPanel.value = true;
 };
 
 const handleClusterClick = (e) => {
@@ -369,27 +386,6 @@ const handleClusterClick = (e) => {
       duration: 1000,
     });
   });
-};
-
-const calculateDistance = (
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number => {
-  const radlat1 = (Math.PI * lat1) / 180;
-  const radlat2 = (Math.PI * lat2) / 180;
-  const theta = lon1 - lon2;
-  const radtheta = (Math.PI * theta) / 180;
-  let dist =
-    Math.sin(radlat1) * Math.sin(radlat2) +
-    Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-  if (dist > 1) dist = 1;
-  dist = Math.acos(dist);
-  dist = (dist * 180) / Math.PI;
-  dist = dist * 60 * 1.1515;
-  dist = dist * 1.609344; // Convert miles to kilometers
-  return dist;
 };
 
 const toggleMapStyle = () => {
@@ -479,7 +475,11 @@ watch(isMapTabActive, async (isActive) => {
 
 watch(
   () => collectionsStore.selectedCategory,
-  async () => {
+  async (newCategory, oldCategory) => {
+    if (newCategory !== oldCategory) {
+      collectionsStore.didCategoryChange = true;
+      closePopup(); // Close the popup when the collection changes
+    }
     if (isMapTabActive.value) {
       // Update markers when category changes and map tab is active
       await performMapSearch();
@@ -556,13 +556,5 @@ onUnmounted(() => {
   .info-panel {
     width: 200px;
   }
-}
-
-/* Custom styles for selected marker */
-.selected-marker {
-  transition: transform 0.2s, filter 0.2s; /* Add transition for animation */
-  transform: scale(1.2);
-  filter: hue-rotate(120deg); /* Change the color */
-  z-index: 10; /* Bring selected marker to front */
 }
 </style>
