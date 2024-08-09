@@ -173,48 +173,35 @@ const initializeMap = () => {
   }
 };
 
-// Add markers and clusters to the map
-const addMarkersAndClusters = () => {
-  const markerImageUrl =
-    categoryMarkerMap[collectionsStore.selectedCategory?.toLowerCase()] ||
-    '/images/map/default-marker.png';
+// Helper function to remove existing layers
+const removeExistingLayers = (layerIds) => {
+  layerIds.forEach((layerId) => {
+    if (map?.getLayer(layerId)) {
+      map.removeLayer(layerId);
+    }
+  });
+};
 
-  const geojson = {
-    type: 'FeatureCollection',
-    features: mapResults.value.map((markerData, index) => ({
-      type: 'Feature',
-      id: index, // Ensure each feature has a unique ID
-      geometry: {
-        type: 'Point',
-        coordinates: [markerData.longitud, markerData.latitud],
-      },
-      properties: {
-        title: markerData.nombre,
-        subtype: markerData.nombre_subtipo_recurso || '',
-        municipality: markerData.nombre_municipio,
-        code: markerData.codigo,
-        images: markerData.imagenes ? JSON.stringify(markerData.imagenes) : '[]',
-        collection: markerData.coleccion,
-        fechaInicio: markerData.fechaInicio || null,
-      },
-    })),
-  };
+// Helper function to remove an existing source
+const removeExistingSource = (sourceId) => {
+  if (map?.getSource(sourceId)) {
+    map.removeSource(sourceId);
+  }
+};
 
-  if (map?.getLayer('clusters')) map.removeLayer('clusters');
-  if (map?.getLayer('cluster-count')) map.removeLayer('cluster-count');
-  if (map?.getLayer('unclustered-points')) map.removeLayer('unclustered-points');
-  if (map?.getLayer('resource-names')) map.removeLayer('resource-names'); // Remove existing text layer
-  if (map?.getSource('resources')) map.removeSource('resources');
-  if (map?.hasImage('custom-marker')) map.removeImage('custom-marker');
-
-  map?.addSource('resources', {
+// Helper function to add source
+const addSource = (sourceId, data) => {
+  map?.addSource(sourceId, {
     type: 'geojson',
-    data: geojson,
+    data: data,
     cluster: true,
     clusterMaxZoom: 14,
     clusterRadius: 50,
   });
+};
 
+// Helper function to add cluster layers
+const addClusterLayers = () => {
   map?.addLayer({
     id: 'clusters',
     type: 'circle',
@@ -246,69 +233,129 @@ const addMarkersAndClusters = () => {
       'text-size': 12,
     },
   });
+};
 
-  map?.loadImage(markerImageUrl, (error, image) => {
-    if (error) {
-      console.error('Error loading image:', error);
-      return;
-    }
-
-    map?.addImage('custom-marker', image);
-
-    map?.addLayer({
-      id: 'unclustered-points',
-      type: 'symbol',
-      source: 'resources',
-      filter: ['!', ['has', 'point_count']],
-      layout: {
-        'icon-image': 'custom-marker',
-        'icon-size': 0.2,
-        'icon-allow-overlap': true,
-      },
-    });
-
-    // Add a text layer for resource names
-    map?.addLayer({
-      id: 'resource-names',
-      type: 'symbol',
-      source: 'resources',
-      filter: ['!', ['has', 'point_count']],
-      layout: {
-        'text-field': ['get', 'title'],
-        'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-        'text-size': 14, // Size of the text
-        'text-variable-anchor': ['top', 'bottom', 'left', 'right'], // Allow text to move around the marker
-        'text-radial-offset': 0.5, // Offset the text from the marker to reduce overlap
-        'text-justify': 'auto', // Let Mapbox decide the best justification
-        'text-anchor': 'center', // Align text relative to the anchor position
-        'text-allow-overlap': false, // Prevent text overlap
-        'text-padding': 2, // Padding between text and other features to reduce collision
-      },
-      paint: {
-        'text-color': isDarkMode.value === 'dark' ? '#ffffff' : '#000000', // Dynamic text color based on map mode
-        'text-halo-color':
-          isDarkMode.value === 'dark' ? '#000000' : '#ffffff', // Adjust halo color based on map mode
-        'text-halo-width': 1, // Halo width for better text visibility
-      },
-    });
+// Helper function to add marker layers
+const addMarkerLayers = () => {
+  map?.addLayer({
+    id: 'unclustered-points',
+    type: 'symbol',
+    source: 'resources',
+    filter: ['!', ['has', 'point_count']],
+    layout: {
+      'icon-image': 'custom-marker',
+      'icon-size': 0.2,
+      'icon-allow-overlap': true,
+    },
   });
 
-  // Fit bounds only if the category changed or filters were applied
-  if (mapStore.didCategoryChange || mapStore.shouldRefitBounds) {
-    const bounds = new LngLatBounds();
-    mapResults.value.forEach((markerData) => {
-      bounds.extend([markerData.longitud, markerData.latitud]);
+  map?.addLayer({
+    id: 'resource-names',
+    type: 'symbol',
+    source: 'resources',
+    filter: ['!', ['has', 'point_count']],
+    layout: {
+      'text-field': ['get', 'title'],
+      'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+      'text-size': 14,
+      'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+      'text-radial-offset': 0.5,
+      'text-justify': 'auto',
+      'text-anchor': 'center',
+      'text-allow-overlap': false,
+      'text-padding': 2,
+    },
+    paint: {
+      'text-color': isDarkMode.value === 'dark' ? '#ffffff' : '#000000',
+      'text-halo-color': isDarkMode.value === 'dark' ? '#000000' : '#ffffff',
+      'text-halo-width': 1,
+    },
+  });
+};
+
+// Helper function to load and add marker image
+const loadAndAddImage = (markerImageUrl) => {
+  // Load and add the new image only if it's not already loaded
+  if (!map?.hasImage('custom-marker')) {
+    map?.loadImage(markerImageUrl, (error, image) => {
+      if (error) {
+        console.error('Error loading image:', error);
+        return;
+      }
+
+      // Add the image
+      map?.addImage('custom-marker', image);
     });
-    if (!bounds.isEmpty()) {
-      map?.fitBounds(bounds, {
-        padding: { top: 50, bottom: 50, left: 50, right: 50 },
-        maxZoom: 14,
-      });
-    } else {
-      console.warn('No valid markers to fit bounds.');
-    }
-    mapStore.didCategoryChange = false; // Reset the flag
-    mapStore.shouldRefitBounds = false; // Reset the flag
+  }
+};
+
+// Helper function to fit map bounds
+const fitMapBounds = () => {
+  const bounds = new LngLatBounds();
+  mapResults.value.forEach((markerData) => {
+    bounds.extend([markerData.longitud, markerData.latitud]);
+  });
+
+  if (!bounds.isEmpty()) {
+    map?.fitBounds(bounds, {
+      padding: { top: 50, bottom: 50, left: 50, right: 50 },
+      maxZoom: 14,
+    });
+  } else {
+    console.warn('No valid markers to fit bounds.');
+  }
+
+  mapStore.didCategoryChange = false; // Reset the flag
+  mapStore.shouldRefitBounds = false; // Reset the flag
+};
+
+// Main function to add markers and clusters
+const addMarkersAndClusters = () => {
+  const markerImageUrl =
+    categoryMarkerMap[collectionsStore.selectedCategory?.toLowerCase()] ||
+    '/images/map/default-marker.png';
+
+  const geojson = {
+    type: 'FeatureCollection',
+    features: mapResults.value.map((markerData, index) => ({
+      type: 'Feature',
+      id: index, // Ensure each feature has a unique ID
+      geometry: {
+        type: 'Point',
+        coordinates: [markerData.longitud, markerData.latitud],
+      },
+      properties: {
+        title: markerData.nombre,
+        subtype: markerData.nombre_subtipo_recurso || '',
+        municipality: markerData.nombre_municipio,
+        code: markerData.codigo,
+        images: markerData.imagenes ? JSON.stringify(markerData.imagenes) : '[]',
+        collection: markerData.coleccion,
+        fechaInicio: markerData.fechaInicio || null,
+      },
+    })),
+  };
+
+  // Remove existing layers and source
+  removeExistingLayers([
+    'clusters',
+    'cluster-count',
+    'unclustered-points',
+    'resource-names',
+  ]);
+  removeExistingSource('resources');
+
+  // Add the source
+  addSource('resources', geojson);
+
+  // Load and add marker image, then add layers
+  loadAndAddImage(markerImageUrl);
+  addClusterLayers();
+  addMarkerLayers();
+
+  // Fit map bounds if necessary
+  if (mapStore.didCategoryChange || mapStore.shouldRefitBounds) {
+    fitMapBounds();
   }
 };
 
@@ -532,9 +579,6 @@ watch(
     if (newCategory !== oldCategory) {
       mapStore.didCategoryChange = true; // Use map store to flag the category change
       closePopup(); // Close the popup when the collection changes
-    }
-    if (isMapTabActive.value) {
-      // Update markers when category changes and map tab is active
       await performMapSearch();
       addMarkersAndClusters();
     }

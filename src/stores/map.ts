@@ -25,7 +25,7 @@ export const useMapStore = defineStore('map', {
     setMapZoom(zoom) {
       this.mapZoom = zoom;
     },
-    
+
     setMapMode(mode) {
       this.mapMode = mode;
     },
