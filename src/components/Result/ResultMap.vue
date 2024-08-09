@@ -366,27 +366,35 @@ const openPopup = (feature) => {
   showInfoPanel.value = true;
 };
 
-const handleClusterClick = (e) => {
+const handleClusterClick = async (e) => {
   const features = map?.queryRenderedFeatures(e.point, { layers: ['clusters'] });
   if (!features.length) return;
 
   const clusterId = features[0].properties.cluster_id;
   const source = map?.getSource('resources') as mapboxgl.GeoJSONSource;
 
+  // Get the cluster expansion zoom level and bounds
   source.getClusterExpansionZoom(clusterId, (err, zoom) => {
     if (err) return;
 
-    const newCenter = features[0].geometry.coordinates;
-    const popupOffset = 200;
+    // Get the cluster's features
+    source.getClusterLeaves(clusterId, Infinity, 0, (err, leaves) => {
+      if (err) return;
 
-    map?.easeTo({
-      center: newCenter,
-      zoom: zoom + 1,
-      offset: [0, -popupOffset],
-      duration: 1000,
+      const bounds = new LngLatBounds();
+      leaves.forEach(leaf => {
+        bounds.extend(leaf.geometry.coordinates);
+      });
+
+      map?.fitBounds(bounds, {
+        padding: { top: 50, bottom: 50, left: 50, right: 50 },
+        maxZoom: zoom + 1, // Slightly zoom in for a better view
+        duration: 1000,
+      });
     });
   });
 };
+
 
 const toggleMapStyle = () => {
   if (!map) return;
