@@ -110,6 +110,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFilterStore } from '@/stores/filter';
 import { useCollectionsStore } from '@/stores/collections';
+import { useMapStore } from '@/stores/map'; // Import the new map store
 import DatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { defineProps, defineEmits } from 'vue';
@@ -125,6 +126,7 @@ const emit = defineEmits(['close', 'filtersApplied']);
 
 const filterStore = useFilterStore();
 const collectionsStore = useCollectionsStore();
+const mapStore = useMapStore(); // Use the new map store
 
 // Ensure categories are fetched when component mounts
 onMounted(() => {
@@ -270,7 +272,7 @@ const applyFilters = async () => {
   await collectionsStore.filterResultsByCategory(selectedCategoryName.value, filters);
 
   // Set flag to refit map bounds after filter changes
-  collectionsStore.shouldRefitBounds = true;
+  mapStore.shouldRefitBounds = true; // Use map store to set refit flag
 
   emit('filtersApplied');
 };

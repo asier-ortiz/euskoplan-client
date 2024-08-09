@@ -1,4 +1,5 @@
 // src/store/collections.ts
+
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import config from '../config';
@@ -21,21 +22,9 @@ export const useCollectionsStore = defineStore('collections', {
     sortField: useLocalStorage('sortField', 'name'),
     sortOrder: useLocalStorage('sortOrder', 'asc'),
     activeTab: useLocalStorage('activeTab', 'cards'), // Store active tab state
-    mapCenter: useLocalStorage('mapCenter', { lat: 43.0000, lng: -2.6197 }), // Default to Basque Country coordinates
-    mapZoom: useLocalStorage('mapZoom', 5), // Store map zoom level
-    mapMarkers: useLocalStorage('mapMarkers', []), // Store map markers
-    mapMode: useLocalStorage('mapMode', 'light'), // Store map mode (light or dark)
-    mapPopup: null, // Add state for map popup
-    didCategoryChange: false, // Track if the category changed
-    shouldRefitBounds: false, // Track if the map should refit bounds after filter changes
   }),
 
   actions: {
-    // Add this action to manage popup state
-    setMapPopup(popup) {
-      this.mapPopup = popup;
-    },
-
     async fetchRelatedResources(category, language = 'es') {
       try {
         if (!category) {
@@ -361,7 +350,6 @@ export const useCollectionsStore = defineStore('collections', {
 
     setSelectedCategory(category) {
       this.selectedCategory = category || ''; // Set to empty string if null
-      this.didCategoryChange = true; // Flag the category change
     },
 
     // Add actions to update sortField and sortOrder
@@ -376,21 +364,5 @@ export const useCollectionsStore = defineStore('collections', {
     setActiveTab(tab) {
       this.activeTab = tab;
     },
-
-    setMapCenter(center) {
-      this.mapCenter = center;
-    },
-
-    setMapZoom(zoom) {
-      this.mapZoom = zoom;
-    },
-
-    setMapMarkers(markers) {
-      this.mapMarkers = markers;
-    },
-
-    setMapMode(mode) {
-      this.mapMode = mode;
-    }
   },
 });

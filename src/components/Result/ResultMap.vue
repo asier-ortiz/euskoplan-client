@@ -29,15 +29,17 @@ import { FontAwesomeIcon } from '@/font-awesome';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import { useFilterStore } from '@/stores/filter';
+import { useMapStore } from '@/stores/map'; // Import the new map store
 import { calculateDistance } from '@/utils/distance';
 import ResultPopupContent from './ResultPopupContent.vue';
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 const mapContainer = ref<HTMLElement | null>(null);
 const collectionsStore = useCollectionsStore();
+const mapStore = useMapStore(); // Use the new map store
 const filterStore = useFilterStore();
 const locationStore = useLocationStore();
-const isDarkMode = ref(collectionsStore.mapMode);
+const isDarkMode = ref(mapStore.mapMode); // Use map store for map mode
 let map: Map | null = null;
 
 // State for displaying the zoom message
@@ -60,8 +62,8 @@ const isMapTabActive = computed(() => collectionsStore.activeTab === 'map');
 // Map configuration
 const mapOptions = {
   style: isDarkMode.value === 'dark' ? 'mapbox://styles/mapbox/dark-v10' : 'mapbox://styles/mapbox/streets-v11',
-  center: collectionsStore.mapCenter || [-2.6189, 43.25],
-  zoom: collectionsStore.mapZoom || 7,
+  center: mapStore.mapCenter || [-2.6189, 43.25], // Use map store for map center
+  zoom: mapStore.mapZoom || 7, // Use map store for map zoom
 };
 
 // Map categories to their corresponding marker images
@@ -114,7 +116,7 @@ const initializeMap = () => {
       addMarkersAndClusters();
 
       // Restore popup state if available
-      const popupState = collectionsStore.mapPopup;
+      const popupState = mapStore.mapPopup;
       if (popupState) {
         openPopup(popupState);
       }
@@ -150,8 +152,8 @@ const initializeMap = () => {
     // Save map state when the map moves or zooms
     map.on('moveend', () => {
       const center = map.getCenter();
-      collectionsStore.setMapCenter({ lat: center.lat, lng: center.lng });
-      collectionsStore.setMapZoom(map.getZoom());
+      mapStore.setMapCenter({ lat: center.lat, lng: center.lng }); // Use map store for setting map center
+      mapStore.setMapZoom(map.getZoom()); // Use map store for setting map zoom
     });
 
     // Listen for wheel events to control zoom with the Ctrl key
@@ -278,7 +280,7 @@ const addMarkersAndClusters = () => {
   });
 
   // Fit bounds only if the category changed or filters were applied
-  if (collectionsStore.didCategoryChange || collectionsStore.shouldRefitBounds) {
+  if (mapStore.didCategoryChange || mapStore.shouldRefitBounds) {
     const bounds = new LngLatBounds();
     mapResults.value.forEach((markerData) => {
       bounds.extend([markerData.longitud, markerData.latitud]);
@@ -291,8 +293,8 @@ const addMarkersAndClusters = () => {
     } else {
       console.warn('No valid markers to fit bounds.');
     }
-    collectionsStore.didCategoryChange = false; // Reset the flag
-    collectionsStore.shouldRefitBounds = false; // Reset the flag
+    mapStore.didCategoryChange = false; // Reset the flag
+    mapStore.shouldRefitBounds = false; // Reset the flag
   }
 };
 
@@ -337,7 +339,7 @@ const handleMapClick = (e) => {
   selectedCode.value = feature.properties.code;
 
   // Save popup state to store
-  collectionsStore.setMapPopup(feature);
+  mapStore.setMapPopup(feature);
 
   // Show the info panel
   showInfoPanel.value = true;
@@ -346,7 +348,7 @@ const handleMapClick = (e) => {
 // Close the info panel
 const closePopup = () => {
   showInfoPanel.value = false;
-  collectionsStore.setMapPopup(null); // Clear popup state
+  mapStore.setMapPopup(null); // Clear popup state
 };
 
 // Method to open popup using stored state
@@ -406,7 +408,7 @@ const toggleMapStyle = () => {
 
   // Toggle map style
   isDarkMode.value = isDarkMode.value === 'dark' ? 'light' : 'dark';
-  collectionsStore.setMapMode(isDarkMode.value); // Update map mode in the store
+  mapStore.setMapMode(isDarkMode.value); // Use map store to update map mode
   map.setStyle(
     isDarkMode.value === 'dark' ? 'mapbox://styles/mapbox/dark-v10' : 'mapbox://styles/mapbox/streets-v11'
   );
@@ -486,7 +488,7 @@ watch(
   () => collectionsStore.selectedCategory,
   async (newCategory, oldCategory) => {
     if (newCategory !== oldCategory) {
-      collectionsStore.didCategoryChange = true;
+      mapStore.didCategoryChange = true; // Use map store to flag the category change
       closePopup(); // Close the popup when the collection changes
     }
     if (isMapTabActive.value) {
