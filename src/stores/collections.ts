@@ -41,7 +41,10 @@ export const useCollectionsStore = defineStore('collections', {
         });
         this.relatedResources = response.data;
       } catch (error) {
-        console.error(`Error fetching related resources for category ${category}:`, error);
+        console.error(
+          `Error fetching related resources for category ${category}:`,
+          error
+        );
       }
     },
 
@@ -135,7 +138,11 @@ export const useCollectionsStore = defineStore('collections', {
 
     // Individual search actions for different categories
     async getAccommodationsSearching(query, cancelToken) {
-      return this.performSearch('/accommodation/results/search', query, cancelToken);
+      return this.performSearch(
+        '/accommodation/results/search',
+        query,
+        cancelToken
+      );
     },
 
     async getCavesSearching(query, cancelToken) {
@@ -163,7 +170,11 @@ export const useCollectionsStore = defineStore('collections', {
     },
 
     async getRestaurantsSearching(query, cancelToken) {
-      return this.performSearch('/restaurant/results/search', query, cancelToken);
+      return this.performSearch(
+        '/restaurant/results/search',
+        query,
+        cancelToken
+      );
     },
 
     async searchAllCollections(query, language) {
@@ -176,7 +187,9 @@ export const useCollectionsStore = defineStore('collections', {
       }
 
       if (this.searchCancelToken) {
-        this.searchCancelToken.cancel('Operation canceled due to new request.');
+        this.searchCancelToken.cancel(
+          'Operation canceled due to new request.'
+        );
       }
 
       this.searchCancelToken = axios.CancelToken.source();
@@ -245,7 +258,11 @@ export const useCollectionsStore = defineStore('collections', {
       }
     },
 
-    async searchInCategory(category: string | null, query: string, language: string) {
+    async searchInCategory(
+      category: string | null,
+      query: string,
+      language: string
+    ) {
       if (!category) {
         console.error('Category is null or undefined.');
         this.searchResults = [];
@@ -261,7 +278,9 @@ export const useCollectionsStore = defineStore('collections', {
       }
 
       if (this.searchCancelToken) {
-        this.searchCancelToken.cancel('Operation canceled due to new request.');
+        this.searchCancelToken.cancel(
+          'Operation canceled due to new request.'
+        );
       }
       this.searchCancelToken = axios.CancelToken.source();
 
@@ -341,7 +360,9 @@ export const useCollectionsStore = defineStore('collections', {
 
     async fetchResourceById(category: string, id: number, language: string) {
       try {
-        const response = await axios.get(`/${category}/result/${id}/${language}`);
+        const response = await axios.get(
+          `/${category}/result/${id}/${language}`
+        );
         this.currentDetail = response.data;
       } catch (error) {
         console.error(`Error fetching ${category} with id ${id}:`, error);
@@ -349,7 +370,9 @@ export const useCollectionsStore = defineStore('collections', {
     },
 
     setSelectedCategory(category) {
-      this.selectedCategory = category || ''; // Set to empty string if null
+      if (this.selectedCategory !== category) {
+        this.selectedCategory = category || ''; // Set to empty string if null
+      }
     },
 
     // Add actions to update sortField and sortOrder

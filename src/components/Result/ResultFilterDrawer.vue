@@ -126,6 +126,7 @@ import { useMapStore } from '@/stores/map'; // Import the new map store
 import DatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { defineProps, defineEmits } from 'vue';
+import { debounce } from 'lodash';
 
 const props = defineProps({
   visible: {
@@ -213,17 +214,17 @@ const selectedSubCategory = ref(
 watch(selectedCategory, () => {
   clearLocalFilters();
   filterStore.clearFilters();
-  applyFilters(); // Trigger filters application on category change
+  debouncedApplyFilters(); // Trigger filters application on category change
 });
 
 // Watch for changes in subcategory and apply filters automatically
 watch(selectedSubCategory, () => {
-  applyFilters();
+  debouncedApplyFilters();
 });
 
 // Watch for changes in date inputs and apply filters automatically
 watch([startDate, endDate], () => {
-  applyFilters();
+  debouncedApplyFilters();
 });
 
 // Check if any filter is selected
@@ -270,6 +271,11 @@ const clearLocalFilters = () => {
 const closeDrawer = () => {
   emit('close');
 };
+
+// Debounce the applyFilters function to reduce API calls
+const debouncedApplyFilters = debounce(() => {
+  applyFilters();
+}, 300);
 
 // Function to apply filters and update the store
 const applyFilters = async () => {
@@ -347,31 +353,31 @@ const removeProvince = async () => {
   selectedLocality.value = null;
   filterStore.filterLocalitiesByProvince(null);
   localitySearch.value = ''; // Clear locality search input
-  await applyFilters(); // Trigger query after removal
+  await debouncedApplyFilters(); // Trigger query after removal
 };
 
 // Function to remove the selected locality
 const removeLocality = async () => {
   selectedLocality.value = null;
-  await applyFilters(); // Trigger query after removal
+  await debouncedApplyFilters(); // Trigger query after removal
 };
 
 // Function to remove the start date
 const removeStartDate = async () => {
   startDate.value = null;
-  await applyFilters(); // Trigger query after removal
+  await debouncedApplyFilters(); // Trigger query after removal
 };
 
 // Function to remove the end date
 const removeEndDate = async () => {
   endDate.value = null;
-  await applyFilters(); // Trigger query after removal
+  await debouncedApplyFilters(); // Trigger query after removal
 };
 
 // Function to remove the selected category
 const removeSelectedCategory = async () => {
   selectedSubCategory.value = null;
-  await applyFilters(); // Trigger query after removal
+  await debouncedApplyFilters(); // Trigger query after removal
 };
 </script>
 
@@ -482,20 +488,6 @@ select:disabled,
 .date-picker {
   display: flex;
   flex-direction: column;
-}
-
-.apply-button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.apply-button:hover {
-  background-color: #0056b3;
 }
 
 hr {

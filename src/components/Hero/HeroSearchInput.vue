@@ -19,12 +19,16 @@
 import { ref, watch } from 'vue';
 import { debounce } from 'lodash-es';
 import { useCollectionsStore } from '@/stores/collections';
+import { useMapStore } from '@/stores/map';
 
 const collectionsStore = useCollectionsStore();
+const mapStore = useMapStore();
 const searchQuery = ref(collectionsStore.searchQuery); // Initialize with value from store
 
 const onSearch = () => {
   collectionsStore.searchQuery = searchQuery.value;
+  // Optionally, set map-related flags to refit or update the map bounds
+  mapStore.shouldRefitBounds = true; // Ensure map bounds fit new search results
 };
 
 // Debounce search function to prevent multiple rapid requests
@@ -33,12 +37,15 @@ const debouncedSearch = debounce(onSearch, 1000);
 // Watch for changes in searchQuery and update store
 watch(searchQuery, (newQuery) => {
   debouncedSearch();
+  // Trigger map update directly
+  mapStore.shouldRefitBounds = true; // Ensure map updates with new search results
 });
 
 // Emit the search query when the button is clicked
 const emit = defineEmits(['search']);
 const handleSearchClick = () => {
   emit('search', searchQuery.value);
+  mapStore.shouldRefitBounds = true; // Ensure map updates with new search results
 };
 </script>
 

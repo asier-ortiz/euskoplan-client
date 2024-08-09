@@ -31,17 +31,17 @@ import { FontAwesomeIcon } from '@/font-awesome';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import { useFilterStore } from '@/stores/filter';
-import { useMapStore } from '@/stores/map'; // Import the new map store
+import { useMapStore } from '@/stores/map';
 import { calculateDistance } from '@/utils/distance';
 import ResultPopupContent from './ResultPopupContent.vue';
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 const mapContainer = ref<HTMLElement | null>(null);
 const collectionsStore = useCollectionsStore();
-const mapStore = useMapStore(); // Use the new map store
+const mapStore = useMapStore();
 const filterStore = useFilterStore();
 const locationStore = useLocationStore();
-const isDarkMode = ref(mapStore.mapMode); // Use map store for map mode
+const isDarkMode = ref(mapStore.mapMode);
 let map: Map | null = null;
 
 // State for displaying the zoom message
@@ -67,8 +67,8 @@ const mapOptions = {
     isDarkMode.value === 'dark'
       ? 'mapbox://styles/mapbox/dark-v10'
       : 'mapbox://styles/mapbox/streets-v11',
-  center: mapStore.mapCenter || [-2.6189, 43.25], // Use map store for map center
-  zoom: mapStore.mapZoom || 7, // Use map store for map zoom
+  center: mapStore.mapCenter || [-2.6189, 43.25],
+  zoom: mapStore.mapZoom || 7,
 };
 
 // Map categories to their corresponding marker images
@@ -85,9 +85,13 @@ const categoryMarkerMap = {
 
 // Determine which results to display on the map: filteredResults or searchResults
 const mapResults = computed(() => {
-  return collectionsStore.filteredResults.length > 0
-    ? collectionsStore.filteredResults
-    : collectionsStore.searchResults;
+  if (collectionsStore.searchQuery.length >= 3) {
+    return collectionsStore.searchResults;
+  }
+  if (collectionsStore.selectedCategory) {
+    return collectionsStore.filteredResults;
+  }
+  return [];
 });
 
 // Initialize the map
@@ -161,8 +165,8 @@ const initializeMap = () => {
     // Save map state when the map moves or zooms
     map.on('moveend', () => {
       const center = map.getCenter();
-      mapStore.setMapCenter({ lat: center.lat, lng: center.lng }); // Use map store for setting map center
-      mapStore.setMapZoom(map.getZoom()); // Use map store for setting map zoom
+      mapStore.setMapCenter({ lat: center.lat, lng: center.lng });
+      mapStore.setMapZoom(map.getZoom());
     });
 
     // Listen for wheel events to control zoom with the Ctrl key
@@ -275,18 +279,21 @@ const addMarkerLayers = () => {
 
 // Helper function to load and add marker image
 const loadAndAddImage = (markerImageUrl) => {
-  // Load and add the new image only if it's not already loaded
-  if (!map?.hasImage('custom-marker')) {
-    map?.loadImage(markerImageUrl, (error, image) => {
-      if (error) {
-        console.error('Error loading image:', error);
-        return;
-      }
-
-      // Add the image
-      map?.addImage('custom-marker', image);
-    });
+  // Remove existing image if it exists
+  if (map?.hasImage('custom-marker')) {
+    map.removeImage('custom-marker');
   }
+
+  // Load and add the new image
+  map?.loadImage(markerImageUrl, (error, image) => {
+    if (error) {
+      console.error('Error loading image:', error);
+      return;
+    }
+
+    // Add the image
+    map?.addImage('custom-marker', image);
+  });
 };
 
 // Helper function to fit map bounds
@@ -305,8 +312,8 @@ const fitMapBounds = () => {
     console.warn('No valid markers to fit bounds.');
   }
 
-  mapStore.didCategoryChange = false; // Reset the flag
-  mapStore.shouldRefitBounds = false; // Reset the flag
+  mapStore.didCategoryChange = false;
+  mapStore.shouldRefitBounds = false;
 };
 
 // Main function to add markers and clusters
@@ -319,7 +326,7 @@ const addMarkersAndClusters = () => {
     type: 'FeatureCollection',
     features: mapResults.value.map((markerData, index) => ({
       type: 'Feature',
-      id: index, // Ensure each feature has a unique ID
+      id: index,
       geometry: {
         type: 'Point',
         coordinates: [markerData.longitud, markerData.latitud],
@@ -335,6 +342,8 @@ const addMarkersAndClusters = () => {
       },
     })),
   };
+
+  console.log('GeoJSON data for markers:', geojson); // Debugging log to check data
 
   // Remove existing layers and source
   removeExistingLayers([
@@ -356,6 +365,7 @@ const addMarkersAndClusters = () => {
   // Fit map bounds if necessary
   if (mapStore.didCategoryChange || mapStore.shouldRefitBounds) {
     fitMapBounds();
+    mapStore.shouldRefitBounds = false;
   }
 };
 
@@ -413,7 +423,7 @@ const handleMapClick = (e) => {
 // Close the info panel
 const closePopup = () => {
   showInfoPanel.value = false;
-  mapStore.setMapPopup(null); // Clear popup state
+  mapStore.setMapPopup(null);
 };
 
 // Method to open popup using stored state
@@ -458,7 +468,7 @@ const handleClusterClick = async (e) => {
 
       map?.fitBounds(bounds, {
         padding: { top: 50, bottom: 50, left: 50, right: 50 },
-        maxZoom: zoom + 1, // Slightly zoom in for a better view
+        maxZoom: zoom + 1,
         duration: 1000,
       });
     });
@@ -474,7 +484,7 @@ const toggleMapStyle = () => {
 
   // Toggle map style
   isDarkMode.value = isDarkMode.value === 'dark' ? 'light' : 'dark';
-  mapStore.setMapMode(isDarkMode.value); // Use map store to update map mode
+  mapStore.setMapMode(isDarkMode.value);
   map.setStyle(
     isDarkMode.value === 'dark'
       ? 'mapbox://styles/mapbox/dark-v10'
@@ -485,7 +495,7 @@ const toggleMapStyle = () => {
   map.once('style.load', () => {
     map.setCenter(currentCenter);
     map.setZoom(currentZoom);
-    addMarkersAndClusters(); // Re-add markers and clusters
+    addMarkersAndClusters();
   });
 };
 
@@ -521,6 +531,9 @@ const performMapSearch = async () => {
     }
   } else if (selectedCategory) {
     await collectionsStore.filterResultsByCategory(selectedCategory, filters);
+  } else {
+    // If no category is selected, search all collections
+    await collectionsStore.searchAllCollections(searchQuery, 'es');
   }
 };
 
@@ -539,9 +552,10 @@ const formatDateForApi = (date) => {
 watch(
   () => collectionsStore.searchQuery,
   async () => {
+    await performMapSearch();
     if (isMapTabActive.value) {
-      await performMapSearch();
       addMarkersAndClusters();
+      mapStore.shouldRefitBounds = true;
     }
   }
 );
@@ -558,7 +572,7 @@ watch(
   async () => {
     if (isMapTabActive.value) {
       await performMapSearch();
-      closePopup(); // Ensure popup is closed when filters are applied
+      closePopup();
       addMarkersAndClusters();
     }
   },
@@ -577,8 +591,8 @@ watch(
   () => collectionsStore.selectedCategory,
   async (newCategory, oldCategory) => {
     if (newCategory !== oldCategory) {
-      mapStore.didCategoryChange = true; // Use map store to flag the category change
-      closePopup(); // Close the popup when the collection changes
+      mapStore.didCategoryChange = true;
+      closePopup();
       await performMapSearch();
       addMarkersAndClusters();
     }

@@ -9,6 +9,7 @@
 import { computed } from 'vue';
 import { defineEmits } from 'vue';
 import { useFilterStore } from '@/stores/filter';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const emit = defineEmits(['toggleFilterDrawer']);
 
