@@ -27,6 +27,7 @@ export const useCollectionsStore = defineStore('collections', {
     mapMode: useLocalStorage('mapMode', 'light'), // Store map mode (light or dark)
     mapPopup: null, // Add state for map popup
     didCategoryChange: false, // Track if the category changed
+    shouldRefitBounds: false, // Track if the map should refit bounds after filter changes
   }),
 
   actions: {

@@ -277,8 +277,8 @@ const addMarkersAndClusters = () => {
     });
   });
 
-  // Fit bounds only if the category changed
-  if (collectionsStore.didCategoryChange) {
+  // Fit bounds only if the category changed or filters were applied
+  if (collectionsStore.didCategoryChange || collectionsStore.shouldRefitBounds) {
     const bounds = new LngLatBounds();
     mapResults.value.forEach((markerData) => {
       bounds.extend([markerData.longitud, markerData.latitud]);
@@ -292,6 +292,7 @@ const addMarkersAndClusters = () => {
       console.warn('No valid markers to fit bounds.');
     }
     collectionsStore.didCategoryChange = false; // Reset the flag
+    collectionsStore.shouldRefitBounds = false; // Reset the flag
   }
 };
 

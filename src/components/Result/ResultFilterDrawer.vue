@@ -269,6 +269,9 @@ const applyFilters = async () => {
   // Update filtered results in the store
   await collectionsStore.filterResultsByCategory(selectedCategoryName.value, filters);
 
+  // Set flag to refit map bounds after filter changes
+  collectionsStore.shouldRefitBounds = true;
+
   emit('filtersApplied');
 };
 
