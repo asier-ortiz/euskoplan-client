@@ -80,12 +80,12 @@
           v-if="currentCategories.length"
           id="category"
           v-model="selectedSubCategory"
-          @change="applyFilters"
+          @change="debouncedApplyFilters" 
         >
-          <option value="" disabled>Selecciona una categoría para {{ selectedCategoryName }}</option>
-          <option v-for="category in currentCategories" :key="category" :value="category">
-            {{ category }}
-          </option>
+        <option value="" disabled>Selecciona una categoría para {{ selectedCategoryName }}</option>
+        <option v-for="category in currentCategories" :key="category" :value="category">
+          {{ category }}
+        </option>
         </select>
 
         <hr v-if="selectedCategory === 'Eventos'" />
