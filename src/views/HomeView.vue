@@ -22,16 +22,33 @@ const filterStore = useFilterStore();
 const performSearchAndFilter = async () => {
   const { searchQuery, selectedCategory } = collectionsStore;
 
+  // Determine the correct subcategory key and value
+  let subcategoryKey = null;
+  let subcategoryValue = null;
+
+  if (selectedCategory?.toLowerCase() === 'espacios naturales') {
+    if (filterStore.selectedCategories.natural.espacio_natural) {
+      subcategoryKey = 'nombre_subtipo_recurso_espacio_natural';
+      subcategoryValue = filterStore.selectedCategories.natural.espacio_natural;
+    } else if (filterStore.selectedCategories.natural.playas_pantanos_rios) {
+      subcategoryKey = 'nombre_subtipo_recurso_playas_pantanos_rios';
+      subcategoryValue = filterStore.selectedCategories.natural.playas_pantanos_rios;
+    }
+  } else if (filterStore.selectedCategories[selectedCategory?.toLowerCase()]) {
+    subcategoryKey = 'nombre_subtipo_recurso';
+    subcategoryValue = filterStore.selectedCategories[selectedCategory.toLowerCase()];
+  }
+
   const filters = {
     idioma: 'es',
     ...(filterStore.selectedProvince && { nombre_provincia: filterStore.selectedProvince }),
     ...(filterStore.selectedLocality && { nombre_municipio: filterStore.selectedLocality }),
-    ...(filterStore.selectedCategories[selectedCategory?.toLowerCase()] && {
-      nombre_subtipo_recurso: filterStore.selectedCategories[selectedCategory.toLowerCase()],
-    }),
+    ...(subcategoryKey && subcategoryValue && { [subcategoryKey]: subcategoryValue }),
     ...(filterStore.startDate && { fecha_inicio: formatDateForApi(filterStore.startDate) }),
     ...(filterStore.endDate && { fecha_fin: formatDateForApi(filterStore.endDate) }),
   };
+
+  console.log('Performing search with filters:', filters);
 
   await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
 };
@@ -59,7 +76,7 @@ const handleChipSelected = async (category) => {
 
 // Handle search input
 const handleSearch = async (query) => {
-  collectionsStore.searchQuery = query;
+  collectionsStore.setSearchQuery(query);
   await performSearchAndFilter();
 };
 

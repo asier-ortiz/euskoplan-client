@@ -509,14 +509,22 @@ const toggleMapStyle = () => {
 const performMapSearch = async () => {
   const { searchQuery, selectedCategory } = collectionsStore;
 
-  // Determine the correct subcategory filter key
-  const subCategoryFilterKey =
-    selectedCategory === 'Espacios Naturales'
-      ? filterStore.selectedCategories[selectedCategory.toLowerCase()] ===
-      filterStore.categories.natural.espacio_natural
-        ? 'nombre_subtipo_recurso_espacio_natural'
-        : 'nombre_subtipo_recurso_playas_pantanos_rios'
-      : 'nombre_subtipo_recurso';
+  // Determine the correct subcategory filter key and value
+  let subcategoryKey = null;
+  let subcategoryValue = null;
+
+  if (selectedCategory?.toLowerCase() === 'espacios naturales') {
+    if (filterStore.selectedCategories.natural.espacio_natural) {
+      subcategoryKey = 'nombre_subtipo_recurso_espacio_natural';
+      subcategoryValue = filterStore.selectedCategories.natural.espacio_natural;
+    } else if (filterStore.selectedCategories.natural.playas_pantanos_rios) {
+      subcategoryKey = 'nombre_subtipo_recurso_playas_pantanos_rios';
+      subcategoryValue = filterStore.selectedCategories.natural.playas_pantanos_rios;
+    }
+  } else if (filterStore.selectedCategories[selectedCategory?.toLowerCase()]) {
+    subcategoryKey = 'nombre_subtipo_recurso';
+    subcategoryValue = filterStore.selectedCategories[selectedCategory.toLowerCase()];
+  }
 
   const filters = {
     idioma: 'es',
@@ -526,10 +534,7 @@ const performMapSearch = async () => {
     ...(filterStore.selectedLocality && {
       nombre_municipio: filterStore.selectedLocality,
     }),
-    ...(filterStore.selectedCategories[selectedCategory?.toLowerCase()] && {
-      [subCategoryFilterKey]:
-        filterStore.selectedCategories[selectedCategory.toLowerCase()],
-    }),
+    ...(subcategoryKey && subcategoryValue && { [subcategoryKey]: subcategoryValue }),
     ...(filterStore.startDate && {
       fecha_inicio: formatDateForApi(filterStore.startDate),
     }),
@@ -537,6 +542,8 @@ const performMapSearch = async () => {
       fecha_fin: formatDateForApi(filterStore.endDate),
     }),
   };
+
+  console.log('Performing map search with filters:', filters);
 
   // Use fetchResults to get data based on both search and filters
   await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);

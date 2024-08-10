@@ -150,6 +150,7 @@ export const useFilterStore = defineStore('filter', {
             } else {
                 this.selectedCategories[collection] = category;
             }
+            console.log('Selected Categories:', this.selectedCategories); // Debugging log
         },
         clearFilters() {
             this.selectedProvince = null;

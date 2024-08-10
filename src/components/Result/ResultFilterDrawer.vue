@@ -82,10 +82,10 @@
           v-model="selectedSubCategory"
           @change="debouncedApplyFilters"
         >
-        <option value="" disabled>Selecciona una categoría para {{ selectedCategoryName }}</option>
-        <option v-for="category in currentCategories" :key="category" :value="category">
-          {{ category }}
-        </option>
+          <option value="" disabled>Selecciona una categoría para {{ selectedCategoryName }}</option>
+          <option v-for="category in currentCategories" :key="category" :value="category">
+            {{ category }}
+          </option>
         </select>
 
         <hr v-if="selectedCategory === 'Eventos'" />
@@ -122,7 +122,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFilterStore } from '@/stores/filter';
 import { useCollectionsStore } from '@/stores/collections';
-import { useMapStore } from '@/stores/map'; // Import the new map store
+import { useMapStore } from '@/stores/map'; // Import the map store
 import DatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { defineProps, defineEmits } from 'vue';
@@ -139,7 +139,7 @@ const emit = defineEmits(['close', 'filtersApplied']);
 
 const filterStore = useFilterStore();
 const collectionsStore = useCollectionsStore();
-const mapStore = useMapStore(); // Use the new map store
+const mapStore = useMapStore(); // Use the map store
 
 // Ensure categories are fetched when component mounts
 onMounted(() => {
@@ -148,6 +148,17 @@ onMounted(() => {
   }
   if (!filterStore.categories.accommodation.length) {
     filterStore.fetchCategories();
+  }
+
+  // Initialize selected subcategory based on stored value
+  if (selectedCategory.value === 'Espacios Naturales') {
+    if (filterStore.selectedCategories.natural.espacio_natural) {
+      selectedSubCategory.value = filterStore.selectedCategories.natural.espacio_natural;
+    } else if (filterStore.selectedCategories.natural.playas_pantanos_rios) {
+      selectedSubCategory.value = filterStore.selectedCategories.natural.playas_pantanos_rios;
+    }
+  } else {
+    selectedSubCategory.value = filterStore.selectedCategories[selectedCategory.value.toLowerCase()];
   }
 });
 
@@ -206,9 +217,7 @@ const endDate = ref(filterStore.endDate);
 const selectedCategoryName = computed(() => selectedCategory.value);
 
 // Synchronize subcategory selection with the filter store
-const selectedSubCategory = ref(
-  filterStore.selectedCategories[selectedCategory.value?.toLowerCase()]
-);
+const selectedSubCategory = ref(null);
 
 // Watch for changes in selected category and clear local filters
 watch(selectedCategory, () => {
@@ -218,7 +227,19 @@ watch(selectedCategory, () => {
 });
 
 // Watch for changes in subcategory and apply filters automatically
-watch(selectedSubCategory, () => {
+watch(selectedSubCategory, (newValue) => {
+  // Check which natural category it belongs to and set it appropriately
+  if (selectedCategory.value === 'Espacios Naturales') {
+    if (filterStore.categories.natural.espacio_natural.includes(newValue)) {
+      filterStore.selectedCategories.natural.espacio_natural = newValue;
+      filterStore.selectedCategories.natural.playas_pantanos_rios = null;
+    } else if (filterStore.categories.natural.playas_pantanos_rios.includes(newValue)) {
+      filterStore.selectedCategories.natural.playas_pantanos_rios = newValue;
+      filterStore.selectedCategories.natural.espacio_natural = null;
+    }
+  } else {
+    filterStore.selectedCategories[selectedCategory.value.toLowerCase()] = newValue;
+  }
   debouncedApplyFilters();
 });
 
@@ -284,10 +305,6 @@ const applyFilters = async () => {
   filterStore.setSelectedLocality(selectedLocality.value);
   filterStore.setStartDate(startDate.value);
   filterStore.setEndDate(endDate.value);
-  filterStore.setSelectedCategory(
-    selectedCategory.value?.toLowerCase(),
-    selectedSubCategory.value
-  );
 
   // Format dates for API
   const formattedStart = formatDateForApi(filterStore.startDate);
@@ -308,7 +325,11 @@ const applyFilters = async () => {
   };
 
   // Use fetchResults to get data based on both search and filters
-  await collectionsStore.fetchResults(selectedCategoryName.value, collectionsStore.searchQuery, filters);
+  await collectionsStore.fetchResults(
+    selectedCategoryName.value,
+    collectionsStore.searchQuery,
+    filters
+  );
 
   // Set flag to refit map bounds after filter changes
   mapStore.shouldRefitBounds = true; // Use map store to set refit flag
@@ -324,14 +345,22 @@ const getSubCategoryFilter = () => {
   if (selectedCategory.value === 'Espacios Naturales') {
     if (selectedSubCategory.value) {
       if (
-        filterStore.categories.natural.espacio_natural.includes(selectedSubCategory.value)
+        filterStore.categories.natural.espacio_natural.includes(
+          selectedSubCategory.value
+        )
       ) {
-        return { nombre_subtipo_recurso_espacio_natural: selectedSubCategory.value };
+        return {
+          nombre_subtipo_recurso_espacio_natural: selectedSubCategory.value,
+        };
       }
       if (
-        filterStore.categories.natural.playas_pantanos_rios.includes(selectedSubCategory.value)
+        filterStore.categories.natural.playas_pantanos_rios.includes(
+          selectedSubCategory.value
+        )
       ) {
-        return { nombre_subtipo_recurso_playas_pantanos_rios: selectedSubCategory.value };
+        return {
+          nombre_subtipo_recurso_playas_pantanos_rios: selectedSubCategory.value,
+        };
       }
     }
   } else {
