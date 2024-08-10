@@ -29,6 +29,11 @@ export const useCollectionsStore = defineStore('collections', {
   actions: {
     // Fetch results based on category, search query, and filters
     async fetchResults(category: string, searchQuery: string, filters: any) {
+      if (!category) {
+        this.results = [];
+        return;
+      }
+
       this.loading = true;
       const cacheKey = JSON.stringify({ category, searchQuery, filters });
 

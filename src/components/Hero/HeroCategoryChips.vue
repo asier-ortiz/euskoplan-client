@@ -4,7 +4,7 @@
       v-for="category in categories"
       :key="category"
       :class="['chip', { 'chip-selected': collectionsStore.selectedCategory === category }]"
-      @click="selectCategory(category)"
+      @click="toggleCategorySelection(category)"
       role="button"
     >
       {{ category }}
@@ -34,11 +34,17 @@ const categories = [
 
 // Debounce the API call to prevent multiple calls
 const debouncedFetchResults = debounce((category, filters) => {
-  collectionsStore.fetchResults(category, filters);
+  collectionsStore.fetchResults(category, '', filters);
 }, 300);
 
-const selectCategory = (category) => {
-  if (collectionsStore.selectedCategory !== category) {
+const toggleCategorySelection = (category) => {
+  if (collectionsStore.selectedCategory === category) {
+    // If the category is already selected, unselect it
+    collectionsStore.setSelectedCategory(null);
+    filterStore.clearFilters(); // Clear filters when category is unselected
+    collectionsStore.results = []; // Clear results when no category is selected
+  } else {
+    // Otherwise, select the category
     collectionsStore.setSelectedCategory(category);
     filterStore.clearFilters(); // Clear filters when a new category is selected
     debouncedFetchResults(category, { idioma: 'es' });
