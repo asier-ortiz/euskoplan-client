@@ -30,6 +30,7 @@ import { useRouter } from 'vue-router';
 import { useLocationStore } from '@/stores/location';
 import { calculateDistance } from '@/utils/distance';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'; // Import FontAwesomeIcon
+import { getDefaultImageUrl } from '@/utils/imageUtils'; // Import the utility function
 
 // Define props with TypeScript types
 const props = defineProps({
@@ -93,23 +94,6 @@ const distance = computed(() => {
   }
   return null;
 });
-
-// Default images by collection type
-const getDefaultImageUrl = (collection: string) => {
-  const defaultImages: Record<string, string> = {
-    accommodation: '/images/default/default-accommodation.jpg',
-    cave: '/images/default/default-cave.jpg',
-    cultural: '/images/default/default-cultural.jpg',
-    event: '/images/default/default-event.jpg',
-    fair: '/images/default/default-fair.jpg',
-    museum: '/images/default/default-museum.jpg',
-    natural: '/images/default/default-natural.jpg',
-    restaurant: '/images/default/default-restaurant.jpg',
-    default: '/images/default/default-image.jpg',
-  };
-
-  return defaultImages[collection.toLowerCase()] || defaultImages.default;
-};
 
 // Set initial image URL or default if none is available
 watch(

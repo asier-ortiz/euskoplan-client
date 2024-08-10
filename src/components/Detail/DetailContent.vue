@@ -1,5 +1,6 @@
 <template>
   <div class="detail-content">
+    <!-- Carousel for multiple images -->
     <div v-if="resource.imagenes && resource.imagenes.length > 1" class="detail-carousel">
       <div class="carousel-container">
         <div class="carousel-slide" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
@@ -8,23 +9,23 @@
           </div>
         </div>
       </div>
-      <!-- Flechas de navegación para cambiar entre imágenes -->
       <button v-if="currentIndex > 0" @click="prevSlide" class="carousel-button prev-button">‹</button>
       <button v-if="currentIndex < resource.imagenes.length - 1" @click="nextSlide" class="carousel-button next-button">›</button>
     </div>
 
-    <div v-else-if="resource.imagenes && resource.imagenes.length === 1" class="single-image">
-      <img :src="resource.imagenes[0].fuente" :alt="resource.imagenes[0].titulo || 'Imagen del recurso'" />
+    <!-- Single image or default image -->
+    <div v-else class="single-image">
+      <img :src="singleImageUrl" :alt="singleImageAlt" />
     </div>
 
     <hr class="section-separator" />
 
-    <!-- Filtramos el contenido HTML para eliminar párrafos vacíos -->
+    <!-- Filter the HTML content to remove empty paragraphs -->
     <p v-html="filteredDescription" class="description"></p>
 
     <hr class="section-separator" />
 
-    <!-- Mostrar solo si hay información disponible -->
+    <!-- Display dynamic info only if available -->
     <div v-if="hasDynamicInfo" class="dynamic-info">
       <p v-if="resource.direccion"><strong>Dirección:</strong> {{ resource.direccion }}</p>
       <p v-if="resource.codigo_postal"><strong>Código Postal:</strong> {{ resource.codigo_postal }}</p>
@@ -79,19 +80,28 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { defineProps } from 'vue';
+import { getDefaultImageUrl } from '@/utils/imageUtils'; // Import the utility function
 
 const props = defineProps<{
   resource: any;
   formatDate: (date: string) => string;
 }>();
 
-// Define the currentIndex as a ref to manage its state locally
+// Ref to manage the current slide index
 const currentIndex = ref(0);
 
-// Computed property to filter out empty paragraphs from the description
-const filteredDescription = computed(() => {
-  // Eliminar los párrafos vacíos o que solo contienen espacios no separables
-  return props.resource.descripcion.replace(/<p>&nbsp;<\/p>/g, '');
+// Computed property to get the single image URL or a default image if not available
+const singleImageUrl = computed(() => {
+  return props.resource.imagenes && props.resource.imagenes.length === 1
+    ? props.resource.imagenes[0].fuente
+    : getDefaultImageUrl(props.resource.coleccion);
+});
+
+// Computed property to get the alt text for the single image or a default text
+const singleImageAlt = computed(() => {
+  return props.resource.imagenes && props.resource.imagenes.length === 1
+    ? props.resource.imagenes[0].titulo || 'Imagen del recurso'
+    : 'Imagen por defecto';
 });
 
 // Watch for changes in the resource to reset the currentIndex
@@ -117,6 +127,12 @@ const nextSlide = () => {
     currentIndex.value++;
   }
 };
+
+// Computed property to filter out empty paragraphs from the description
+const filteredDescription = computed(() => {
+  // Remove empty paragraphs or those containing only non-breaking spaces
+  return props.resource.descripcion.replace(/<p>&nbsp;<\/p>/g, '');
+});
 
 // Computed property to determine if there is any dynamic info to display
 const hasDynamicInfo = computed(() => {
@@ -147,7 +163,7 @@ const hasDynamicInfo = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem; /* Add padding for smaller screens */
+  padding: 1rem;
 }
 
 .detail-carousel {
@@ -224,9 +240,8 @@ const hasDynamicInfo = computed(() => {
   width: 100%;
 }
 
-/* Ajusta el espacio entre párrafos dentro del contenido HTML */
 .description p {
-  margin: 0.5rem 0; /* Ajusta este valor para cambiar el espacio entre párrafos */
+  margin: 0.5rem 0;
 }
 
 .dynamic-info {
@@ -235,9 +250,9 @@ const hasDynamicInfo = computed(() => {
   width: 100%;
   font-size: 0.95rem;
   color: #333;
-  background-color: #f0f8ff; /* Light blue background for a soft tone */
-  padding: 1rem; /* Add some padding for visual space */
-  border-radius: 8px; /* Add rounded corners */
+  background-color: #f0f8ff;
+  padding: 1rem;
+  border-radius: 8px;
 }
 
 .dynamic-info p {
