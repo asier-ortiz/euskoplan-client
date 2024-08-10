@@ -28,19 +28,14 @@ export const useCollectionsStore = defineStore('collections', {
 
   actions: {
     // Fetch results based on category, search query, and filters
-    async fetchResults(category: string, searchQuery: string, filters: any) {
-      if (!category) {
-        this.results = [];
-        return;
-      }
-
-      this.loading = true;
+    async fetchResults(category: string | null, searchQuery: string, filters: any) {
+      this.loading = true; // Set loading to true at the start of the request
       const cacheKey = JSON.stringify({ category, searchQuery, filters });
 
       // Check if the results are already cached
       if (this.cache.has(cacheKey)) {
         this.results = this.cache.get(cacheKey);
-        this.loading = false;
+        this.loading = false; // Set loading to false after cache check
         return;
       }
 
@@ -49,7 +44,7 @@ export const useCollectionsStore = defineStore('collections', {
         let params = { idioma: 'es', ...filters };
 
         // Determine endpoint and parameters based on category
-        switch (category.toLowerCase()) {
+        switch (category?.toLowerCase()) {
           case 'alojamientos':
             endpoint = '/accommodation/results/filter';
             break;
@@ -75,9 +70,9 @@ export const useCollectionsStore = defineStore('collections', {
             endpoint = '/restaurant/results/filter';
             break;
           default:
-            console.error('Invalid category:', category);
-            this.results = [];
-            this.loading = false;
+            // If no category is selected, perform a general search across all collections
+            await this.searchAllCollections(searchQuery, 'es');
+            this.loading = false; // Ensure loading is set to false here
             return;
         }
 
@@ -92,7 +87,7 @@ export const useCollectionsStore = defineStore('collections', {
         console.error(`Error fetching results for category ${category}:`, error);
         this.results = [];
       } finally {
-        this.loading = false;
+        this.loading = false; // Set loading to false in the finally block
       }
     },
 
@@ -149,136 +144,10 @@ export const useCollectionsStore = defineStore('collections', {
       }
     },
 
-    // Perform a search within a specific category
-    async searchInCategory(category: string | null, query: string, language: string) {
-      if (!category) {
-        console.error('Category is null or undefined.');
-        this.searchResults = [];
-        return;
-      }
-
-      const cacheKey = JSON.stringify({ category, query, language });
-
-      // Check if the results are already cached
-      if (this.searchCache.has(cacheKey)) {
-        this.searchResults = this.searchCache.get(cacheKey);
-        return;
-      }
-
-      if (this.searchCancelToken) {
-        this.searchCancelToken.cancel('Operation canceled due to new request.');
-      }
-      this.searchCancelToken = axios.CancelToken.source();
-
-      if (query.length < 3) {
-        this.searchResults = [];
-        return;
-      }
-
-      this.loading = true;
-      this.searchResults = [];
-
-      try {
-        switch (category.toLowerCase()) {
-          case 'alojamientos':
-            this.searchResults = await this.performSearch('/accommodation/results/search', { idioma: language, busqueda: query });
-            break;
-          case 'cuevas y restos arqueológicos':
-            this.searchResults = await this.performSearch('/cave/results/search', { idioma: language, busqueda: query });
-            break;
-          case 'edificios religiosos y castillos':
-            this.searchResults = await this.performSearch('/cultural/results/search', { idioma: language, busqueda: query });
-            break;
-          case 'eventos':
-            this.searchResults = await this.performSearch('/event/results/search', { idioma: language, busqueda: query });
-            break;
-          case 'parques temáticos':
-            this.searchResults = await this.performSearch('/fair/results/search', { idioma: language, busqueda: query });
-            break;
-          case 'museos y centros de interpretación':
-            this.searchResults = await this.performSearch('/museum/results/search', { idioma: language, busqueda: query });
-            break;
-          case 'espacios naturales':
-            this.searchResults = await this.performSearch('/natural/results/search', { idioma: language, busqueda: query });
-            break;
-          case 'restaurantes':
-            this.searchResults = await this.performSearch('/restaurant/results/search', { idioma: language, busqueda: query });
-            break;
-          default:
-            console.error('Unrecognized category:', category);
-            this.searchResults = [];
-            break;
-        }
-
-        // Cache the search results
-        this.searchCache.set(cacheKey, this.searchResults);
-      } catch (error) {
-        console.error('Error during search:', error);
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    // Perform a search across all collections
-    async searchAllCollections(query: string, language: string) {
-      const cacheKey = JSON.stringify({ query, language });
-
-      // Check if the results are already cached
-      if (this.searchCache.has(cacheKey)) {
-        this.searchResults = this.searchCache.get(cacheKey);
-        return;
-      }
-
-      if (this.searchCancelToken) {
-        this.searchCancelToken.cancel('Operation canceled due to new request.');
-      }
-
-      this.searchCancelToken = axios.CancelToken.source();
-
-      if (query.length < 3) {
-        this.searchResults = [];
-        return;
-      }
-
-      this.loading = true;
-      this.searchResults = [];
-
-      try {
-        if (this.selectedCategory) {
-          await this.searchInCategory(this.selectedCategory, query, language);
-        } else {
-          const accommodations = await this.performSearch('/accommodation/results/search', { idioma: language, busqueda: query });
-          const caves = await this.performSearch('/cave/results/search', { idioma: language, busqueda: query });
-          const culturals = await this.performSearch('/cultural/results/search', { idioma: language, busqueda: query });
-          const events = await this.performSearch('/event/results/search', { idioma: language, busqueda: query });
-          const fairs = await this.performSearch('/fair/results/search', { idioma: language, busqueda: query });
-          const museums = await this.performSearch('/museum/results/search', { idioma: language, busqueda: query });
-          const naturals = await this.performSearch('/natural/results/search', { idioma: language, busqueda: query });
-          const restaurants = await this.performSearch('/restaurant/results/search', { idioma: language, busqueda: query });
-
-          this.searchResults = [
-            ...accommodations,
-            ...caves,
-            ...culturals,
-            ...events,
-            ...fairs,
-            ...museums,
-            ...naturals,
-            ...restaurants,
-          ];
-
-          // Cache the search results
-          this.searchCache.set(cacheKey, this.searchResults);
-        }
-      } finally {
-        this.loading = false;
-      }
-    },
-
     // Helper function to perform search requests
     async performSearch(endpoint: string, params: any) {
       try {
-        const response = await axios.get(endpoint, { params, cancelToken: this.searchCancelToken.token });
+        const response = await axios.get(endpoint, { params, cancelToken: this.searchCancelToken?.token });
         return response.data;
       } catch (error) {
         if (axios.isCancel(error)) {
@@ -287,6 +156,42 @@ export const useCollectionsStore = defineStore('collections', {
           console.error(`Error searching ${endpoint.split('/')[1]}:`, error);
         }
         return [];
+      }
+    },
+
+    // Perform a search across all collections
+    async searchAllCollections(query: string, language: string) {
+      if (!query || query.length < 3) {
+        this.results = [];
+        return;
+      }
+
+      this.loading = true; // Set loading to true when starting the search
+      this.searchResults = [];
+
+      try {
+        const endpoints = [
+          '/accommodation/results/filter',
+          '/cave/results/filter',
+          '/cultural/results/filter',
+          '/event/results/filter',
+          '/fair/results/filter',
+          '/museum/results/filter',
+          '/natural/results/filter',
+          '/restaurant/results/filter',
+        ];
+
+        const requests = endpoints.map(endpoint =>
+          axios.get(endpoint, { params: { idioma: language, busqueda: query } })
+        );
+
+        const responses = await Promise.all(requests);
+        this.results = responses.flatMap(response => response.data);
+      } catch (error) {
+        console.error('Error fetching results for all collections:', error);
+        this.results = [];
+      } finally {
+        this.loading = false; // Ensure loading is set to false in the finally block
       }
     },
   },

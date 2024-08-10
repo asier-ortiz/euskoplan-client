@@ -1,4 +1,3 @@
-<!-- src/components/HeroSearchInput.vue -->
 <template>
   <div class="search-container">
     <input

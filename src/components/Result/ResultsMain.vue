@@ -1,5 +1,7 @@
+<!-- ResultsMain.vue -->
 <template>
   <div class="results-view">
+    <!-- Ensure the spinner is bound to the loading state -->
     <Spinner :visible="collectionsStore.loading" />
     <div class="tabs-and-filter">
       <div class="tabs">
@@ -51,7 +53,7 @@ const setActiveTab = (tab) => {
   collectionsStore.setActiveTab(tab);
 };
 
-// Compute the number of results using unified results array
+// Compute the number of results using the unified results array
 const resultsCount = computed(() => {
   return collectionsStore.results.length;
 });

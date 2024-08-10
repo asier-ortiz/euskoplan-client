@@ -4,7 +4,7 @@
       v-for="category in categories"
       :key="category"
       :class="['chip', { 'chip-selected': collectionsStore.selectedCategory === category }]"
-      @click="toggleCategorySelection(category)"
+      @click="toggleCategory(category)"
       role="button"
     >
       {{ category }}
@@ -16,7 +16,7 @@
 import { ref } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
 import { useFilterStore } from '@/stores/filter';
-import { debounce } from 'lodash'; // Ensure lodash-es is used to support tree-shaking
+import { debounce } from 'lodash-es'; // Ensure lodash-es is used to support tree-shaking
 
 const collectionsStore = useCollectionsStore();
 const filterStore = useFilterStore();
@@ -33,21 +33,25 @@ const categories = [
 ];
 
 // Debounce the API call to prevent multiple calls
-const debouncedFetchResults = debounce((category, filters) => {
-  collectionsStore.fetchResults(category, '', filters);
+const debouncedFetchResults = debounce((category, searchQuery) => {
+  collectionsStore.fetchResults(category, searchQuery, { idioma: 'es' });
 }, 300);
 
-const toggleCategorySelection = (category) => {
-  if (collectionsStore.selectedCategory === category) {
-    // If the category is already selected, unselect it
-    collectionsStore.setSelectedCategory(null);
-    filterStore.clearFilters(); // Clear filters when category is unselected
-    collectionsStore.results = []; // Clear results when no category is selected
-  } else {
-    // Otherwise, select the category
-    collectionsStore.setSelectedCategory(category);
+const toggleCategory = (category) => {
+  // Toggle category selection
+  const isCurrentlySelected = collectionsStore.selectedCategory === category;
+  const newCategory = isCurrentlySelected ? null : category;
+
+  collectionsStore.setSelectedCategory(newCategory);
+
+  if (newCategory) {
     filterStore.clearFilters(); // Clear filters when a new category is selected
-    debouncedFetchResults(category, { idioma: 'es' });
+
+    // Fetch results using the current search query for the selected category
+    debouncedFetchResults(newCategory, collectionsStore.searchQuery);
+  } else {
+    // Clear results if no category is selected
+    collectionsStore.results = [];
   }
 };
 </script>
