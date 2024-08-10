@@ -1,3 +1,4 @@
+<!-- src/components/HomeView.vue -->
 <template>
   <div>
     <Hero @chipSelected="handleChipSelected" @search="handleSearch" />
@@ -18,7 +19,7 @@ const collectionsStore = useCollectionsStore();
 const filterStore = useFilterStore();
 
 // Perform the search based on current state
-const performSearch = async () => {
+const performSearchAndFilter = async () => {
   const { searchQuery, selectedCategory } = collectionsStore;
 
   const filters = {
@@ -32,15 +33,7 @@ const performSearch = async () => {
     ...(filterStore.endDate && { fecha_fin: formatDateForApi(filterStore.endDate) }),
   };
 
-  if (searchQuery.length >= 3) {
-    if (selectedCategory) {
-      await collectionsStore.searchInCategory(selectedCategory, searchQuery, 'es');
-    } else {
-      await collectionsStore.searchAllCollections(searchQuery, 'es');
-    }
-  } else if (selectedCategory) {
-    await collectionsStore.filterResultsByCategory(selectedCategory, filters);
-  }
+  await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
 };
 
 // Format date helper function
@@ -53,7 +46,7 @@ const formatDateForApi = (date) => {
 // Execute the search on initial load
 onMounted(() => {
   if (collectionsStore.searchQuery || collectionsStore.selectedCategory) {
-    performSearch();
+    performSearchAndFilter();
   }
 });
 
@@ -61,13 +54,13 @@ onMounted(() => {
 const handleChipSelected = async (category) => {
   filterStore.clearFilters();
   collectionsStore.setSelectedCategory(category);
-  await performSearch();
+  await performSearchAndFilter();
 };
 
 // Handle search input
 const handleSearch = async (query) => {
   collectionsStore.searchQuery = query;
-  await performSearch();
+  await performSearchAndFilter();
 };
 
 // Watch for changes in searchQuery and selectedCategory
@@ -75,7 +68,7 @@ watch(
   () => [collectionsStore.searchQuery, collectionsStore.selectedCategory],
   async ([newQuery, newCategory], [oldQuery, oldCategory]) => {
     if (newQuery !== oldQuery || newCategory !== oldCategory) {
-      await performSearch();
+      await performSearchAndFilter();
     }
   }
 );

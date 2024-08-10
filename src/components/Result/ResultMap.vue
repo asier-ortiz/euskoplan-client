@@ -85,13 +85,7 @@ const categoryMarkerMap = {
 
 // Determine which results to display on the map: filteredResults or searchResults
 const mapResults = computed(() => {
-  if (collectionsStore.searchQuery.length >= 3) {
-    return collectionsStore.searchResults;
-  }
-  if (collectionsStore.selectedCategory) {
-    return collectionsStore.filteredResults;
-  }
-  return [];
+  return collectionsStore.results;
 });
 
 // Initialize the map
@@ -523,18 +517,8 @@ const performMapSearch = async () => {
     }),
   };
 
-  if (searchQuery.length >= 3) {
-    if (selectedCategory) {
-      await collectionsStore.searchInCategory(selectedCategory, searchQuery, 'es');
-    } else {
-      await collectionsStore.searchAllCollections(searchQuery, 'es');
-    }
-  } else if (selectedCategory) {
-    await collectionsStore.filterResultsByCategory(selectedCategory, filters);
-  } else {
-    // If no category is selected, search all collections
-    await collectionsStore.searchAllCollections(searchQuery, 'es');
-  }
+  // Use fetchResults to get data based on both search and filters
+  await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
 };
 
 // Format date helper function

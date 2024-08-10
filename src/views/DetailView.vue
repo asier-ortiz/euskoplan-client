@@ -2,7 +2,6 @@
   <div class="detail-view-container">
     <Spinner v-if="loading" :visible="loading" />
     <div v-else class="detail-view">
-
       <!-- Include DetailHeaderButtons Component -->
       <DetailHeaderButtons
         :goBackHome="goBackHome"
@@ -40,7 +39,6 @@
         :handleRelatedImageError="handleRelatedImageError"
         :getDefaultImage="getDefaultImage"
       />
-
     </div>
   </div>
 </template>
@@ -52,11 +50,11 @@ import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import { useFavoritesStore } from '@/stores/favorites';
 import { useAuthStore } from '@/stores/auth';
+import { useMapStore } from '@/stores/map'; // Import map store
 import { calculateDistance } from '@/utils/distance';
 import mapboxgl from 'mapbox-gl';
 import Swal from 'sweetalert2';
 import Spinner from '@/components/Misc/LoadingSpinner.vue';
-import { FontAwesomeIcon } from '@/font-awesome';
 import DetailContent from '@/components/Detail/DetailContent.vue';
 import DetailMap from '@/components/Detail/DetailMap.vue';
 import DetailRelatedResources from '@/components/Detail/DetailRelatedResources.vue';
@@ -71,12 +69,13 @@ const collectionsStore = useCollectionsStore();
 const locationStore = useLocationStore();
 const favoritesStore = useFavoritesStore();
 const authStore = useAuthStore();
+const mapStore = useMapStore(); // Use the map store
 
 const resource = ref<any>(null);
 const currentIndex = ref<number>(0);
 const loading = ref<boolean>(true);
 const relatedResources = ref<any[]>([]);
-const isDarkMode = ref(collectionsStore.mapMode);
+const isDarkMode = ref(mapStore.mapMode); // Use map store for dark mode
 
 let map: mapboxgl.Map | undefined;
 

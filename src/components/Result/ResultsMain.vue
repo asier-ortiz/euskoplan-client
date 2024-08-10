@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref } from 'vue';
 import ResultCardContainer from './ResultCardContainer.vue';
 import ResultMap from './ResultMap.vue';
 import FilterDrawer from '@/components/Result/ResultFilterDrawer.vue';
@@ -51,15 +51,9 @@ const setActiveTab = (tab) => {
   collectionsStore.setActiveTab(tab);
 };
 
-// Compute the number of results
+// Compute the number of results using unified results array
 const resultsCount = computed(() => {
-  if (collectionsStore.searchQuery.length >= 3) {
-    return collectionsStore.searchResults.length;
-  }
-  if (collectionsStore.selectedCategory) {
-    return collectionsStore.filteredResults.length;
-  }
-  return 0;
+  return collectionsStore.results.length;
 });
 </script>
 

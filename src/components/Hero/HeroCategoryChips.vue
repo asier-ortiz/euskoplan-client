@@ -16,7 +16,7 @@
 import { ref } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
 import { useFilterStore } from '@/stores/filter';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash'; // Ensure lodash-es is used to support tree-shaking
 
 const collectionsStore = useCollectionsStore();
 const filterStore = useFilterStore();
@@ -33,15 +33,15 @@ const categories = [
 ];
 
 // Debounce the API call to prevent multiple calls
-const debouncedFilterResults = debounce((category, filters) => {
-  collectionsStore.filterResultsByCategory(category, filters);
+const debouncedFetchResults = debounce((category, filters) => {
+  collectionsStore.fetchResults(category, filters);
 }, 300);
 
 const selectCategory = (category) => {
   if (collectionsStore.selectedCategory !== category) {
     collectionsStore.setSelectedCategory(category);
     filterStore.clearFilters(); // Clear filters when a new category is selected
-    debouncedFilterResults(category, { idioma: 'es' });
+    debouncedFetchResults(category, { idioma: 'es' });
   }
 };
 </script>

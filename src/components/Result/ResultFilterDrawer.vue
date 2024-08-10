@@ -307,8 +307,8 @@ const applyFilters = async () => {
     ...(formattedEnd && { fecha_fin: formattedEnd }),
   };
 
-  // Update filtered results in the store
-  await collectionsStore.filterResultsByCategory(selectedCategoryName.value, filters);
+  // Use fetchResults to get data based on both search and filters
+  await collectionsStore.fetchResults(selectedCategoryName.value, collectionsStore.searchQuery, filters);
 
   // Set flag to refit map bounds after filter changes
   mapStore.shouldRefitBounds = true; // Use map store to set refit flag

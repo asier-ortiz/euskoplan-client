@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import ResultCard from '@/components/Result/ResultCard.vue';
@@ -45,15 +45,7 @@ const collectionsStore = useCollectionsStore();
 const locationStore = useLocationStore();
 
 // Compute the results to display
-const results = computed(() => {
-  if (collectionsStore.searchQuery.length >= 3) {
-    return collectionsStore.searchResults;
-  }
-  if (collectionsStore.selectedCategory) {
-    return collectionsStore.filteredResults;
-  }
-  return [];
-});
+const results = computed(() => collectionsStore.results || []); // Ensure results is defined
 
 // Determine the subtype based on collection type
 const getSubtype = (item) => {
