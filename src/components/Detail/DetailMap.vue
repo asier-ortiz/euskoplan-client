@@ -3,6 +3,10 @@
     <!-- Add the heading for the map -->
     <h3 class="map-heading">Ubicación</h3>
     <div ref="mapContainer" class="map-container">
+      <!-- Add the toggle style button -->
+      <button class="toggle-style-button" @click="toggleMapStyle" title="Toggle Dark/Light Mode">
+        <FontAwesomeIcon :icon="[mapStore.mapMode === 'dark' ? 'fas' : 'fas', mapStore.mapMode === 'dark' ? 'sun' : 'moon']" />
+      </button>
       <div v-show="showZoomMessage" class="zoom-message">
         Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom
       </div>
@@ -11,13 +15,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, defineProps } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import mapboxgl from 'mapbox-gl';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { useMapStore } from '@/stores/map'; // Import your map store
 
 const props = defineProps<{
   resource: any;
-  isDarkMode: string;
 }>();
+
+const mapStore = useMapStore(); // Use the map store
 
 const mapContainer = ref<HTMLDivElement | null>(null);
 let map: mapboxgl.Map | undefined;
@@ -30,7 +37,7 @@ const initializeMap = () => {
   if (mapContainer.value) {
     map = new mapboxgl.Map({
       container: mapContainer.value,
-      style: props.isDarkMode === 'dark'
+      style: mapStore.mapMode === 'dark'
         ? 'mapbox://styles/mapbox/dark-v10'
         : 'mapbox://styles/mapbox/streets-v11',
       center: [parseFloat(props.resource.longitud), parseFloat(props.resource.latitud)],
@@ -113,6 +120,28 @@ const getMarkerImageUrl = (collection: string) => {
   return categoryMarkerMap[collection] || '/images/map/default-marker.png';
 };
 
+// Toggle the map style between dark and light mode
+const toggleMapStyle = () => {
+  // Toggle the map mode in the store
+  mapStore.setMapMode(mapStore.mapMode === 'dark' ? 'light' : 'dark');
+
+  // Update the map style
+  if (map) {
+    const currentCenter = map.getCenter();
+    const currentZoom = map.getZoom();
+    map.setStyle(
+      mapStore.mapMode === 'dark'
+        ? 'mapbox://styles/mapbox/dark-v10'
+        : 'mapbox://styles/mapbox/streets-v11'
+    );
+
+    map.once('style.load', () => {
+      map.setCenter(currentCenter);
+      map.setZoom(currentZoom);
+    });
+  }
+};
+
 onMounted(() => {
   initializeMap();
 });
@@ -123,6 +152,27 @@ onUnmounted(() => {
     mapContainer.value?.removeEventListener('wheel', handleWheelZoom);
   }
 });
+
+// Watch for changes in the global map mode and update the map style
+watch(
+  () => mapStore.mapMode,
+  (newMode) => {
+    if (map) {
+      const currentCenter = map.getCenter();
+      const currentZoom = map.getZoom();
+      map.setStyle(
+        newMode === 'dark'
+          ? 'mapbox://styles/mapbox/dark-v10'
+          : 'mapbox://styles/mapbox/streets-v11'
+      );
+
+      map.once('style.load', () => {
+        map.setCenter(currentCenter);
+        map.setZoom(currentZoom);
+      });
+    }
+  }
+);
 </script>
 
 <style scoped>
@@ -168,5 +218,22 @@ onUnmounted(() => {
   z-index: 3;
   text-align: center;
   font-size: 1rem;
+}
+
+.toggle-style-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+.toggle-style-button:hover {
+  background-color: #f0f0f0;
 }
 </style>
