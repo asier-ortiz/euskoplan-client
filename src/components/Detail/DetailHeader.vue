@@ -1,4 +1,3 @@
-<!-- DetailHeader.vue -->
 <template>
   <div class="detail-header">
     <h1>{{ resource.nombre }}</h1>
@@ -31,10 +30,38 @@ defineProps<{
 
 <style scoped>
 .detail-header {
+  position: relative; /* Allows positioning of the pseudo-element */
   text-align: center;
-  margin: 2rem auto; /* Consistent margin for alignment and spacing */
+  margin: 2rem auto;
   width: 100%;
-  max-width: 600px; /* Align with content and map width */
+  max-width: 600px;
+  z-index: 1; /* Ensures text is above the background */
+}
+
+.detail-header::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%; /* Extend more towards the sides */
+  height: 140%; /* Extend a bit more towards the bottom */
+  background: radial-gradient(
+    circle at center,
+    rgba(240, 220, 250, 0.2) 0%,
+    rgba(240, 220, 250, 0.1) 40%,
+    transparent 80%
+  );
+  border-radius: 50%; /* Creates a more organic, cloud-like shape */
+  z-index: 0;
+  pointer-events: none; /* Ensures background doesn't interfere with interactions */
+}
+
+.detail-header h1,
+.detail-header h2,
+.detail-header p {
+  position: relative; /* Keeps text above the background */
+  z-index: 1;
 }
 
 .detail-header h1 {
@@ -51,18 +78,18 @@ defineProps<{
 
 .detail-header p {
   font-size: 1rem;
-  color: #555555; /* Matching color for municipio text */
+  color: #555555;
   margin-top: 0.5rem;
 }
 
 .location-icon {
-  margin-right: 0.5rem; /* Space between icon and text */
-  color: #007bff; /* Color for the location icon */
+  margin-right: 0.5rem;
+  color: #007bff;
 }
 
 .municipio-text {
   font-size: 1rem;
-  color: #555555; /* Matching color from ResultCard.vue */
+  color: #555555;
   margin-top: 0.5rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;

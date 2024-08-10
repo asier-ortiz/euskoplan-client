@@ -52,6 +52,7 @@ import { useFavoritesStore } from '@/stores/favorites';
 import { useAuthStore } from '@/stores/auth';
 import { useMapStore } from '@/stores/map'; // Import map store
 import { calculateDistance } from '@/utils/distance';
+import { getDefaultImageUrl } from '@/utils/imageUtils'; // Import getDefaultImageUrl from imageUtils
 import mapboxgl from 'mapbox-gl';
 import Swal from 'sweetalert2';
 import Spinner from '@/components/Misc/LoadingSpinner.vue';
@@ -77,7 +78,7 @@ const loading = ref<boolean>(true);
 const relatedResources = ref<any[]>([]);
 const isDarkMode = ref(mapStore.mapMode); // Use map store for dark mode
 
-let map: mapboxgl.Map | undefined;
+// let map: mapboxgl.Map | undefined;
 
 const distance = computed(() => {
   if (
@@ -207,19 +208,7 @@ const navigateToResource = (related: any) => {
 };
 
 const getDefaultImage = (collection: string) => {
-  const defaultImages = {
-    accommodation: '/images/default/default-accommodation.jpg',
-    cave: '/images/default/default-cave.jpg',
-    cultural: '/images/default/default-cultural.jpg',
-    event: '/images/default/default-event.jpg',
-    fair: '/images/default/default-fair.jpg',
-    museum: '/images/default/default-museum.jpg',
-    natural: '/images/default/default-natural.jpg',
-    restaurant: '/images/default/default-restaurant.jpg',
-    default: '/images/default/default-image.jpg',
-  };
-
-  return defaultImages[collection.toLowerCase()] || defaultImages.default;
+  return getDefaultImageUrl(collection); // Use the function from imageUtils
 };
 
 const goBackHome = () => {
@@ -274,8 +263,9 @@ onMounted(() => {
 
 .section-separator {
   border: none;
-  border-top: 1px solid #ddd;
-  margin: 1.5rem 0;
+  border-top: 2px dotted #8bbcd7; /* Light blue color for dotted line */
+  margin: 2rem 0; /* Margin for spacing around the separator */
+  background: none; /* Remove any background to keep focus on the line */
 }
 
 .loading {
