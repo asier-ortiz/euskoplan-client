@@ -1,7 +1,14 @@
 <template>
   <div class="result-card" @click="navigateToDetail">
     <div class="card-image" :style="{ backgroundImage: `url(${imageUrl})` }">
-      <img :src="imageUrl" @error="handleImageError" class="hidden-image" alt="Image of {{ name }}" />
+      <div v-if="!imageLoaded" class="skeleton-loader"></div> <!-- Skeleton loader -->
+      <img
+        :src="imageUrl"
+        @load="handleImageLoad"
+        @error="handleImageError"
+        class="hidden-image"
+        alt="Image of {{ name }}"
+      />
       <!-- Event Date Overlay -->
       <div v-if="isEvent" class="event-date">{{ formattedDate }}</div>
     </div>
@@ -72,6 +79,7 @@ const locationStore = useLocationStore();
 
 // Define a ref to store the current image URL
 const imageUrl = ref('');
+const imageLoaded = ref(false); // Ref to track if the image has loaded
 
 // Distance calculation
 const distance = computed(() => {
@@ -116,9 +124,15 @@ watch(
   { immediate: true }
 );
 
+// Handle image loading success by hiding the skeleton loader
+const handleImageLoad = () => {
+  imageLoaded.value = true;
+};
+
 // Handle image loading errors by setting the default image URL
 const handleImageError = () => {
   imageUrl.value = getDefaultImageUrl(props.collection);
+  imageLoaded.value = true; // Hide skeleton if error occurs
 };
 
 // Navigate to detail page on card click
@@ -171,6 +185,32 @@ const formattedDate = computed(() => {
   width: 100%;
   height: 100%;
   object-fit: cover; /* Ensures image covers the entire container */
+  transition: opacity 0.3s ease; /* Smooth transition for image */
+  opacity: 0; /* Start invisible */
+}
+
+.hidden-image.loaded {
+  opacity: 1; /* Fade in image once loaded */
+}
+
+.skeleton-loader {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .card-content {
