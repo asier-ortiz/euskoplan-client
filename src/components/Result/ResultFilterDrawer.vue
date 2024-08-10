@@ -80,7 +80,7 @@
           v-if="currentCategories.length"
           id="category"
           v-model="selectedSubCategory"
-          @change="debouncedApplyFilters" 
+          @change="debouncedApplyFilters"
         >
         <option value="" disabled>Selecciona una categoría para {{ selectedCategoryName }}</option>
         <option v-for="category in currentCategories" :key="category" :value="category">

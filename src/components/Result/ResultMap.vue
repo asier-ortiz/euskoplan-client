@@ -83,10 +83,22 @@ const categoryMarkerMap = {
   restaurantes: '/images/map/restaurants-marker.png',
 };
 
-// Determine which results to display on the map: filteredResults or searchResults
+// Determine which results to display on the map
 const mapResults = computed(() => {
   return collectionsStore.results;
 });
+
+// Determine the subtype based on collection type
+const getSubtype = (item) => {
+  if (item.coleccion.toLowerCase() === 'natural') {
+    return (
+      item.nombre_subtipo_recurso_espacio_natural ||
+      item.nombre_subtipo_recurso_playas_pantanos_rios ||
+      ''
+    );
+  }
+  return item.nombre_subtipo_recurso || '';
+};
 
 // Initialize the map
 const initializeMap = () => {
@@ -327,7 +339,7 @@ const addMarkersAndClusters = () => {
       },
       properties: {
         title: markerData.nombre,
-        subtype: markerData.nombre_subtipo_recurso || '',
+        subtype: getSubtype(markerData),
         municipality: markerData.nombre_municipio,
         code: markerData.codigo,
         images: markerData.imagenes ? JSON.stringify(markerData.imagenes) : '[]',
@@ -497,6 +509,15 @@ const toggleMapStyle = () => {
 const performMapSearch = async () => {
   const { searchQuery, selectedCategory } = collectionsStore;
 
+  // Determine the correct subcategory filter key
+  const subCategoryFilterKey =
+    selectedCategory === 'Espacios Naturales'
+      ? filterStore.selectedCategories[selectedCategory.toLowerCase()] ===
+      filterStore.categories.natural.espacio_natural
+        ? 'nombre_subtipo_recurso_espacio_natural'
+        : 'nombre_subtipo_recurso_playas_pantanos_rios'
+      : 'nombre_subtipo_recurso';
+
   const filters = {
     idioma: 'es',
     ...(filterStore.selectedProvince && {
@@ -506,7 +527,7 @@ const performMapSearch = async () => {
       nombre_municipio: filterStore.selectedLocality,
     }),
     ...(filterStore.selectedCategories[selectedCategory?.toLowerCase()] && {
-      nombre_subtipo_recurso:
+      [subCategoryFilterKey]:
         filterStore.selectedCategories[selectedCategory.toLowerCase()],
     }),
     ...(filterStore.startDate && {
