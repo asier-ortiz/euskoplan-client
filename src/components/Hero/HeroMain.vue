@@ -3,25 +3,43 @@
     <div class="hero-overlay" :style="{ backgroundColor: overlayColor }">
       <div class="hero-content">
         <h1>Encuentra tu próxima aventura</h1>
-        <SearchInput @search="onSearch" />
+        <!-- CategoryChips placed above SearchInput -->
         <div class="chips-and-filter">
           <CategoryChips @chipSelected="onChipSelected" />
         </div>
+        <!-- Use v-show to keep space reserved -->
+        <transition name="fade">
+          <div v-show="isCategorySelected" class="search-input-wrapper">
+            <SearchInput @search="onSearch" />
+          </div>
+        </transition>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { defineEmits } from 'vue';
+import { useCollectionsStore } from '@/stores/collections';
 import SearchInput from '@/components/Hero/HeroSearchInput.vue';
 import CategoryChips from '@/components/Hero/HeroCategoryChips.vue';
 
 const emit = defineEmits(['chipSelected', 'search']);
 const overlayColor = ref('rgba(0, 0, 0, 0.4)');
 
+// Access the collections store
+const collectionsStore = useCollectionsStore();
+
+// Reactive reference to the selected category
+const selectedCategory = computed(() => collectionsStore.selectedCategory);
+
+// Computed property to determine if a category is selected
+const isCategorySelected = computed(() => selectedCategory.value !== '');
+
+// Emit when a chip is selected and update the store
 const onChipSelected = (category) => {
+  collectionsStore.setSelectedCategory(category);
   emit('chipSelected', category);
 };
 
@@ -47,10 +65,10 @@ onUnmounted(() => {
 <style scoped>
 .hero-container {
   position: relative;
-  width: 100vw; /* Ensure full viewport width */
-  left: 50%; /* Center hero with respect to the viewport */
+  width: 100vw;
+  left: 50%;
   right: 50%;
-  margin-left: -50vw; /* Adjust position to avoid overflow */
+  margin-left: -50vw;
   height: 400px;
   background: url('/images/gaztelugatxe.webp') no-repeat center center;
   background-size: cover;
@@ -89,6 +107,42 @@ onUnmounted(() => {
   justify-content: center;
   gap: 0.5rem;
   margin-top: 2rem;
+  margin-bottom: 1rem;
+  width: 100%; /* Full width for uniform appearance */
+  max-width: 800px; /* Same max-width as hero-content */
+  padding: 0 2rem; /* Padding to center the chips */
+}
+
+.search-input-wrapper {
+  margin-top: 1rem; /* Margin for spacing */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Full width to match chips-and-filter */
+  max-width: 800px; /* Same max-width for consistency */
+  padding: 0 2rem; /* Padding to center the input */
+  opacity: 1;
+}
+
+/* Make the SearchInput full width */
+.search-input-wrapper input {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem 1rem;
+  border: 2px solid #007bff;
+  border-radius: 25px 0 0 25px;
+  outline: none;
+  font-size: 1rem;
+}
+
+/* Fade transition styles */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 @media (max-width: 768px) {

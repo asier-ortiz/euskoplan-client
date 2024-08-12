@@ -11,16 +11,17 @@ axios.defaults.baseURL = config.apiBaseUrl;
 export const useCollectionsStore = defineStore('collections', {
   state: () => ({
     results: [], // Unified results array for search and filters
-    filteredResults: [], // Results filtered by category and other filters
-    searchResults: [], // Results from search operations
+
     selectedCategory: useLocalStorage('selectedCategory', ''), // Default to an empty string
     searchQuery: useLocalStorage('searchQuery', ''), // Store search query
-    searchCancelToken: null, // Cancel token for search requests
+    cancelToken: null, // Change to abort controller
+
     loading: false, // Loading state
     currentDetail: null, // Current detailed resource
     relatedResources: [], // Related resources for detail view
     cache: new Map(), // Cache for filtered results
     searchCache: new Map(), // Cache for search results
+
     sortField: useLocalStorage('sortField', 'name'), // Field for sorting results
     sortOrder: useLocalStorage('sortOrder', 'asc'), // Order for sorting results
     activeTab: useLocalStorage('activeTab', 'cards'), // Store active tab state
@@ -70,8 +71,6 @@ export const useCollectionsStore = defineStore('collections', {
             endpoint = '/restaurant/results/filter';
             break;
           default:
-            // If no category is selected, perform a general search across all collections
-            await this.searchAllCollections(searchQuery, 'es');
             this.loading = false; // Ensure loading is set to false here
             return;
         }
@@ -144,55 +143,5 @@ export const useCollectionsStore = defineStore('collections', {
       }
     },
 
-    // Helper function to perform search requests
-    async performSearch(endpoint: string, params: any) {
-      try {
-        const response = await axios.get(endpoint, { params, cancelToken: this.searchCancelToken?.token });
-        return response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled:', error.message);
-        } else {
-          console.error(`Error searching ${endpoint.split('/')[1]}:`, error);
-        }
-        return [];
-      }
-    },
-
-    // Perform a search across all collections
-    async searchAllCollections(query: string, language: string) {
-      if (!query || query.length < 3) {
-        this.results = [];
-        return;
-      }
-
-      this.loading = true; // Set loading to true when starting the search
-      this.searchResults = [];
-
-      try {
-        const endpoints = [
-          '/accommodation/results/filter',
-          '/cave/results/filter',
-          '/cultural/results/filter',
-          '/event/results/filter',
-          '/fair/results/filter',
-          '/museum/results/filter',
-          '/natural/results/filter',
-          '/restaurant/results/filter',
-        ];
-
-        const requests = endpoints.map(endpoint =>
-          axios.get(endpoint, { params: { idioma: language, busqueda: query } })
-        );
-
-        const responses = await Promise.all(requests);
-        this.results = responses.flatMap(response => response.data);
-      } catch (error) {
-        console.error('Error fetching results for all collections:', error);
-        this.results = [];
-      } finally {
-        this.loading = false; // Ensure loading is set to false in the finally block
-      }
-    },
   },
 });
