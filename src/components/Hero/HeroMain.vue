@@ -10,7 +10,7 @@
         <!-- Use v-show to keep space reserved -->
         <transition name="fade">
           <div v-show="isCategorySelected" class="search-input-wrapper">
-            <SearchInput @search="onSearch" />
+            <SearchInput @search="onSearch" :selectedCategory="selectedCategory" />
           </div>
         </transition>
       </div>

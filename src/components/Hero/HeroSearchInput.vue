@@ -5,7 +5,7 @@
       class="search-input"
       v-model="searchQuery"
       @input="onSearchInput"
-      placeholder="¿Qué te apetece hacer?"
+      :placeholder="placeholderText"
     />
     <button class="search-button" @click="handleSearchClick">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -18,14 +18,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, defineProps } from 'vue';
 import { debounce } from 'lodash-es';
 import { useCollectionsStore } from '@/stores/collections';
 import { useFilterStore } from '@/stores/filter';
 
+// Define props
+const props = defineProps<{
+  selectedCategory: string | null;
+}>();
+
 const collectionsStore = useCollectionsStore();
 const filterStore = useFilterStore();
 const searchQuery = ref(collectionsStore.searchQuery); // Initialize with value from store
+
+// Computed property for placeholder text
+const placeholderText = computed(() => {
+  return props.selectedCategory
+    ? `Buscar en ${props.selectedCategory}`
+    : '';
+});
 
 // Helper function to determine the correct subcategory filter key and value
 const getSubcategoryFilter = () => {
@@ -51,7 +63,6 @@ const getSubcategoryFilter = () => {
     } else {
       console.log('No specific subcategory selected');
     }
-
   } else if (filterStore.selectedCategories[category]) {
     console.log('Using default subcategory');
     return {
