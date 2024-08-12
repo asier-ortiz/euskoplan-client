@@ -7,12 +7,10 @@
         <div class="chips-and-filter">
           <CategoryChips @chipSelected="onChipSelected" />
         </div>
-        <!-- Use v-show to keep space reserved -->
-        <transition name="fade">
-          <div v-show="isCategorySelected" class="search-input-wrapper">
-            <SearchInput @search="onSearch" :selectedCategory="selectedCategory" />
-          </div>
-        </transition>
+        <!-- SearchInput managed purely by CSS for visibility -->
+        <div class="search-input-wrapper" :class="{ hidden: !isCategorySelected }">
+          <SearchInput @search="onSearch" :selectedCategory="selectedCategory" />
+        </div>
       </div>
     </div>
   </div>
@@ -121,7 +119,14 @@ onUnmounted(() => {
   width: 100%; /* Full width to match chips-and-filter */
   max-width: 800px; /* Same max-width for consistency */
   padding: 0 2rem; /* Padding to center the input */
+  min-height: 60px; /* Minimum height to reserve space */
   opacity: 1;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+
+.search-input-wrapper.hidden {
+  opacity: 0;
+  visibility: hidden;
 }
 
 /* Make the SearchInput full width */
@@ -133,16 +138,6 @@ onUnmounted(() => {
   border-radius: 25px 0 0 25px;
   outline: none;
   font-size: 1rem;
-}
-
-/* Fade transition styles */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 
 @media (max-width: 768px) {
