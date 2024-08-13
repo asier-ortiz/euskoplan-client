@@ -4,10 +4,10 @@
     <div v-else class="detail-view">
       <!-- Include DetailHeaderButtons Component -->
       <DetailHeaderButtons
-        :goBackHome="goBackHome"
-        :handleAddToPlan="handleAddToPlan"
-        :toggleFavorite="toggleFavorite"
-        :isFavorite="isFavorite"
+          :goBackHome="goBackHome"
+          :handleAddToPlan="handleAddToPlan"
+          :toggleFavorite="toggleFavorite"
+          :isFavorite="isFavorite"
       />
 
       <hr class="section-separator" />
@@ -19,11 +19,11 @@
 
       <!-- Include DetailContent Component -->
       <DetailContent
-        :resource="resource"
-        :currentIndex="currentIndex"
-        :prevSlide="prevSlide"
-        :nextSlide="nextSlide"
-        :formatDate="formatDate"
+          :resource="resource"
+          :currentIndex="currentIndex"
+          :prevSlide="prevSlide"
+          :nextSlide="nextSlide"
+          :formatDate="formatDate"
       />
 
       <!-- Include DetailMap Component -->
@@ -33,11 +33,11 @@
 
       <!-- Include DetailRelatedResources Component -->
       <DetailRelatedResources
-        :relatedResources="relatedResources"
-        :formatDate="formatDate"
-        :navigateToResource="navigateToResource"
-        :handleRelatedImageError="handleRelatedImageError"
-        :getDefaultImage="getDefaultImage"
+          :relatedResources="relatedResources"
+          :formatDate="formatDate"
+          :navigateToResource="navigateToResource"
+          :handleRelatedImageError="handleRelatedImageError"
+          :getDefaultImage="getDefaultImage"
       />
     </div>
   </div>
@@ -52,7 +52,7 @@ import { useFavoritesStore } from '@/stores/favorites';
 import { useAuthStore } from '@/stores/auth';
 import { useMapStore } from '@/stores/map'; // Import map store
 import { calculateDistance } from '@/utils/distance';
-import { getDefaultImageUrl } from '@/utils/imageUtils'; // Import getDefaultImageUrl from imageUtils
+import { getDefaultImageUrl } from '@/utils/image'; // Import getDefaultImageUrl from imageUtils
 import mapboxgl from 'mapbox-gl';
 import Swal from 'sweetalert2';
 import Spinner from '@/components/Misc/LoadingSpinner.vue';
@@ -82,16 +82,16 @@ const isDarkMode = ref(mapStore.mapMode); // Use map store for dark mode
 
 const distance = computed(() => {
   if (
-    locationStore.userLocation &&
-    resource.value &&
-    resource.value.longitud &&
-    resource.value.latitud
+      locationStore.userLocation &&
+      resource.value &&
+      resource.value.longitud &&
+      resource.value.latitud
   ) {
     return calculateDistance(
-      locationStore.userLocation.latitude,
-      locationStore.userLocation.longitude,
-      Number(resource.value.latitud),
-      Number(resource.value.longitud)
+        locationStore.userLocation.latitude,
+        locationStore.userLocation.longitude,
+        Number(resource.value.latitud),
+        Number(resource.value.longitud)
     );
   }
   return null;
@@ -105,10 +105,10 @@ const isFavorite = computed(() => {
 });
 
 watch(
-  () => [route.params.id, route.params.category],
-  () => {
-    fetchResource();
-  }
+    () => [route.params.id, route.params.category],
+    () => {
+      fetchResource();
+    }
 );
 
 const fetchResource = async () => {
@@ -124,15 +124,15 @@ const fetchResource = async () => {
 
   relatedResources.value.forEach((related) => {
     if (
-      locationStore.userLocation &&
-      related.longitud &&
-      related.latitud
+        locationStore.userLocation &&
+        related.longitud &&
+        related.latitud
     ) {
       related.distancia = calculateDistance(
-        locationStore.userLocation.latitude,
-        locationStore.userLocation.longitude,
-        Number(related.latitud),
-        Number(related.longitud)
+          locationStore.userLocation.latitude,
+          locationStore.userLocation.longitude,
+          Number(related.latitud),
+          Number(related.longitud)
       );
     }
   });
@@ -160,8 +160,8 @@ const toggleFavorite = () => {
     favoritesStore.addFavorite(resource.value.id, resource.value.coleccion);
   } else {
     const favoriteId = favoritesStore.getFavoriteId(
-      resource.value.id,
-      resource.value.coleccion
+        resource.value.id,
+        resource.value.coleccion
     );
     if (favoriteId) {
       favoritesStore.removeFavorite(favoriteId);
@@ -226,7 +226,7 @@ const formatDate = (dateString: string) => {
 
 const handleRelatedImageError = (index: number) => {
   relatedResources.value[index].imagenes[0].fuente = getDefaultImage(
-    relatedResources.value[index].coleccion
+      relatedResources.value[index].coleccion
   );
 };
 

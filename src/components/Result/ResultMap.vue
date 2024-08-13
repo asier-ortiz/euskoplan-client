@@ -10,14 +10,14 @@
     <!-- Info Panel -->
     <div v-if="showInfoPanel" class="info-panel visible">
       <ResultPopupContent
-        :imageSrc="selectedImage"
-        :subtype="selectedSubtype"
-        :title="selectedTitle"
-        :municipality="selectedMunicipality"
-        :distance="selectedDistance"
-        :collection="selectedCollection"
-        :code="selectedCode"
-        @close="closePopup"
+          :imageSrc="selectedImage"
+          :subtype="selectedSubtype"
+          :title="selectedTitle"
+          :municipality="selectedMunicipality"
+          :distance="selectedDistance"
+          :collection="selectedCollection"
+          :code="selectedCode"
+          @close="closePopup"
       />
     </div>
   </div>
@@ -34,6 +34,7 @@ import { useFilterStore } from '@/stores/filter';
 import { useMapStore } from '@/stores/map';
 import { calculateDistance } from '@/utils/distance';
 import ResultPopupContent from './ResultPopupContent.vue';
+import { formatDateForApi } from "@/utils/date";
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 const mapContainer = ref<HTMLElement | null>(null);
@@ -64,9 +65,9 @@ const isMapTabActive = computed(() => collectionsStore.activeTab === 'map');
 // Map configuration
 const mapOptions = {
   style:
-    isDarkMode.value === 'dark'
-      ? 'mapbox://styles/mapbox/dark-v10'
-      : 'mapbox://styles/mapbox/streets-v11',
+      isDarkMode.value === 'dark'
+          ? 'mapbox://styles/mapbox/dark-v10'
+          : 'mapbox://styles/mapbox/streets-v11',
   center: mapStore.mapCenter || [-2.6189, 43.25],
   zoom: mapStore.mapZoom || 7,
 };
@@ -92,9 +93,9 @@ const mapResults = computed(() => {
 const getSubtype = (item) => {
   if (item.coleccion.toLowerCase() === 'natural') {
     return (
-      item.nombre_subtipo_recurso_espacio_natural ||
-      item.nombre_subtipo_recurso_playas_pantanos_rios ||
-      ''
+        item.nombre_subtipo_recurso_espacio_natural ||
+        item.nombre_subtipo_recurso_playas_pantanos_rios ||
+        ''
     );
   }
   return item.nombre_subtipo_recurso || '';
@@ -121,8 +122,8 @@ const initializeMap = () => {
 
     map.on('load', () => {
       const attributionControl = map
-        .getContainer()
-        .getElementsByClassName('mapboxgl-ctrl-attrib')[0];
+          .getContainer()
+          .getElementsByClassName('mapboxgl-ctrl-attrib')[0];
       if (attributionControl) {
         attributionControl.parentNode.removeChild(attributionControl);
       }
@@ -130,10 +131,12 @@ const initializeMap = () => {
       // Ensure markers and clusters are added on load
       addMarkersAndClusters();
 
-      // Restore popup state if available
-      const popupState = mapStore.mapPopup;
-      if (popupState) {
+      // Restore popup state if available in localStorage
+      const popupState = mapStore.mapPopup ? JSON.parse(mapStore.mapPopup) : null;
+      console.log("Popup State on Load:", popupState);
+      if (popupState && popupState.geometry) {
         openPopup(popupState);
+        map.flyTo({ center: popupState.geometry.coordinates, zoom: mapStore.mapZoom });
       }
     });
 
@@ -141,9 +144,9 @@ const initializeMap = () => {
     map.on('click', 'clusters', handleClusterClick);
     map.on('click', (e) => {
       if (
-        !map?.queryRenderedFeatures(e.point, {
-          layers: ['unclustered-points', 'clusters'],
-        }).length
+          !map?.queryRenderedFeatures(e.point, {
+            layers: ['unclustered-points', 'clusters'],
+          }).length
       ) {
         closePopup();
       }
@@ -325,8 +328,8 @@ const fitMapBounds = () => {
 // Main function to add markers and clusters
 const addMarkersAndClusters = () => {
   const markerImageUrl =
-    categoryMarkerMap[collectionsStore.selectedCategory?.toLowerCase()] ||
-    '/images/map/default-marker.png';
+      categoryMarkerMap[collectionsStore.selectedCategory?.toLowerCase()] ||
+      '/images/map/default-marker.png';
 
   const geojson = {
     type: 'FeatureCollection',
@@ -405,22 +408,22 @@ const handleMapClick = (e) => {
 
   // Set selected info for the panel
   selectedImage.value =
-    JSON.parse(feature.properties.images)[0]?.fuente ||
-    `/images/default/default-image.jpg`;
+      JSON.parse(feature.properties.images)[0]?.fuente ||
+      `/images/default/default-image.jpg`;
   selectedSubtype.value = feature.properties.subtype;
   selectedTitle.value = feature.properties.title;
   selectedMunicipality.value = feature.properties.municipality;
   selectedDistance.value = calculateDistance(
-    locationStore.userLocation.latitude,
-    locationStore.userLocation.longitude,
-    feature.geometry.coordinates[1],
-    feature.geometry.coordinates[0]
+      locationStore.userLocation.latitude,
+      locationStore.userLocation.longitude,
+      feature.geometry.coordinates[1],
+      feature.geometry.coordinates[0]
   ).toFixed(2);
   selectedCollection.value = feature.properties.collection;
   selectedCode.value = feature.properties.code;
 
-  // Save popup state to store
-  mapStore.setMapPopup(feature);
+  // Save the complete feature object to the store
+  mapStore.setMapPopup(JSON.parse(JSON.stringify(feature)));
 
   // Show the info panel
   showInfoPanel.value = true;
@@ -429,22 +432,24 @@ const handleMapClick = (e) => {
 // Close the info panel
 const closePopup = () => {
   showInfoPanel.value = false;
-  mapStore.setMapPopup(null);
+  mapStore.setMapPopup(null); // Reset popup state in the store and localStorage
 };
 
 // Method to open popup using stored state
 const openPopup = (feature) => {
+  if (!feature || !feature.properties) return;  // Add this guard clause
+
   selectedImage.value =
-    JSON.parse(feature.properties.images)[0]?.fuente ||
-    `/images/default/default-image.jpg`;
+      JSON.parse(feature.properties.images)[0]?.fuente ||
+      `/images/default/default-image.jpg`;
   selectedSubtype.value = feature.properties.subtype;
   selectedTitle.value = feature.properties.title;
   selectedMunicipality.value = feature.properties.municipality;
   selectedDistance.value = calculateDistance(
-    locationStore.userLocation.latitude,
-    locationStore.userLocation.longitude,
-    feature.geometry.coordinates[1],
-    feature.geometry.coordinates[0]
+      locationStore.userLocation.latitude,
+      locationStore.userLocation.longitude,
+      feature.geometry.coordinates[1],
+      feature.geometry.coordinates[0]
   ).toFixed(2);
   selectedCollection.value = feature.properties.collection;
   selectedCode.value = feature.properties.code;
@@ -492,9 +497,9 @@ const toggleMapStyle = () => {
   isDarkMode.value = isDarkMode.value === 'dark' ? 'light' : 'dark';
   mapStore.setMapMode(isDarkMode.value);
   map.setStyle(
-    isDarkMode.value === 'dark'
-      ? 'mapbox://styles/mapbox/dark-v10'
-      : 'mapbox://styles/mapbox/streets-v11'
+      isDarkMode.value === 'dark'
+          ? 'mapbox://styles/mapbox/dark-v10'
+          : 'mapbox://styles/mapbox/streets-v11'
   );
 
   // Restore map state after style change
@@ -549,46 +554,35 @@ const performMapSearch = async () => {
   await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
 };
 
-// Format date helper function
-const formatDateForApi = (date) => {
-  if (!date) return null;
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  return new Intl.DateTimeFormat('es-ES', options)
-    .format(new Date(date))
-    .split('/')
-    .reverse()
-    .join('/');
-};
-
 // Watch for changes in the search query
 watch(
-  () => collectionsStore.searchQuery,
-  async () => {
-    await performMapSearch();
-    if (isMapTabActive.value) {
-      addMarkersAndClusters();
-      mapStore.shouldRefitBounds = true;
+    () => collectionsStore.searchQuery,
+    async () => {
+      await performMapSearch();
+      if (isMapTabActive.value) {
+        addMarkersAndClusters();
+        mapStore.shouldRefitBounds = true;
+      }
     }
-  }
 );
 
 // Watch for changes in applied filters
 watch(
-  () => [
-    filterStore.selectedProvince,
-    filterStore.selectedLocality,
-    filterStore.selectedCategories,
-    filterStore.startDate,
-    filterStore.endDate,
-  ],
-  async () => {
-    if (isMapTabActive.value) {
-      await performMapSearch();
-      closePopup();
-      addMarkersAndClusters();
-    }
-  },
-  { deep: true }
+    () => [
+      filterStore.selectedProvince,
+      filterStore.selectedLocality,
+      filterStore.selectedCategories,
+      filterStore.startDate,
+      filterStore.endDate,
+    ],
+    async () => {
+      if (isMapTabActive.value) {
+        await performMapSearch();
+        closePopup();
+        addMarkersAndClusters();
+      }
+    },
+    { deep: true }
 );
 
 watch(isMapTabActive, async (isActive) => {
@@ -600,15 +594,15 @@ watch(isMapTabActive, async (isActive) => {
 });
 
 watch(
-  () => collectionsStore.selectedCategory,
-  async (newCategory, oldCategory) => {
-    if (newCategory !== oldCategory) {
-      mapStore.didCategoryChange = true;
-      closePopup();
-      await performMapSearch();
-      addMarkersAndClusters();
+    () => collectionsStore.selectedCategory,
+    async (newCategory, oldCategory) => {
+      if (newCategory !== oldCategory) {
+        mapStore.didCategoryChange = true;
+        closePopup();
+        await performMapSearch();
+        addMarkersAndClusters();
+      }
     }
-  }
 );
 
 onMounted(async () => {

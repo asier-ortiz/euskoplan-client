@@ -1,4 +1,4 @@
-// src/utils/imageUtils.ts
+// src/utils/image.ts
 
 // Default images by collection type
 export const getDefaultImageUrl = (collection: string): string => {

@@ -30,7 +30,7 @@ import { useRouter } from 'vue-router';
 import { useLocationStore } from '@/stores/location';
 import { calculateDistance } from '@/utils/distance';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'; // Import FontAwesomeIcon
-import { getDefaultImageUrl } from '@/utils/imageUtils'; // Import the utility function
+import { getDefaultImageUrl } from '@/utils/image'; // Import the utility function
 
 // Define props with TypeScript types
 const props = defineProps({

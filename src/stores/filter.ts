@@ -2,6 +2,10 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import { useLocalStorage } from '@vueuse/core';
+import config from '../config'; // Import the configuration
+
+// Set the base URL for axios from your configuration
+axios.defaults.baseURL = config.apiBaseUrl;
 
 export const useFilterStore = defineStore('filter', {
     state: () => ({
@@ -48,8 +52,8 @@ export const useFilterStore = defineStore('filter', {
             for (const category in state.selectedCategories) {
                 if (category === 'natural') {
                     if (
-                      state.selectedCategories.natural.espacio_natural ||
-                      state.selectedCategories.natural.playas_pantanos_rios
+                        state.selectedCategories.natural.espacio_natural ||
+                        state.selectedCategories.natural.playas_pantanos_rios
                     ) {
                         count++;
                     }
@@ -63,7 +67,7 @@ export const useFilterStore = defineStore('filter', {
     actions: {
         async fetchLocalities() {
             try {
-                const response = await axios.get('http://localhost:8000/api/locality/names?idioma=es');
+                const response = await axios.get('/locality/names', { params: { idioma: 'es' } });
                 this.localities = response.data;
                 this.filteredLocalities = response.data;
             } catch (error) {
@@ -74,7 +78,7 @@ export const useFilterStore = defineStore('filter', {
             this.selectedProvince = province;
             if (province) {
                 this.filteredLocalities = this.localities.filter(
-                  (locality) => locality.nombre_provincia === province
+                    (locality) => locality.nombre_provincia === province
                 );
                 this.selectedLocality = null;
             } else {
@@ -92,47 +96,35 @@ export const useFilterStore = defineStore('filter', {
         },
         async fetchCategories() {
             try {
-                const accommodationResponse = await axios.get(
-                  'http://localhost:8000/api/accommodation/categories/es'
-                );
+                const accommodationResponse = await axios.get('/accommodation/categories/es');
                 this.categories.accommodation = accommodationResponse.data.map(
-                  (cat) => cat.nombre_subtipo_recurso
+                    (cat) => cat.nombre_subtipo_recurso
                 );
 
-                const caveResponse = await axios.get('http://localhost:8000/api/cave/categories/es');
+                const caveResponse = await axios.get('/cave/categories/es');
                 this.categories.cave = caveResponse.data.map((cat) => cat.nombre_subtipo_recurso);
 
-                const culturalResponse = await axios.get(
-                  'http://localhost:8000/api/cultural/categories/es'
-                );
-                this.categories.cultural = culturalResponse.data.map(
-                  (cat) => cat.nombre_subtipo_recurso
-                );
+                const culturalResponse = await axios.get('/cultural/categories/es');
+                this.categories.cultural = culturalResponse.data.map((cat) => cat.nombre_subtipo_recurso);
 
-                const eventResponse = await axios.get('http://localhost:8000/api/event/categories/es');
+                const eventResponse = await axios.get('/event/categories/es');
                 this.categories.event = eventResponse.data.map((cat) => cat.nombre_subtipo_recurso);
 
-                const museumResponse = await axios.get(
-                  'http://localhost:8000/api/museum/categories/es'
-                );
+                const museumResponse = await axios.get('/museum/categories/es');
                 this.categories.museum = museumResponse.data.map((cat) => cat.nombre_subtipo_recurso);
 
-                const naturalResponse = await axios.get(
-                  'http://localhost:8000/api/natural/categories/es'
-                );
+                const naturalResponse = await axios.get('/natural/categories/es');
                 this.categories.natural.espacio_natural = naturalResponse.data.espacio_natural.map(
-                  (cat) => cat.nombre_subtipo_recurso_espacio_natural
+                    (cat) => cat.nombre_subtipo_recurso_espacio_natural
                 );
                 this.categories.natural.playas_pantanos_rios =
-                  naturalResponse.data.playas_pantanos_rios.map(
-                    (cat) => cat.nombre_subtipo_recurso_playas_pantanos_rios
-                  );
+                    naturalResponse.data.playas_pantanos_rios.map(
+                        (cat) => cat.nombre_subtipo_recurso_playas_pantanos_rios
+                    );
 
-                const restaurantResponse = await axios.get(
-                  'http://localhost:8000/api/restaurant/categories/es'
-                );
+                const restaurantResponse = await axios.get('/restaurant/categories/es');
                 this.categories.restaurant = restaurantResponse.data.map(
-                  (cat) => cat.nombre_subtipo_recurso
+                    (cat) => cat.nombre_subtipo_recurso
                 );
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -170,6 +162,39 @@ export const useFilterStore = defineStore('filter', {
                 restaurant: null,
             };
             console.log('Filters cleared');
+        },
+        getFilters() {
+            const filters = {
+                nombre_provincia: this.selectedProvince || undefined,
+                nombre_municipio: this.selectedLocality || undefined,
+                fecha_inicio: this.startDate || undefined,
+                fecha_fin: this.endDate || undefined,
+            };
+
+            // Add selected subcategories
+            for (const collection in this.selectedCategories) {
+                const selectedCategory = this.selectedCategories[collection];
+                if (selectedCategory) {
+                    if (collection === 'natural') {
+                        if (this.selectedCategories.natural.espacio_natural) {
+                            filters.nombre_subtipo_recurso_espacio_natural =
+                                this.selectedCategories.natural.espacio_natural;
+                        } else if (this.selectedCategories.natural.playas_pantanos_rios) {
+                            filters.nombre_subtipo_recurso_playas_pantanos_rios =
+                                this.selectedCategories.natural.playas_pantanos_rios;
+                        }
+                    } else {
+                        filters.nombre_subtipo_recurso = selectedCategory;
+                    }
+                }
+            }
+
+            // Remove undefined keys
+            Object.keys(filters).forEach(
+                (key) => filters[key] === undefined && delete filters[key]
+            );
+
+            return filters;
         },
     },
 });

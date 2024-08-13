@@ -9,7 +9,6 @@ import PasswordReset from '@/views/Auth/PasswordResetView.vue';
 import PasswordRecovery from '@/views/Auth/PasswordRecoveryView.vue';
 import Detail from '@/views/DetailView.vue';
 import Account from '@/views/AccountView.vue';
-import PlanEdit from '@/views/PlanEditView.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useScrollStore } from '@/stores/scroll';
 
@@ -25,12 +24,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/account',
     name: 'Account',
     component: Account,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/plan-edit/:id',
-    name: 'PlanEdit',
-    component: PlanEdit,
     meta: { requiresAuth: true },
   },
 ];

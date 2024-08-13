@@ -5,11 +5,11 @@
         <h1>Encuentra tu próxima aventura</h1>
         <!-- CategoryChips placed above SearchInput -->
         <div class="chips-and-filter">
-          <CategoryChips @chipSelected="onChipSelected" />
+          <CategoryChips />
         </div>
         <!-- SearchInput managed purely by CSS for visibility -->
         <div class="search-input-wrapper" :class="{ hidden: !isCategorySelected }">
-          <SearchInput @search="onSearch" :selectedCategory="selectedCategory" />
+          <SearchInput />
         </div>
       </div>
     </div>
@@ -18,12 +18,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { defineEmits } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
 import SearchInput from '@/components/Hero/HeroSearchInput.vue';
 import CategoryChips from '@/components/Hero/HeroCategoryChips.vue';
 
-const emit = defineEmits(['chipSelected', 'search']);
 const overlayColor = ref('rgba(0, 0, 0, 0.4)');
 
 // Access the collections store
@@ -35,16 +33,7 @@ const selectedCategory = computed(() => collectionsStore.selectedCategory);
 // Computed property to determine if a category is selected
 const isCategorySelected = computed(() => selectedCategory.value !== '');
 
-// Emit when a chip is selected and update the store
-const onChipSelected = (category) => {
-  collectionsStore.setSelectedCategory(category);
-  emit('chipSelected', category);
-};
-
-const onSearch = (query) => {
-  emit('search', query);
-};
-
+// Handle scroll for overlay effect
 const handleScroll = () => {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   const opacity = Math.min(0.4 + scrollTop / 500, 0.7);

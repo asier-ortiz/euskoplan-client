@@ -80,7 +80,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { defineProps } from 'vue';
-import { getDefaultImageUrl } from '@/utils/imageUtils'; // Import the utility function
+import { getDefaultImageUrl } from '@/utils/image'; // Import the utility function
 
 const props = defineProps<{
   resource: any;

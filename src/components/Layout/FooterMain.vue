@@ -8,9 +8,9 @@
         <p class="mb-0">
           Made with
           <span class="mx-2">
-            <font-awesome-icon :icon="['fab', 'laravel']" /> +
-            <font-awesome-icon :icon="['fab', 'vuejs']" /> +
-            <font-awesome-icon icon="heart" class="text-danger" />
+            <font-awesome-icon :icon="['fab', 'laravel']"/> +
+            <font-awesome-icon :icon="['fab', 'vuejs']"/> +
+            <font-awesome-icon icon="heart" class="text-danger"/>
           </span>
         </p>
       </div>
@@ -19,7 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import {ref} from 'vue';
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const currentYear = ref(new Date().getFullYear());
 </script>

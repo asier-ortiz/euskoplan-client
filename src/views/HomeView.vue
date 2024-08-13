@@ -1,9 +1,9 @@
 <!-- src/components/HomeView.vue -->
 <template>
   <div>
-    <Hero @chipSelected="handleChipSelected" @search="handleSearch" />
+    <Hero />
     <div class="container">
-      <ResultsMain />
+      <ResultsMain v-if="collectionsStore.selectedCategory" />
     </div>
   </div>
 </template>
@@ -13,80 +13,30 @@ import { onMounted, watch } from 'vue';
 import Hero from '@/components/Hero/HeroMain.vue';
 import ResultsMain from '@/components/Result/ResultsMain.vue';
 import { useCollectionsStore } from '@/stores/collections';
-import { useFilterStore } from '@/stores/filter';
+import { useFilterStore } from '@/stores/filter'; // Import filter store
 
 const collectionsStore = useCollectionsStore();
-const filterStore = useFilterStore();
+const filterStore = useFilterStore(); // Access filter store
 
-// Perform the search based on current state
 const performSearchAndFilter = async () => {
-  const { searchQuery, selectedCategory } = collectionsStore;
-
-  // Determine the correct subcategory key and value
-  let subcategoryKey = null;
-  let subcategoryValue = null;
-
-  if (selectedCategory?.toLowerCase() === 'espacios naturales') {
-    if (filterStore.selectedCategories.natural.espacio_natural) {
-      subcategoryKey = 'nombre_subtipo_recurso_espacio_natural';
-      subcategoryValue = filterStore.selectedCategories.natural.espacio_natural;
-    } else if (filterStore.selectedCategories.natural.playas_pantanos_rios) {
-      subcategoryKey = 'nombre_subtipo_recurso_playas_pantanos_rios';
-      subcategoryValue = filterStore.selectedCategories.natural.playas_pantanos_rios;
-    }
-  } else if (filterStore.selectedCategories[selectedCategory?.toLowerCase()]) {
-    subcategoryKey = 'nombre_subtipo_recurso';
-    subcategoryValue = filterStore.selectedCategories[selectedCategory.toLowerCase()];
-  }
-
-  const filters = {
-    idioma: 'es',
-    ...(filterStore.selectedProvince && { nombre_provincia: filterStore.selectedProvince }),
-    ...(filterStore.selectedLocality && { nombre_municipio: filterStore.selectedLocality }),
-    ...(subcategoryKey && subcategoryValue && { [subcategoryKey]: subcategoryValue }),
-    ...(filterStore.startDate && { fecha_inicio: formatDateForApi(filterStore.startDate) }),
-    ...(filterStore.endDate && { fecha_fin: formatDateForApi(filterStore.endDate) }),
-  };
-
-  console.log('Performing search with filters:', filters);
-
+  const { selectedCategory, searchQuery } = collectionsStore;
+  const filters = filterStore.getFilters(); // Get active filters
+  console.log('Performing search with category, query, and filters:', selectedCategory, searchQuery, filters);
   await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
 };
 
-// Format date helper function
-const formatDateForApi = (date) => {
-  if (!date) return null;
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  return new Intl.DateTimeFormat('es-ES', options).format(new Date(date)).split('/').reverse().join('/');
-};
-
-// Execute the search on initial load
 onMounted(() => {
   if (collectionsStore.searchQuery || collectionsStore.selectedCategory) {
     performSearchAndFilter();
   }
 });
 
-// Handle category chip selection
-const handleChipSelected = async (category) => {
-  filterStore.clearFilters();
-  collectionsStore.setSelectedCategory(category);
-  await performSearchAndFilter();
-};
-
-// Handle search input
-const handleSearch = async (query) => {
-  collectionsStore.setSearchQuery(query);
-  await performSearchAndFilter();
-};
-
-// Watch for changes in searchQuery and selectedCategory
 watch(
-  () => [collectionsStore.searchQuery, collectionsStore.selectedCategory],
-  async ([newQuery, newCategory], [oldQuery, oldCategory]) => {
-    if (newQuery !== oldQuery || newCategory !== oldCategory) {
-      await performSearchAndFilter();
+    () => [collectionsStore.searchQuery, collectionsStore.selectedCategory],
+    async ([newQuery, newCategory], [oldQuery, oldCategory]) => {
+      if (newQuery !== oldQuery || newCategory !== oldCategory) {
+        await performSearchAndFilter();
+      }
     }
-  }
 );
 </script>

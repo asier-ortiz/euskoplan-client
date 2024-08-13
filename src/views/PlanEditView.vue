@@ -1,3 +1,0 @@
-<template>
-  Plan Edit
-</template>

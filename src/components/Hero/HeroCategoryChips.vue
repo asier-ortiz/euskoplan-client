@@ -1,25 +1,24 @@
+<!-- src/components/CategorySelection.vue -->
 <template>
   <div class="chips-container">
-    <span
-      v-for="category in categories"
-      :key="category"
-      :class="['chip', { 'chip-selected': collectionsStore.selectedCategory === category }]"
-      @click="toggleCategory(category)"
-      role="button"
+    <div
+        v-for="category in categories"
+        :key="category"
+        class="chip"
+        :class="{ 'chip-selected': isSelected(category) }"
+        @click="toggleCategory(category)"
     >
       {{ category }}
-    </span>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
-import { useFilterStore } from '@/stores/filter';
-import { debounce } from 'lodash-es'; // Ensure lodash-es is used to support tree-shaking
+import { useFilterStore } from '@/stores/filter'; // Import filter store
 
 const collectionsStore = useCollectionsStore();
-const filterStore = useFilterStore();
+const filterStore = useFilterStore(); // Access filter store
 
 const categories = [
   'Alojamientos',
@@ -32,27 +31,22 @@ const categories = [
   'Restaurantes'
 ];
 
-// Debounce the API call to prevent multiple calls
-const debouncedFetchResults = debounce((category, searchQuery) => {
-  collectionsStore.fetchResults(category, searchQuery, { idioma: 'es' });
-}, 300);
-
 const toggleCategory = (category) => {
-  // Toggle category selection
   const isCurrentlySelected = collectionsStore.selectedCategory === category;
   const newCategory = isCurrentlySelected ? null : category;
 
   collectionsStore.setSelectedCategory(newCategory);
 
   if (newCategory) {
-    filterStore.clearFilters(); // Clear filters when a new category is selected
-
-    // Fetch results using the current search query for the selected category
-    debouncedFetchResults(newCategory, collectionsStore.searchQuery);
+    const filters = filterStore.getFilters(); // Get active filters
+    collectionsStore.fetchResults(newCategory, collectionsStore.searchQuery, filters);
   } else {
-    // Clear results if no category is selected
     collectionsStore.results = [];
   }
+};
+
+const isSelected = (category) => {
+  return collectionsStore.selectedCategory === category;
 };
 </script>
 
