@@ -26,16 +26,17 @@ export const useCollectionsStore = defineStore('collections', {
 
   actions: {
     async fetchResults(category: string | null, searchQuery: string, filters: any) {
-      this.loading = true;
-      const currentRequest = ++this.requestCounter; // Increment and capture the current request counter
 
       const cacheKey = JSON.stringify({ category, searchQuery, filters });
-
+      
       if (this.cache.has(cacheKey)) {
         this.results = this.cache.get(cacheKey);
         this.loading = false;
         return;
       }
+
+      this.loading = true;
+      const currentRequest = ++this.requestCounter; // Increment and capture the current request counter
 
       try {
         let endpoint = '';
