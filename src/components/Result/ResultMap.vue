@@ -659,7 +659,7 @@ watch(
         addMarkersAndClusters();
       } else {
         // Optionally, you can clear the markers if no results are found
-         clearMapMarkers(); // Implement this function to clear markers from the map
+        clearMapMarkers(); // Implement this function to clear markers from the map
       }
     },
     { immediate: true } // This ensures it runs on initial load as well
