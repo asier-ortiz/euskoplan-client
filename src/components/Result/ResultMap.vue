@@ -639,7 +639,7 @@ watch(
       if (isMapTabActive.value) {
         await performMapSearch();
         closePopup();
-        addMarkersAndClusters();
+        await addMarkersAndClusters();
       }
     },
     { deep: true }
@@ -647,10 +647,19 @@ watch(
 
 watch(isMapTabActive, async (isActive) => {
   if (isActive) {
-    await performMapSearch();
-    initializeMap();
+    if (!mapStore.shouldRefitBounds) {
+      // Do not refit bounds if the flag is false
+      initializeMap();
+    } else {
+      // Only perform map search and refit bounds if necessary
+      await performMapSearch();
+      initializeMap();
+      fitMapBounds();
+      mapStore.setShouldRefitBounds(false);  // Reset the flag after refitting bounds
+    }
   }
 });
+
 
 watch(
     () => collectionsStore.selectedCategory,
