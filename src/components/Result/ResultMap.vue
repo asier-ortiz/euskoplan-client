@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, watch, computed, onUnmounted } from 'vue';
+import { onMounted, ref, watch, computed, onUnmounted } from 'vue';
 import mapboxgl, { Map, LngLatBounds } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { FontAwesomeIcon } from '@/font-awesome';
@@ -64,10 +64,9 @@ const isMapTabActive = computed(() => collectionsStore.activeTab === 'map');
 
 // Map configuration
 const mapOptions = {
-  style:
-      isDarkMode.value === 'dark'
-          ? 'mapbox://styles/mapbox/dark-v10'
-          : 'mapbox://styles/mapbox/streets-v11',
+  style: isDarkMode.value === 'dark'
+      ? 'mapbox://styles/mapbox/dark-v10'
+      : 'mapbox://styles/mapbox/streets-v11',
   center: mapStore.mapCenter || [-2.6189, 43.25],
   zoom: mapStore.mapZoom || 7,
 };
@@ -102,6 +101,8 @@ const getSubtype = (item) => {
 };
 
 // Initialize the map
+let isRestoringState = false;  // Flag to ensure state restoration happens correctly
+
 const initializeMap = () => {
   if (!map) {
     map = new mapboxgl.Map({
@@ -130,19 +131,32 @@ const initializeMap = () => {
 
       addMarkersAndClusters(); // Add markers only after the map is loaded
 
-      // Restore map state (center, zoom) and popup if available
       if (mapStore.mapCenter && mapStore.mapZoom) {
+        isRestoringState = true;
         map.setCenter([mapStore.mapCenter.lng, mapStore.mapCenter.lat]);
         map.setZoom(mapStore.mapZoom);
 
         if (mapStore.mapPopup) {
           const popupState = JSON.parse(mapStore.mapPopup);
           openPopup(popupState);
-          map.flyTo({ center: popupState.geometry.coordinates, zoom: mapStore.mapZoom });
         }
-      } else {
-        // Fit bounds if no previous state exists
+
+        // Disable any automatic bounds adjustment during state restoration
+        map.once('moveend', () => {
+          isRestoringState = false;
+        });
+      } else if (mapStore.shouldRefitBounds) {
+        // Adjust bounds only if no previous state exists or if explicitly needed
         fitMapBounds();
+        mapStore.setShouldRefitBounds(false);
+      }
+    });
+
+    map.on('moveend', () => {
+      if (!isRestoringState) {
+        const center = map.getCenter();
+        mapStore.setMapCenter({ lat: center.lat, lng: center.lng });
+        mapStore.setMapZoom(map.getZoom());
       }
     });
 
@@ -175,13 +189,6 @@ const initializeMap = () => {
     });
 
     locationStore.fetchUserLocation();
-
-    // Save map state when the map moves or zooms
-    map.on('moveend', () => {
-      const center = map.getCenter();
-      mapStore.setMapCenter({ lat: center.lat, lng: center.lng });
-      mapStore.setMapZoom(map.getZoom());
-    });
 
     mapContainer.value?.addEventListener('wheel', handleWheelZoom);
   } else {
@@ -320,6 +327,11 @@ const loadAndAddImage = (markerImageUrl, collectionName) => {
 
 // Helper function to fit map bounds
 const fitMapBounds = () => {
+  // Verificar si deberíamos ajustar los límites del mapa
+  if (!mapStore.shouldRefitBounds) {
+    return;
+  }
+
   const bounds = new LngLatBounds();
   let validMarkers = 0;
 
@@ -340,8 +352,8 @@ const fitMapBounds = () => {
     console.warn('No valid markers to fit bounds.');
   }
 
-  mapStore.didCategoryChange = false;
-  mapStore.shouldRefitBounds = false;
+  // Resetear el flag después de ajustar los límites
+  mapStore.setShouldRefitBounds(false);
 };
 
 // Main function to add markers and clusters
@@ -392,13 +404,13 @@ const addMarkersAndClusters = async () => {
   addMarkerLayers(imageName);
   addClusterLayers();
 
-  // Fit map bounds after a short delay to ensure all markers are rendered
-  setTimeout(() => {
+  // Esperar a que el mapa termine de renderizar antes de ajustar los límites
+  map.once('idle', () => {
     if (mapStore.didCategoryChange || mapStore.shouldRefitBounds) {
       fitMapBounds();
-      mapStore.shouldRefitBounds = false;
+      mapStore.setShouldRefitBounds(false);
     }
-  }, 200); // Adjust delay as needed
+  });
 };
 
 // Handle wheel zoom with Ctrl/Cmd key
@@ -582,9 +594,10 @@ const performMapSearch = async () => {
   // Use fetchResults to get data based on both search and filters
   await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
 
-  if (mapStore.didCategoryChange || !mapStore.mapCenter) {
-    // Refit bounds only if the category changed or there's no stored center
+  // Check the bounds only if needed
+  if (mapStore.didCategoryChange || !mapStore.mapCenter || mapStore.shouldRefitBounds) {
     fitMapBounds();
+    mapStore.setShouldRefitBounds(false);
   } else {
     // Otherwise, use the stored center and zoom
     map.setCenter([mapStore.mapCenter.lng, mapStore.mapCenter.lat]);
@@ -608,7 +621,7 @@ watch(
       await performMapSearch();
       if (isMapTabActive.value) {
         addMarkersAndClusters();
-        mapStore.shouldRefitBounds = true;
+        mapStore.setShouldRefitBounds(true);
       }
     }
 );
@@ -643,7 +656,7 @@ watch(
     () => collectionsStore.selectedCategory,
     async (newCategory, oldCategory) => {
       if (newCategory !== oldCategory) {
-        mapStore.didCategoryChange = true;
+        mapStore.setDidCategoryChange(true);
         closePopup();
         await performMapSearch();
       }
@@ -669,31 +682,29 @@ onMounted(async () => {
   mapboxgl.accessToken = accessToken;
 
   if (isMapTabActive.value) {
-    // Initialize the map first
     initializeMap();
 
-    // Use a watcher or timeout to wait until the map is initialized before performing the search
     const checkMapInitialization = setInterval(() => {
-      if (map) {
+      if (map && map.isStyleLoaded()) {
         clearInterval(checkMapInitialization);
-
-        // Perform map search after the map is fully initialized
         performMapSearch();
 
-        // Restore map state if available
         if (mapStore.mapCenter && mapStore.mapZoom) {
+          isRestoringState = true;
           map.setCenter([mapStore.mapCenter.lng, mapStore.mapCenter.lat]);
           map.setZoom(mapStore.mapZoom);
-        }
 
-        // Restore popup state if available
-        if (mapStore.mapPopup) {
-          const popupState = JSON.parse(mapStore.mapPopup);
-          openPopup(popupState);
-          map.flyTo({ center: popupState.geometry.coordinates, zoom: mapStore.mapZoom });
+          if (mapStore.mapPopup) {
+            const popupState = JSON.parse(mapStore.mapPopup);
+            openPopup(popupState);
+          }
+
+          map.once('moveend', () => {
+            isRestoringState = false;
+          });
         }
       }
-    }, 100); // Check every 100ms
+    }, 100);
   }
 });
 

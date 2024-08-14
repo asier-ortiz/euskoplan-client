@@ -1,5 +1,3 @@
-// src/store/map.ts
-
 import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
 
@@ -15,7 +13,6 @@ export const useMapStore = defineStore('map', {
 
   actions: {
     setMapPopup(popup) {
-      // this.mapPopup = popup;
       this.mapPopup = popup ? JSON.stringify(popup) : null;
     },
 
@@ -29,6 +26,14 @@ export const useMapStore = defineStore('map', {
 
     setMapMode(mode: 'light' | 'dark') {
       this.mapMode = mode;
+    },
+
+    setDidCategoryChange(status: boolean) {
+      this.didCategoryChange = status;
+    },
+
+    setShouldRefitBounds(status: boolean) {
+      this.shouldRefitBounds = status;
     },
   },
 });
