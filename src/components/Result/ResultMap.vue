@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch, computed, onUnmounted } from 'vue';
+import {onMounted, ref, watch, computed, onUnmounted, nextTick} from 'vue';
 import mapboxgl, { Map, LngLatBounds } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { FontAwesomeIcon } from '@/font-awesome';
@@ -128,12 +128,10 @@ const initializeMap = () => {
         attributionControl.parentNode.removeChild(attributionControl);
       }
 
-      // Ensure markers and clusters are added on load
-      addMarkersAndClusters();
+      addMarkersAndClusters(); // Add markers only after the map is loaded
 
       // Restore popup state if available in localStorage
       const popupState = mapStore.mapPopup ? JSON.parse(mapStore.mapPopup) : null;
-      console.log("Popup State on Load:", popupState);
       if (popupState && popupState.geometry) {
         openPopup(popupState);
         map.flyTo({ center: popupState.geometry.coordinates, zoom: mapStore.mapZoom });
@@ -152,7 +150,6 @@ const initializeMap = () => {
       }
     });
 
-    // Handle cursor changes over clusters and markers
     map.on('mouseenter', 'clusters', () => {
       map.getCanvas().style.cursor = 'pointer';
     });
@@ -178,11 +175,10 @@ const initializeMap = () => {
       mapStore.setMapZoom(map.getZoom());
     });
 
-    // Listen for wheel events to control zoom with the Ctrl key
     mapContainer.value?.addEventListener('wheel', handleWheelZoom);
   } else {
     map.resize();
-    addMarkersAndClusters();
+    addMarkersAndClusters(); // Add markers if the map is already initialized
   }
 };
 
@@ -395,6 +391,7 @@ const handleWheelZoom = (event: WheelEvent) => {
   }
 };
 
+// Save popup state if a popup is opened
 const handleMapClick = (e) => {
   const features = map?.queryRenderedFeatures(e.point, {
     layers: ['unclustered-points'],
@@ -587,7 +584,6 @@ watch(
 
 watch(isMapTabActive, async (isActive) => {
   if (isActive) {
-    // If map tab is active, perform search to ensure markers are updated
     await performMapSearch();
     initializeMap();
   }
@@ -608,8 +604,24 @@ watch(
 onMounted(async () => {
   mapboxgl.accessToken = accessToken;
   if (isMapTabActive.value) {
-    await performMapSearch();
-    initializeMap();
+    await performMapSearch(); // Fetch data
+
+    setTimeout(() => {
+      initializeMap(); // Initialize the map after a delay
+
+      // Restore map state if available
+      if (mapStore.mapCenter && mapStore.mapZoom) {
+        map.setCenter([mapStore.mapCenter.lng, mapStore.mapCenter.lat]);
+        map.setZoom(mapStore.mapZoom);
+      }
+
+      // Restore popup state if available
+      if (mapStore.mapPopup) {
+        const popupState = JSON.parse(mapStore.mapPopup);
+        openPopup(popupState);
+        map.flyTo({ center: popupState.geometry.coordinates, zoom: mapStore.mapZoom });
+      }
+    }, 1000); // Adjust delay as needed
   }
 });
 

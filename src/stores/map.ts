@@ -19,15 +19,15 @@ export const useMapStore = defineStore('map', {
       this.mapPopup = popup ? JSON.stringify(popup) : null;
     },
 
-    setMapCenter(center) {
+    setMapCenter(center: { lat: number; lng: number }) {
       this.mapCenter = center;
     },
 
-    setMapZoom(zoom) {
+    setMapZoom(zoom: number) {
       this.mapZoom = zoom;
     },
 
-    setMapMode(mode) {
+    setMapMode(mode: 'light' | 'dark') {
       this.mapMode = mode;
     },
   },
