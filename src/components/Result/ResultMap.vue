@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, watch, computed, onUnmounted, nextTick} from 'vue';
+import {onMounted, ref, watch, computed, onUnmounted } from 'vue';
 import mapboxgl, { Map, LngLatBounds } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { FontAwesomeIcon } from '@/font-awesome';
@@ -130,11 +130,19 @@ const initializeMap = () => {
 
       addMarkersAndClusters(); // Add markers only after the map is loaded
 
-      // Restore popup state if available in localStorage
-      const popupState = mapStore.mapPopup ? JSON.parse(mapStore.mapPopup) : null;
-      if (popupState && popupState.geometry) {
-        openPopup(popupState);
-        map.flyTo({ center: popupState.geometry.coordinates, zoom: mapStore.mapZoom });
+      // Restore map state (center, zoom) and popup if available
+      if (mapStore.mapCenter && mapStore.mapZoom) {
+        map.setCenter([mapStore.mapCenter.lng, mapStore.mapCenter.lat]);
+        map.setZoom(mapStore.mapZoom);
+
+        if (mapStore.mapPopup) {
+          const popupState = JSON.parse(mapStore.mapPopup);
+          openPopup(popupState);
+          map.flyTo({ center: popupState.geometry.coordinates, zoom: mapStore.mapZoom });
+        }
+      } else {
+        // Fit bounds if no previous state exists
+        fitMapBounds();
       }
     });
 
@@ -245,19 +253,30 @@ const addClusterLayers = () => {
 };
 
 // Helper function to add marker layers
-const addMarkerLayers = () => {
+const addMarkerLayers = (imageName) => {
+  // Check if the layer already exists, and remove it if it does
+  if (map?.getLayer('unclustered-points')) {
+    map.removeLayer('unclustered-points');
+  }
+
+  if (map?.getLayer('resource-names')) {
+    map.removeLayer('resource-names');
+  }
+
+  // Add the layer for unclustered points
   map?.addLayer({
     id: 'unclustered-points',
     type: 'symbol',
     source: 'resources',
     filter: ['!', ['has', 'point_count']],
     layout: {
-      'icon-image': 'custom-marker',
+      'icon-image': imageName, // Use the unique image name
       'icon-size': 0.2,
       'icon-allow-overlap': true,
     },
   });
 
+  // Add the layer for resource names
   map?.addLayer({
     id: 'resource-names',
     type: 'symbol',
@@ -283,11 +302,9 @@ const addMarkerLayers = () => {
 };
 
 // Helper function to load and add marker image
-const loadAndAddImage = (markerImageUrl) => {
-  // Remove existing image if it exists
-  if (map?.hasImage('custom-marker')) {
-    map.removeImage('custom-marker');
-  }
+const loadAndAddImage = (markerImageUrl, collectionName) => {
+  // Generate a unique image name using the collection name and a random suffix
+  const imageName = `custom-marker-${collectionName}-${Math.random().toString(36).substr(2, 9)}`;
 
   // Load and add the new image
   map?.loadImage(markerImageUrl, (error, image) => {
@@ -295,23 +312,29 @@ const loadAndAddImage = (markerImageUrl) => {
       console.error('Error loading image:', error);
       return;
     }
-
-    // Add the image
-    map?.addImage('custom-marker', image);
+    map?.addImage(imageName, image);
   });
+
+  return imageName;
 };
 
 // Helper function to fit map bounds
 const fitMapBounds = () => {
   const bounds = new LngLatBounds();
+  let validMarkers = 0;
+
   mapResults.value.forEach((markerData) => {
-    bounds.extend([markerData.longitud, markerData.latitud]);
+    if (markerData.longitud && markerData.latitud) {
+      bounds.extend([markerData.longitud, markerData.latitud]);
+      validMarkers++;
+    }
   });
 
-  if (!bounds.isEmpty()) {
+  if (validMarkers > 0) {
     map?.fitBounds(bounds, {
       padding: { top: 50, bottom: 50, left: 50, right: 50 },
       maxZoom: 14,
+      duration: 1000, // Smooth animation when fitting bounds
     });
   } else {
     console.warn('No valid markers to fit bounds.');
@@ -322,10 +345,13 @@ const fitMapBounds = () => {
 };
 
 // Main function to add markers and clusters
-const addMarkersAndClusters = () => {
+const addMarkersAndClusters = async () => {
+  const selectedCategory = collectionsStore.selectedCategory?.toLowerCase();
   const markerImageUrl =
-      categoryMarkerMap[collectionsStore.selectedCategory?.toLowerCase()] ||
-      '/images/map/default-marker.png';
+      categoryMarkerMap[selectedCategory] || '/images/map/default-marker.png';
+
+  // Load the marker image and get the unique image name
+  const imageName = loadAndAddImage(markerImageUrl, selectedCategory);
 
   const geojson = {
     type: 'FeatureCollection',
@@ -362,16 +388,17 @@ const addMarkersAndClusters = () => {
   // Add the source
   addSource('resources', geojson);
 
-  // Load and add marker image, then add layers
-  loadAndAddImage(markerImageUrl);
+  // Add layers using the unique image name
+  addMarkerLayers(imageName);
   addClusterLayers();
-  addMarkerLayers();
 
-  // Fit map bounds if necessary
-  if (mapStore.didCategoryChange || mapStore.shouldRefitBounds) {
-    fitMapBounds();
-    mapStore.shouldRefitBounds = false;
-  }
+  // Fit map bounds after a short delay to ensure all markers are rendered
+  setTimeout(() => {
+    if (mapStore.didCategoryChange || mapStore.shouldRefitBounds) {
+      fitMapBounds();
+      mapStore.shouldRefitBounds = false;
+    }
+  }, 200); // Adjust delay as needed
 };
 
 // Handle wheel zoom with Ctrl/Cmd key
@@ -509,6 +536,11 @@ const toggleMapStyle = () => {
 
 // This method is triggered when the map tab becomes active or on initial load
 const performMapSearch = async () => {
+  if (!map) {
+    console.warn('Map is not initialized yet.');
+    return;
+  }
+
   const { searchQuery, selectedCategory } = collectionsStore;
 
   // Determine the correct subcategory filter key and value
@@ -549,6 +581,24 @@ const performMapSearch = async () => {
 
   // Use fetchResults to get data based on both search and filters
   await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
+
+  if (mapStore.didCategoryChange || !mapStore.mapCenter) {
+    // Refit bounds only if the category changed or there's no stored center
+    fitMapBounds();
+  } else {
+    // Otherwise, use the stored center and zoom
+    map.setCenter([mapStore.mapCenter.lng, mapStore.mapCenter.lat]);
+    map.setZoom(mapStore.mapZoom);
+  }
+};
+
+const clearMapMarkers = () => {
+  // Remove existing layers and sources related to markers
+  if (map?.getLayer('clusters')) map.removeLayer('clusters');
+  if (map?.getLayer('cluster-count')) map.removeLayer('cluster-count');
+  if (map?.getLayer('unclustered-points')) map.removeLayer('unclustered-points');
+  if (map?.getLayer('resource-names')) map.removeLayer('resource-names');
+  if (map?.getSource('resources')) map.removeSource('resources');
 };
 
 // Watch for changes in the search query
@@ -596,41 +646,69 @@ watch(
         mapStore.didCategoryChange = true;
         closePopup();
         await performMapSearch();
-        addMarkersAndClusters();
       }
     }
 );
 
+// Watch for changes in the results from the collections store
+watch(
+    () => collectionsStore.results,
+    (newResults) => {
+      if (newResults && newResults.length > 0) {
+        // Update the map markers when new results are fetched
+        addMarkersAndClusters();
+      } else {
+        // Optionally, you can clear the markers if no results are found
+         clearMapMarkers(); // Implement this function to clear markers from the map
+      }
+    },
+    { immediate: true } // This ensures it runs on initial load as well
+);
+
 onMounted(async () => {
   mapboxgl.accessToken = accessToken;
+
   if (isMapTabActive.value) {
-    await performMapSearch(); // Fetch data
+    // Initialize the map first
+    initializeMap();
 
-    setTimeout(() => {
-      initializeMap(); // Initialize the map after a delay
+    // Use a watcher or timeout to wait until the map is initialized before performing the search
+    const checkMapInitialization = setInterval(() => {
+      if (map) {
+        clearInterval(checkMapInitialization);
 
-      // Restore map state if available
-      if (mapStore.mapCenter && mapStore.mapZoom) {
-        map.setCenter([mapStore.mapCenter.lng, mapStore.mapCenter.lat]);
-        map.setZoom(mapStore.mapZoom);
+        // Perform map search after the map is fully initialized
+        performMapSearch();
+
+        // Restore map state if available
+        if (mapStore.mapCenter && mapStore.mapZoom) {
+          map.setCenter([mapStore.mapCenter.lng, mapStore.mapCenter.lat]);
+          map.setZoom(mapStore.mapZoom);
+        }
+
+        // Restore popup state if available
+        if (mapStore.mapPopup) {
+          const popupState = JSON.parse(mapStore.mapPopup);
+          openPopup(popupState);
+          map.flyTo({ center: popupState.geometry.coordinates, zoom: mapStore.mapZoom });
+        }
       }
-
-      // Restore popup state if available
-      if (mapStore.mapPopup) {
-        const popupState = JSON.parse(mapStore.mapPopup);
-        openPopup(popupState);
-        map.flyTo({ center: popupState.geometry.coordinates, zoom: mapStore.mapZoom });
-      }
-    }, 1000); // Adjust delay as needed
+    }, 100); // Check every 100ms
   }
 });
 
 onUnmounted(() => {
   if (map) {
+    // Save the map's current state before unmounting
+    const center = map.getCenter();
+    mapStore.setMapCenter({ lat: center.lat, lng: center.lng });
+    mapStore.setMapZoom(map.getZoom());
+
     map.remove();
     mapContainer.value?.removeEventListener('wheel', handleWheelZoom);
   }
 });
+
 </script>
 
 <style scoped>
