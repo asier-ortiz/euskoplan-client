@@ -20,6 +20,9 @@ import mapboxgl from 'mapbox-gl';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useMapStore } from '@/stores/map'; // Import your map store
 
+// Set the Mapbox access token
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+
 const props = defineProps<{
   resource: any;
 }>();
@@ -38,8 +41,8 @@ const initializeMap = () => {
     map = new mapboxgl.Map({
       container: mapContainer.value,
       style: mapStore.mapMode === 'dark'
-        ? 'mapbox://styles/mapbox/dark-v10'
-        : 'mapbox://styles/mapbox/streets-v11',
+          ? 'mapbox://styles/mapbox/dark-v10'
+          : 'mapbox://styles/mapbox/streets-v11',
       center: [parseFloat(props.resource.longitud), parseFloat(props.resource.latitud)],
       zoom: 14,
     });
@@ -48,12 +51,12 @@ const initializeMap = () => {
     map.addControl(new mapboxgl.NavigationControl(), 'top-right');
     map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
     map.addControl(
-      new mapboxgl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserHeading: true,
-      }),
-      'top-right'
+        new mapboxgl.GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+          trackUserLocation: true,
+          showUserHeading: true,
+        }),
+        'top-right'
     );
 
     const markerImageUrl = getMarkerImageUrl(props.resource.coleccion?.toLowerCase());
@@ -72,9 +75,9 @@ const initializeMap = () => {
     }).setText(props.resource.nombre);
 
     const marker = new mapboxgl.Marker({ element: markerElement })
-      .setLngLat([parseFloat(props.resource.longitud), parseFloat(props.resource.latitud)])
-      .setPopup(popup) // Add popup to the marker
-      .addTo(map);
+        .setLngLat([parseFloat(props.resource.longitud), parseFloat(props.resource.latitud)])
+        .setPopup(popup) // Add popup to the marker
+        .addTo(map);
 
     // Show the popup on mouse enter and hide on mouse leave
     markerElement.addEventListener('mouseenter', () => popup.addTo(map));
@@ -130,9 +133,9 @@ const toggleMapStyle = () => {
     const currentCenter = map.getCenter();
     const currentZoom = map.getZoom();
     map.setStyle(
-      mapStore.mapMode === 'dark'
-        ? 'mapbox://styles/mapbox/dark-v10'
-        : 'mapbox://styles/mapbox/streets-v11'
+        mapStore.mapMode === 'dark'
+            ? 'mapbox://styles/mapbox/dark-v10'
+            : 'mapbox://styles/mapbox/streets-v11'
     );
 
     map.once('style.load', () => {
@@ -155,23 +158,23 @@ onUnmounted(() => {
 
 // Watch for changes in the global map mode and update the map style
 watch(
-  () => mapStore.mapMode,
-  (newMode) => {
-    if (map) {
-      const currentCenter = map.getCenter();
-      const currentZoom = map.getZoom();
-      map.setStyle(
-        newMode === 'dark'
-          ? 'mapbox://styles/mapbox/dark-v10'
-          : 'mapbox://styles/mapbox/streets-v11'
-      );
+    () => mapStore.mapMode,
+    (newMode) => {
+      if (map) {
+        const currentCenter = map.getCenter();
+        const currentZoom = map.getZoom();
+        map.setStyle(
+            newMode === 'dark'
+                ? 'mapbox://styles/mapbox/dark-v10'
+                : 'mapbox://styles/mapbox/streets-v11'
+        );
 
-      map.once('style.load', () => {
-        map.setCenter(currentCenter);
-        map.setZoom(currentZoom);
-      });
+        map.once('style.load', () => {
+          map.setCenter(currentCenter);
+          map.setZoom(currentZoom);
+        });
+      }
     }
-  }
 );
 </script>
 

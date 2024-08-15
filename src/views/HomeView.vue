@@ -1,4 +1,3 @@
-<!-- src/components/HomeView.vue -->
 <template>
   <div>
     <Hero />
@@ -14,9 +13,11 @@ import Hero from '@/components/Hero/HeroMain.vue';
 import ResultsMain from '@/components/Result/ResultsMain.vue';
 import { useCollectionsStore } from '@/stores/collections';
 import { useFilterStore } from '@/stores/filter';
+import { useScrollStore } from '@/stores/scroll'; // Import the scroll store
 
 const collectionsStore = useCollectionsStore();
 const filterStore = useFilterStore();
+const scrollStore = useScrollStore(); // Use the scroll store
 
 const performSearchAndFilter = async (skipIfNoChange = false) => {
   const { selectedCategory, searchQuery } = collectionsStore;
@@ -32,6 +33,12 @@ const performSearchAndFilter = async (skipIfNoChange = false) => {
 
 onMounted(() => {
   performSearchAndFilter(true); // Only perform search if necessary
+
+  // Restore scroll position if returning to the HomeView
+  const savedScrollPosition = scrollStore.getScrollPosition();
+  if (savedScrollPosition !== 0) {
+    window.scrollTo({ top: savedScrollPosition });
+  }
 });
 
 watch(
