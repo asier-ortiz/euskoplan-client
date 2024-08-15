@@ -35,6 +35,7 @@ import { useMapStore } from '@/stores/map';
 import { calculateDistance } from '@/utils/distance';
 import ResultPopupContent from './ResultPopupContent.vue';
 import { formatDateForApi } from "@/utils/date";
+import { getMarkerImageUrl } from '@/utils/map';
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 const mapContainer = ref<HTMLElement | null>(null);
@@ -69,18 +70,6 @@ const mapOptions = {
       : 'mapbox://styles/mapbox/streets-v11',
   center: mapStore.mapCenter || [-2.6189, 43.25],
   zoom: mapStore.mapZoom || 7,
-};
-
-// Map categories to their corresponding marker images
-const categoryMarkerMap = {
-  alojamientos: '/images/map/accommodations-marker.png',
-  'cuevas y restos arqueológicos': '/images/map/caves-marker.png',
-  'edificios religiosos y castillos': '/images/map/culturals-marker.png',
-  eventos: '/images/map/events-marker.png',
-  'parques temáticos': '/images/map/fairs-marker.png',
-  'museos y centros de interpretación': '/images/map/museums-marker.png',
-  'espacios naturales': '/images/map/naturals-marker.png',
-  restaurantes: '/images/map/restaurants-marker.png',
 };
 
 // Determine which results to display on the map
@@ -349,9 +338,7 @@ const fitMapBounds = () => {
 // Main function to add markers and clusters
 const addMarkersAndClusters = async () => {
   const selectedCategory = collectionsStore.selectedCategory?.toLowerCase();
-  const markerImageUrl =
-      categoryMarkerMap[selectedCategory] || '/images/map/default-marker.png';
-
+  const markerImageUrl = getMarkerImageUrl(selectedCategory || '');
   const imageName = loadAndAddImage(markerImageUrl, selectedCategory);
 
   const geojson = {
