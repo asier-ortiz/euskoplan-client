@@ -1,4 +1,3 @@
-// router/index.ts
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import Home from '@/views/HomeView.vue';
@@ -11,6 +10,7 @@ import Detail from '@/views/DetailView.vue';
 import Account from '@/views/AccountView.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useScrollStore } from '@/stores/scroll';
+import { useMapStore } from '@/stores/map';
 
 const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'Home', component: Home },
@@ -47,6 +47,16 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   const scrollStore = useScrollStore();
+  const mapStore = useMapStore();
+
+  // Handle map state when navigating away from or to Detail
+  if (from.name === 'Detail' && to.name === 'Home') {
+    mapStore.setReturningFromDetail(true);
+  } else {
+    mapStore.resetReturningFromDetail();
+  }
+
+  next();
 
   if (from.name === 'Home') {
     // Save the scroll position when leaving the home view

@@ -84,9 +84,7 @@ const categoryMarkerMap = {
 };
 
 // Determine which results to display on the map
-const mapResults = computed(() => {
-  return collectionsStore.results;
-});
+const mapResults = computed(() => collectionsStore.results);
 
 // Determine the subtype based on collection type
 const getSubtype = (item) => {
@@ -101,7 +99,7 @@ const getSubtype = (item) => {
 };
 
 // Initialize the map
-let isRestoringState = false;  // Flag to ensure state restoration happens correctly
+let isRestoringState = false;
 
 const initializeMap = () => {
   if (!map) {
@@ -122,14 +120,15 @@ const initializeMap = () => {
     map.addControl(locateControl);
 
     map.on('load', () => {
+      addMarkersAndClusters();
+
+      // Remove the attribution control if it exists
       const attributionControl = map
           .getContainer()
-          .getElementsByClassName('mapboxgl-ctrl-attrib')[0];
+          .querySelector('.mapboxgl-ctrl-attrib');
       if (attributionControl) {
         attributionControl.parentNode.removeChild(attributionControl);
       }
-
-      addMarkersAndClusters(); // Add markers only after the map is loaded
 
       if (mapStore.mapCenter && mapStore.mapZoom) {
         isRestoringState = true;
@@ -141,12 +140,12 @@ const initializeMap = () => {
           openPopup(popupState);
         }
 
-        // Disable any automatic bounds adjustment during state restoration
         map.once('moveend', () => {
           isRestoringState = false;
         });
-      } else if (mapStore.shouldRefitBounds) {
-        // Adjust bounds only if no previous state exists or if explicitly needed
+      }
+
+      if (!mapStore.returningFromDetail && mapStore.shouldRefitBounds) {
         fitMapBounds();
         mapStore.setShouldRefitBounds(false);
       }
@@ -193,7 +192,7 @@ const initializeMap = () => {
     mapContainer.value?.addEventListener('wheel', handleWheelZoom);
   } else {
     map.resize();
-    addMarkersAndClusters(); // Add markers if the map is already initialized
+    addMarkersAndClusters();
   }
 };
 
@@ -261,7 +260,6 @@ const addClusterLayers = () => {
 
 // Helper function to add marker layers
 const addMarkerLayers = (imageName) => {
-  // Check if the layer already exists, and remove it if it does
   if (map?.getLayer('unclustered-points')) {
     map.removeLayer('unclustered-points');
   }
@@ -270,20 +268,18 @@ const addMarkerLayers = (imageName) => {
     map.removeLayer('resource-names');
   }
 
-  // Add the layer for unclustered points
   map?.addLayer({
     id: 'unclustered-points',
     type: 'symbol',
     source: 'resources',
     filter: ['!', ['has', 'point_count']],
     layout: {
-      'icon-image': imageName, // Use the unique image name
+      'icon-image': imageName,
       'icon-size': 0.2,
       'icon-allow-overlap': true,
     },
   });
 
-  // Add the layer for resource names
   map?.addLayer({
     id: 'resource-names',
     type: 'symbol',
@@ -310,10 +306,10 @@ const addMarkerLayers = (imageName) => {
 
 // Helper function to load and add marker image
 const loadAndAddImage = (markerImageUrl, collectionName) => {
-  // Generate a unique image name using the collection name and a random suffix
-  const imageName = `custom-marker-${collectionName}-${Math.random().toString(36).substr(2, 9)}`;
+  const imageName = `custom-marker-${collectionName}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
-  // Load and add the new image
   map?.loadImage(markerImageUrl, (error, image) => {
     if (error) {
       console.error('Error loading image:', error);
@@ -327,11 +323,6 @@ const loadAndAddImage = (markerImageUrl, collectionName) => {
 
 // Helper function to fit map bounds
 const fitMapBounds = () => {
-  // Verificar si deberíamos ajustar los límites del mapa
-  if (!mapStore.shouldRefitBounds) {
-    return;
-  }
-
   const bounds = new LngLatBounds();
   let validMarkers = 0;
 
@@ -346,13 +337,12 @@ const fitMapBounds = () => {
     map?.fitBounds(bounds, {
       padding: { top: 50, bottom: 50, left: 50, right: 50 },
       maxZoom: 14,
-      duration: 1000, // Smooth animation when fitting bounds
+      duration: 1000,
     });
   } else {
     console.warn('No valid markers to fit bounds.');
   }
 
-  // Resetear el flag después de ajustar los límites
   mapStore.setShouldRefitBounds(false);
 };
 
@@ -362,7 +352,6 @@ const addMarkersAndClusters = async () => {
   const markerImageUrl =
       categoryMarkerMap[selectedCategory] || '/images/map/default-marker.png';
 
-  // Load the marker image and get the unique image name
   const imageName = loadAndAddImage(markerImageUrl, selectedCategory);
 
   const geojson = {
@@ -386,9 +375,6 @@ const addMarkersAndClusters = async () => {
     })),
   };
 
-  console.log('GeoJSON data for markers:', geojson); // Debugging log to check data
-
-  // Remove existing layers and source
   removeExistingLayers([
     'clusters',
     'cluster-count',
@@ -397,17 +383,14 @@ const addMarkersAndClusters = async () => {
   ]);
   removeExistingSource('resources');
 
-  // Add the source
   addSource('resources', geojson);
-
-  // Add layers using the unique image name
   addMarkerLayers(imageName);
   addClusterLayers();
 
-  // Esperar a que el mapa termine de renderizar antes de ajustar los límites
   map.once('idle', () => {
     if (mapStore.didCategoryChange || mapStore.shouldRefitBounds) {
       fitMapBounds();
+      mapStore.setDidCategoryChange(false);
       mapStore.setShouldRefitBounds(false);
     }
   });
@@ -417,7 +400,7 @@ const addMarkersAndClusters = async () => {
 const handleWheelZoom = (event: WheelEvent) => {
   if (event.ctrlKey || event.metaKey) {
     map?.scrollZoom.enable();
-    event.preventDefault(); // Prevent page scroll
+    event.preventDefault();
   } else {
     map?.scrollZoom.disable();
     showZoomMessage.value = true;
@@ -442,7 +425,6 @@ const handleMapClick = (e) => {
 
   const feature = features[0];
 
-  // Set selected info for the panel
   selectedImage.value =
       JSON.parse(feature.properties.images)[0]?.fuente ||
       `/images/default/default-image.jpg`;
@@ -458,22 +440,20 @@ const handleMapClick = (e) => {
   selectedCollection.value = feature.properties.collection;
   selectedCode.value = feature.properties.code;
 
-  // Save the complete feature object to the store
   mapStore.setMapPopup(JSON.parse(JSON.stringify(feature)));
 
-  // Show the info panel
   showInfoPanel.value = true;
 };
 
 // Close the info panel
 const closePopup = () => {
   showInfoPanel.value = false;
-  mapStore.setMapPopup(null); // Reset popup state in the store and localStorage
+  mapStore.setMapPopup(null);
 };
 
 // Method to open popup using stored state
 const openPopup = (feature) => {
-  if (!feature || !feature.properties) return;  // Add this guard clause
+  if (!feature || !feature.properties) return;
 
   selectedImage.value =
       JSON.parse(feature.properties.images)[0]?.fuente ||
@@ -500,11 +480,9 @@ const handleClusterClick = async (e) => {
   const clusterId = features[0].properties.cluster_id;
   const source = map?.getSource('resources') as mapboxgl.GeoJSONSource;
 
-  // Get the cluster expansion zoom level and bounds
   source.getClusterExpansionZoom(clusterId, (err, zoom) => {
     if (err) return;
 
-    // Get the cluster's features
     source.getClusterLeaves(clusterId, Infinity, 0, (err, leaves) => {
       if (err) return;
 
@@ -525,11 +503,9 @@ const handleClusterClick = async (e) => {
 const toggleMapStyle = () => {
   if (!map) return;
 
-  // Save current map state
   const currentCenter = map.getCenter();
   const currentZoom = map.getZoom();
 
-  // Toggle map style
   isDarkMode.value = isDarkMode.value === 'dark' ? 'light' : 'dark';
   mapStore.setMapMode(isDarkMode.value);
   map.setStyle(
@@ -538,7 +514,6 @@ const toggleMapStyle = () => {
           : 'mapbox://styles/mapbox/streets-v11'
   );
 
-  // Restore map state after style change
   map.once('style.load', () => {
     map.setCenter(currentCenter);
     map.setZoom(currentZoom);
@@ -546,7 +521,6 @@ const toggleMapStyle = () => {
   });
 };
 
-// This method is triggered when the map tab becomes active or on initial load
 const performMapSearch = async () => {
   if (!map) {
     console.warn('Map is not initialized yet.');
@@ -555,7 +529,6 @@ const performMapSearch = async () => {
 
   const { searchQuery, selectedCategory } = collectionsStore;
 
-  // Determine the correct subcategory filter key and value
   let subcategoryKey = null;
   let subcategoryValue = null;
 
@@ -589,24 +562,17 @@ const performMapSearch = async () => {
     }),
   };
 
-  console.log('Performing map search with filters:', filters);
-
-  // Use fetchResults to get data based on both search and filters
   await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
 
-  // Check the bounds only if needed
-  if (mapStore.didCategoryChange || !mapStore.mapCenter || mapStore.shouldRefitBounds) {
+  if (mapStore.shouldRefitBounds) {
     fitMapBounds();
-    mapStore.setShouldRefitBounds(false);
   } else {
-    // Otherwise, use the stored center and zoom
     map.setCenter([mapStore.mapCenter.lng, mapStore.mapCenter.lat]);
     map.setZoom(mapStore.mapZoom);
   }
 };
 
 const clearMapMarkers = () => {
-  // Remove existing layers and sources related to markers
   if (map?.getLayer('clusters')) map.removeLayer('clusters');
   if (map?.getLayer('cluster-count')) map.removeLayer('cluster-count');
   if (map?.getLayer('unclustered-points')) map.removeLayer('unclustered-points');
@@ -614,7 +580,6 @@ const clearMapMarkers = () => {
   if (map?.getSource('resources')) map.removeSource('resources');
 };
 
-// Watch for changes in the search query
 watch(
     () => collectionsStore.searchQuery,
     async () => {
@@ -626,7 +591,6 @@ watch(
     }
 );
 
-// Watch for changes in applied filters
 watch(
     () => [
       filterStore.selectedProvince,
@@ -639,7 +603,7 @@ watch(
       if (isMapTabActive.value) {
         await performMapSearch();
         closePopup();
-        await addMarkersAndClusters();
+        addMarkersAndClusters();
       }
     },
     { deep: true }
@@ -647,19 +611,22 @@ watch(
 
 watch(isMapTabActive, async (isActive) => {
   if (isActive) {
-    if (!mapStore.shouldRefitBounds) {
-      // Do not refit bounds if the flag is false
+    if (!map) {
       initializeMap();
     } else {
-      // Only perform map search and refit bounds if necessary
-      await performMapSearch();
-      initializeMap();
-      fitMapBounds();
-      mapStore.setShouldRefitBounds(false);  // Reset the flag after refitting bounds
+      map.resize();
     }
+
+    await performMapSearch();
+
+    if (mapStore.didCategoryChange || (!mapStore.returningFromDetail && mapStore.shouldRefitBounds)) {
+      fitMapBounds();
+    }
+
+    mapStore.resetReturningFromDetail();
+    mapStore.resetAllFlags();
   }
 });
-
 
 watch(
     () => collectionsStore.selectedCategory,
@@ -668,23 +635,31 @@ watch(
         mapStore.setDidCategoryChange(true);
         closePopup();
         await performMapSearch();
+
+        if (mapStore.shouldRefitBounds) {
+          fitMapBounds();
+          mapStore.setShouldRefitBounds(false);
+        }
       }
     }
 );
 
-// Watch for changes in the results from the collections store
 watch(
     () => collectionsStore.results,
     (newResults) => {
       if (newResults && newResults.length > 0) {
-        // Update the map markers when new results are fetched
         addMarkersAndClusters();
+
+        if (mapStore.didCategoryChange || (!mapStore.returningFromDetail && mapStore.shouldRefitBounds)) {
+          fitMapBounds();
+          mapStore.setDidCategoryChange(false);
+          mapStore.setShouldRefitBounds(false);
+        }
       } else {
-        // Optionally, you can clear the markers if no results are found
-        clearMapMarkers(); // Implement this function to clear markers from the map
+        clearMapMarkers();
       }
     },
-    { immediate: true } // This ensures it runs on initial load as well
+    { immediate: true }
 );
 
 onMounted(async () => {
@@ -719,7 +694,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (map) {
-    // Save the map's current state before unmounting
     const center = map.getCenter();
     mapStore.setMapCenter({ lat: center.lat, lng: center.lng });
     mapStore.setMapZoom(map.getZoom());
@@ -728,7 +702,6 @@ onUnmounted(() => {
     mapContainer.value?.removeEventListener('wheel', handleWheelZoom);
   }
 });
-
 </script>
 
 <style scoped>

@@ -9,6 +9,7 @@ export const useMapStore = defineStore('map', {
     mapPopup: useLocalStorage('mapPopup', null), // Store map popup state
     didCategoryChange: false, // Track if the category changed
     shouldRefitBounds: false, // Track if the map should refit bounds after filter changes
+    returningFromDetail: false, // Track if the user is returning from the DetailView
   }),
 
   actions: {
@@ -16,24 +17,38 @@ export const useMapStore = defineStore('map', {
       this.mapPopup = popup ? JSON.stringify(popup) : null;
     },
 
-    setMapCenter(center: { lat: number; lng: number }) {
+    setMapCenter(center) {
       this.mapCenter = center;
     },
 
-    setMapZoom(zoom: number) {
+    setMapZoom(zoom) {
       this.mapZoom = zoom;
     },
 
-    setMapMode(mode: 'light' | 'dark') {
+    setMapMode(mode) {
       this.mapMode = mode;
     },
 
-    setDidCategoryChange(status: boolean) {
+    setDidCategoryChange(status) {
       this.didCategoryChange = status;
     },
 
-    setShouldRefitBounds(status: boolean) {
+    setShouldRefitBounds(status) {
       this.shouldRefitBounds = status;
+    },
+
+    setReturningFromDetail(status) {
+      this.returningFromDetail = status;
+    },
+
+    resetReturningFromDetail() {
+      this.returningFromDetail = false;
+    },
+
+    resetAllFlags() {
+      this.didCategoryChange = false;
+      this.shouldRefitBounds = false;
+      this.returningFromDetail = false;
     },
   },
 });

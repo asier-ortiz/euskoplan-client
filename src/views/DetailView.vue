@@ -45,15 +45,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import { useFavoritesStore } from '@/stores/favorites';
 import { useAuthStore } from '@/stores/auth';
 import { useMapStore } from '@/stores/map'; // Import map store
 import { calculateDistance } from '@/utils/distance';
-import { getDefaultImageUrl } from '@/utils/image'; // Import getDefaultImageUrl from imageUtils
-import mapboxgl from 'mapbox-gl';
+import { getDefaultImageUrl } from '@/utils/image';
 import Swal from 'sweetalert2';
 import Spinner from '@/components/Misc/LoadingSpinner.vue';
 import DetailContent from '@/components/Detail/DetailContent.vue';
@@ -61,8 +60,6 @@ import DetailMap from '@/components/Detail/DetailMap.vue';
 import DetailRelatedResources from '@/components/Detail/DetailRelatedResources.vue';
 import DetailHeader from '@/components/Detail/DetailHeader.vue';
 import DetailHeaderButtons from '@/components/Detail/DetailHeaderButtons.vue';
-
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const route = useRoute();
 const router = useRouter();
@@ -78,7 +75,13 @@ const loading = ref<boolean>(true);
 const relatedResources = ref<any[]>([]);
 const isDarkMode = ref(mapStore.mapMode); // Use map store for dark mode
 
-// let map: mapboxgl.Map | undefined;
+onBeforeRouteLeave((to, from, next) => {
+  // Set the returningFromDetail flag when leaving DetailView
+  if (from.name === 'Detail') {
+    mapStore.setReturningFromDetail(true);
+  }
+  next();
+});
 
 const distance = computed(() => {
   if (
@@ -123,11 +126,7 @@ const fetchResource = async () => {
   relatedResources.value = collectionsStore.relatedResources;
 
   relatedResources.value.forEach((related) => {
-    if (
-        locationStore.userLocation &&
-        related.longitud &&
-        related.latitud
-    ) {
+    if (locationStore.userLocation && related.longitud && related.latitud) {
       related.distancia = calculateDistance(
           locationStore.userLocation.latitude,
           locationStore.userLocation.longitude,
@@ -208,7 +207,7 @@ const navigateToResource = (related: any) => {
 };
 
 const getDefaultImage = (collection: string) => {
-  return getDefaultImageUrl(collection); // Use the function from imageUtils
+  return getDefaultImageUrl(collection);
 };
 
 const goBackHome = () => {
@@ -263,9 +262,8 @@ onMounted(() => {
 
 .section-separator {
   border: none;
-  border-top: 2px dotted #8bbcd7; /* Light blue color for dotted line */
-  margin: 2rem 0; /* Margin for spacing around the separator */
-  background: none; /* Remove any background to keep focus on the line */
+  border-top: 2px dotted #8bbcd7;
+  margin: 2rem 0;
 }
 
 .loading {
@@ -274,44 +272,5 @@ onMounted(() => {
   align-items: center;
   height: 100vh;
   background-color: #f9f9f9;
-}
-
-.toggle-style-button {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: #fff;
-  border: none;
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 2;
-}
-
-.toggle-style-button:hover {
-  background-color: #f0f0f0;
-}
-
-@media (max-width: 768px) {
-  .detail-header h1 {
-    font-size: 2rem;
-  }
-
-  .detail-header h2 {
-    font-size: 1.2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .header-buttons {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .header-button {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
 }
 </style>

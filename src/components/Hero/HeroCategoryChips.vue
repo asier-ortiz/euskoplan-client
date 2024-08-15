@@ -1,4 +1,3 @@
-<!-- src/components/CategorySelection.vue -->
 <template>
   <div class="chips-container">
     <div
@@ -15,10 +14,12 @@
 
 <script setup lang="ts">
 import { useCollectionsStore } from '@/stores/collections';
-import { useFilterStore } from '@/stores/filter'; // Import filter store
+import { useFilterStore } from '@/stores/filter';
+import { useMapStore } from '@/stores/map';
 
 const collectionsStore = useCollectionsStore();
-const filterStore = useFilterStore(); // Access filter store
+const filterStore = useFilterStore();
+const mapStore = useMapStore();
 
 const categories = [
   'Alojamientos',
@@ -31,23 +32,23 @@ const categories = [
   'Restaurantes'
 ];
 
-const toggleCategory = (category) => {
+const toggleCategory = async (category) => {
   const isCurrentlySelected = collectionsStore.selectedCategory === category;
   const newCategory = isCurrentlySelected ? null : category;
 
   collectionsStore.setSelectedCategory(newCategory);
 
   if (newCategory) {
-    const filters = filterStore.getFilters(); // Get active filters
-    collectionsStore.fetchResults(newCategory, collectionsStore.searchQuery, filters);
+    const filters = filterStore.getFilters();
+    await collectionsStore.fetchResults(newCategory, collectionsStore.searchQuery, filters);
+    mapStore.setDidCategoryChange(true);
+    mapStore.setShouldRefitBounds(true);  // Ensure map refits bounds after category change
   } else {
     collectionsStore.results = [];
   }
 };
 
-const isSelected = (category) => {
-  return collectionsStore.selectedCategory === category;
-};
+const isSelected = (category) => collectionsStore.selectedCategory === category;
 </script>
 
 <style scoped>
