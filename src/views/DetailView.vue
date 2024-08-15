@@ -2,7 +2,6 @@
   <div class="detail-view-container">
     <Spinner v-if="loading" :visible="loading" />
     <div v-else class="detail-view">
-      <!-- Include DetailHeaderButtons Component -->
       <DetailHeaderButtons
           :goBackHome="goBackHome"
           :handleAddToPlan="handleAddToPlan"
@@ -12,12 +11,10 @@
 
       <hr class="section-separator" />
 
-      <!-- Include DetailHeader Component -->
       <DetailHeader :resource="resource" :distance="distance" />
 
       <hr class="section-separator" />
 
-      <!-- Include DetailContent Component -->
       <DetailContent
           :resource="resource"
           :currentIndex="currentIndex"
@@ -26,12 +23,10 @@
           :formatDate="formatDate"
       />
 
-      <!-- Include DetailMap Component -->
       <DetailMap :resource="resource" :isDarkMode="isDarkMode" />
 
       <hr class="section-separator" />
 
-      <!-- Include DetailRelatedResources Component -->
       <DetailRelatedResources
           :relatedResources="relatedResources"
           :formatDate="formatDate"
@@ -50,7 +45,7 @@ import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import { useFavoritesStore } from '@/stores/favorites';
 import { useAuthStore } from '@/stores/auth';
-import { useMapStore } from '@/stores/map'; // Import map store
+import { useMapStore } from '@/stores/map';
 import { calculateDistance } from '@/utils/distance';
 import { getDefaultImageUrl } from '@/utils/image';
 import Swal from 'sweetalert2';
@@ -67,16 +62,15 @@ const collectionsStore = useCollectionsStore();
 const locationStore = useLocationStore();
 const favoritesStore = useFavoritesStore();
 const authStore = useAuthStore();
-const mapStore = useMapStore(); // Use the map store
+const mapStore = useMapStore();
 
 const resource = ref<any>(null);
 const currentIndex = ref<number>(0);
 const loading = ref<boolean>(true);
 const relatedResources = ref<any[]>([]);
-const isDarkMode = ref(mapStore.mapMode); // Use map store for dark mode
+const isDarkMode = ref(mapStore.mapMode);
 
 onBeforeRouteLeave((to, from, next) => {
-  // Set the returningFromDetail flag when leaving DetailView
   if (from.name === 'Detail') {
     mapStore.setReturningFromDetail(true);
   }

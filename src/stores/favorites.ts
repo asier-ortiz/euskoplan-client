@@ -1,8 +1,10 @@
-// src/stores/favorites.ts
-
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import config from '../config'; // Import config
+
+// Set the base URL for Axios
+axios.defaults.baseURL = config.apiBaseUrl;
 
 // Define the types for the resource and favorites
 interface Resource {
@@ -21,8 +23,6 @@ interface FavoritesState {
   loading: boolean;
 }
 
-const API_URL = 'http://localhost:8000/api/favourite';
-
 export const useFavoritesStore = defineStore('favorites', {
   state: (): FavoritesState => ({
     favorites: {},
@@ -32,7 +32,7 @@ export const useFavoritesStore = defineStore('favorites', {
     async fetchFavorites() {
       try {
         this.loading = true;
-        const response = await axios.get(API_URL);
+        const response = await axios.get('/favourite'); // Use relative path
         this.favorites = response.data.favoritos || {};
       } catch (error) {
         Swal.fire({
@@ -47,7 +47,7 @@ export const useFavoritesStore = defineStore('favorites', {
 
     async addFavorite(favoritableId: number, favoritableType: string) {
       try {
-        const response = await axios.post(API_URL, {
+        const response = await axios.post('/favourite', {
           id_favorito: favoritableId,
           tipo_favorito: favoritableType,
         });
@@ -73,7 +73,7 @@ export const useFavoritesStore = defineStore('favorites', {
 
     async removeFavorite(favoriteId: number) {
       try {
-        const response = await axios.delete(`${API_URL}/${favoriteId}`);
+        const response = await axios.delete(`/favourite/${favoriteId}`);
 
         if (response.status === 202) {
           Swal.fire({
@@ -96,32 +96,32 @@ export const useFavoritesStore = defineStore('favorites', {
 
     isFavorite(favoritableId: number, favoritableType: string): boolean {
       return Object.values(this.favorites).some((fav) =>
-        fav.some(
-          (item) =>
-            item.recurso.id === favoritableId &&
-            item.recurso.coleccion === favoritableType
-        )
+          fav.some(
+              (item) =>
+                  item.recurso.id === favoritableId &&
+                  item.recurso.coleccion === favoritableType
+          )
       );
     },
 
     getFavoriteId(
-      favoritableId: number,
-      favoritableType: string
+        favoritableId: number,
+        favoritableType: string
     ): number | null {
       const categoryFavorites = Object.entries(this.favorites).find(
-        ([_, items]) =>
-          items.some(
-            (item) =>
-              item.recurso.id === favoritableId &&
-              item.recurso.coleccion === favoritableType
-          )
+          ([_, items]) =>
+              items.some(
+                  (item) =>
+                      item.recurso.id === favoritableId &&
+                      item.recurso.coleccion === favoritableType
+              )
       );
       if (categoryFavorites) {
         const [, items] = categoryFavorites;
         const favoriteItem = items.find(
-          (item) =>
-            item.recurso.id === favoritableId &&
-            item.recurso.coleccion === favoritableType
+            (item) =>
+                item.recurso.id === favoritableId &&
+                item.recurso.coleccion === favoritableType
         );
         return favoriteItem ? favoriteItem.id : null;
       }
