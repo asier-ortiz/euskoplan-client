@@ -27,42 +27,71 @@
 
     <!-- Display dynamic info only if available -->
     <div v-if="hasDynamicInfo" class="dynamic-info">
+      <!-- General Info -->
       <p v-if="resource.direccion"><strong>Dirección:</strong> {{ resource.direccion }}</p>
       <p v-if="resource.codigo_postal"><strong>Código Postal:</strong> {{ resource.codigo_postal }}</p>
       <p v-if="resource.numero_telefono"><strong>Teléfono:</strong> {{ resource.numero_telefono }}</p>
+      <p v-if="resource.numero_telefono_2"><strong>Teléfono 2:</strong> {{ resource.numero_telefono_2 }}</p>
       <p v-if="resource.email"><strong>Email:</strong> {{ resource.email }}</p>
       <p v-if="resource.pagina_web"><strong>Sitio Web:</strong><a :href="resource.pagina_web" target="_blank">{{ resource.pagina_web }}</a></p>
 
+      <!-- Accommodation Specific -->
       <template v-if="resource.coleccion === 'accommodation'">
         <p v-if="resource.categoria"><strong>Categoría:</strong> {{ resource.categoria }}</p>
         <p v-if="resource.capacidad"><strong>Capacidad:</strong> {{ resource.capacidad }}</p>
         <p v-if="resource.anno_apertura"><strong>Año de Apertura:</strong> {{ resource.anno_apertura }}</p>
         <p v-if="resource.num_hab_individuales"><strong>Habitaciones Individuales:</strong> {{ resource.num_hab_individuales }}</p>
         <p v-if="resource.num_hab_dobles"><strong>Habitaciones Dobles:</strong> {{ resource.num_hab_dobles }}</p>
+        <p v-if="resource.num_hab_salon"><strong>Salones:</strong> {{ resource.num_hab_salon }}</p>
+        <p v-if="resource.num_hab_hasta_4_plazas"><strong>Habitaciones hasta 4 plazas:</strong> {{ resource.num_hab_hasta_4_plazas }}</p>
+        <p v-if="resource.num_hab_mas_4_plazas"><strong>Habitaciones más de 4 plazas:</strong> {{ resource.num_hab_mas_4_plazas }}</p>
       </template>
 
+      <!-- Cave Specific -->
+      <template v-if="resource.coleccion === 'cave'">
+        <p v-if="resource.tipo_monumento"><strong>Tipo de Monumento:</strong> {{ resource.tipo_monumento }}</p>
+        <p v-if="resource.periodo"><strong>Período:</strong> {{ resource.periodo }}</p>
+      </template>
+
+      <!-- Cultural Specific -->
       <template v-if="resource.coleccion === 'cultural'">
         <p v-if="resource.tipo_monumento"><strong>Tipo de Monumento:</strong> {{ resource.tipo_monumento }}</p>
         <p v-if="resource.estilo_artistico"><strong>Estilo Artístico:</strong> {{ resource.estilo_artistico }}</p>
       </template>
 
+      <!-- Event Specific -->
       <template v-if="resource.coleccion === 'event'">
         <p v-if="resource.fecha_inicio"><strong>Fecha de Inicio:</strong> {{ formatDate(resource.fecha_inicio) }}</p>
         <p v-if="resource.fecha_fin"><strong>Fecha de Fin:</strong> {{ formatDate(resource.fecha_fin) }}</p>
       </template>
 
+      <!-- Fair Specific -->
       <template v-if="resource.coleccion === 'fair'">
         <p v-if="resource.atracciones"><strong>Atracciones:</strong> <span v-html="resource.atracciones"></span></p>
         <p v-if="resource.horario"><strong>Horario:</strong> <span v-html="resource.horario"></span></p>
         <p v-if="resource.tarifas"><strong>Tarifas:</strong> <span v-html="resource.tarifas"></span></p>
       </template>
 
+      <!-- Natural Specific -->
       <template v-if="resource.coleccion === 'natural'">
+        <p v-if="resource.subtipo_recurso_espacio_natural"><strong>Subtipo Espacio Natural:</strong> {{ resource.subtipo_recurso_espacio_natural }}</p>
+        <p v-if="resource.fauna"><strong>Fauna:</strong> {{ resource.fauna }}</p>
+        <p v-if="resource.flora"><strong>Flora:</strong> {{ resource.flora }}</p>
+        <p v-if="resource.subtipo_recurso_playas_pantanos_rios"><strong>Subtipo Playas/Pantanos/Ríos:</strong> {{ resource.subtipo_recurso_playas_pantanos_rios }}</p>
         <p v-if="resource.actividades"><strong>Actividades:</strong><span v-html="resource.actividades"></span></p>
+        <p v-if="resource.horario"><strong>Horario:</strong><span v-html="resource.horario"></span></p>
       </template>
 
+      <!-- Restaurant Specific -->
       <template v-if="resource.coleccion === 'restaurant'">
         <p v-if="resource.capacidad"><strong>Capacidad:</strong> {{ resource.capacidad }}</p>
+      </template>
+
+      <!-- Museum Specific -->
+      <template v-if="resource.coleccion === 'museum'">
+        <p v-if="resource.tematica"><strong>Temática:</strong> {{ resource.tematica }}</p>
+        <p v-if="resource.capacidad"><strong>Capacidad:</strong> {{ resource.capacidad }}</p>
+        <p v-if="resource.horario"><strong>Horario:</strong> <span v-html="resource.horario"></span></p>
       </template>
     </div>
 
@@ -93,26 +122,26 @@ const currentIndex = ref(0);
 // Computed property to get the single image URL or a default image if not available
 const singleImageUrl = computed(() => {
   return props.resource.imagenes && props.resource.imagenes.length === 1
-    ? props.resource.imagenes[0].fuente
-    : getDefaultImageUrl(props.resource.coleccion);
+      ? props.resource.imagenes[0].fuente
+      : getDefaultImageUrl(props.resource.coleccion);
 });
 
 // Computed property to get the alt text for the single image or a default text
 const singleImageAlt = computed(() => {
   return props.resource.imagenes && props.resource.imagenes.length === 1
-    ? props.resource.imagenes[0].titulo || 'Imagen del recurso'
-    : 'Imagen por defecto';
+      ? props.resource.imagenes[0].titulo || 'Imagen del recurso'
+      : 'Imagen por defecto';
 });
 
 // Watch for changes in the resource to reset the currentIndex
 watch(
-  () => props.resource,
-  (newResource, oldResource) => {
-    if (newResource !== oldResource) {
-      currentIndex.value = 0; // Reset the index to 0 when the resource changes
-    }
-  },
-  { immediate: true } // Ensure the watcher runs immediately when the component is mounted
+    () => props.resource,
+    (newResource, oldResource) => {
+      if (newResource !== oldResource) {
+        currentIndex.value = 0; // Reset the index to 0 when the resource changes
+      }
+    },
+    { immediate: true } // Ensure the watcher runs immediately when the component is mounted
 );
 
 // Functions to change the slide index
@@ -137,23 +166,27 @@ const filteredDescription = computed(() => {
 // Computed property to determine if there is any dynamic info to display
 const hasDynamicInfo = computed(() => {
   return (
-    props.resource.direccion ||
-    props.resource.codigo_postal ||
-    props.resource.numero_telefono ||
-    props.resource.email ||
-    props.resource.pagina_web ||
-    (props.resource.coleccion === 'accommodation' &&
-      (props.resource.categoria || props.resource.capacidad || props.resource.anno_apertura || props.resource.num_hab_individuales || props.resource.num_hab_dobles)) ||
-    (props.resource.coleccion === 'cultural' &&
-      (props.resource.tipo_monumento || props.resource.estilo_artistico)) ||
-    (props.resource.coleccion === 'event' &&
-      (props.resource.fecha_inicio || props.resource.fecha_fin)) ||
-    (props.resource.coleccion === 'fair' &&
-      (props.resource.atracciones || props.resource.horario || props.resource.tarifas)) ||
-    (props.resource.coleccion === 'natural' &&
-      props.resource.actividades) ||
-    (props.resource.coleccion === 'restaurant' &&
-      props.resource.capacidad)
+      props.resource.direccion ||
+      props.resource.codigo_postal ||
+      props.resource.numero_telefono ||
+      props.resource.email ||
+      props.resource.pagina_web ||
+      (props.resource.coleccion === 'accommodation' &&
+          (props.resource.categoria || props.resource.capacidad || props.resource.anno_apertura || props.resource.num_hab_individuales || props.resource.num_hab_dobles)) ||
+      (props.resource.coleccion === 'cave' &&
+          (props.resource.tipo_monumento || props.resource.periodo)) ||
+      (props.resource.coleccion === 'cultural' &&
+          (props.resource.tipo_monumento || props.resource.estilo_artistico)) ||
+      (props.resource.coleccion === 'event' &&
+          (props.resource.fecha_inicio || props.resource.fecha_fin)) ||
+      (props.resource.coleccion === 'fair' &&
+          (props.resource.atracciones || props.resource.horario || props.resource.tarifas)) ||
+      (props.resource.coleccion === 'natural' &&
+          (props.resource.subtipo_recurso_espacio_natural || props.resource.fauna || props.resource.flora || props.resource.subtipo_recurso_playas_pantanos_rios || props.resource.actividades || props.resource.horario)) ||
+      (props.resource.coleccion === 'restaurant' &&
+          props.resource.capacidad) ||
+      (props.resource.coleccion === 'museum' &&
+          (props.resource.tematica || props.resource.capacidad || props.resource.horario))
   );
 });
 </script>
