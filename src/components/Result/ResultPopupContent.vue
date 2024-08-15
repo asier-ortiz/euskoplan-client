@@ -1,7 +1,16 @@
 <template>
   <div class="result-card">
     <button class="close-btn" @click="$emit('close')">×</button>
-    <div class="card-image" :style="{ backgroundImage: `url(${imageSrc})` }" />
+    <div class="card-image">
+      <img
+          :src="imageUrl"
+          @load="handleImageLoad"
+          @error="handleImageError"
+          class="popup-image"
+          alt="Image of {{ title }}"
+      />
+      <div v-if="!imageLoaded" class="skeleton-loader"></div> <!-- Skeleton loader -->
+    </div>
     <div class="card-content">
       <h3 class="popup-subtype">{{ subtype }}</h3>
       <h2 class="popup-title">{{ title }}</h2>
@@ -17,8 +26,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { defineProps, ref, watch } from 'vue';
+import { getDefaultImageUrl } from '@/utils/image'; // Import the utility function
 
 const props = defineProps<{
   imageSrc: string;
@@ -29,6 +38,29 @@ const props = defineProps<{
   collection: string;
   code: string;
 }>();
+
+const imageUrl = ref('');
+const imageLoaded = ref(false);
+
+const setInitialImage = () => {
+  imageUrl.value = props.imageSrc || getDefaultImageUrl(props.collection);
+};
+
+const handleImageLoad = () => {
+  imageLoaded.value = true;
+};
+
+const handleImageError = () => {
+  imageUrl.value = getDefaultImageUrl(props.collection);
+  imageLoaded.value = true; // Hide skeleton if error occurs
+};
+
+watch(
+    () => props.imageSrc,
+    () => setInitialImage(),
+    { immediate: true }
+);
+
 </script>
 
 <style scoped>
@@ -71,6 +103,33 @@ const props = defineProps<{
   position: relative;
 }
 
+.popup-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.skeleton-loader {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 .card-content {
   padding: 10px;
   text-align: center;
@@ -78,7 +137,7 @@ const props = defineProps<{
 
 .card-content h3 {
   margin: 0 0 5px;
-  font-size: 0.8rem; /* Slightly larger font size */
+  font-size: 0.8rem;
   color: #666666;
   text-transform: uppercase;
   font-weight: normal;
@@ -90,7 +149,7 @@ const props = defineProps<{
 
 .card-content h2 {
   margin: 0 0 10px;
-  font-size: 0.9rem; /* Slightly larger font size */
+  font-size: 0.9rem;
   color: #333333;
   font-weight: bold;
   line-height: 1.2;
@@ -101,7 +160,7 @@ const props = defineProps<{
 
 .card-content p {
   margin: 5px 0;
-  font-size: 0.8rem; /* Slightly larger font size */
+  font-size: 0.8rem;
   color: #555555;
   white-space: nowrap;
   overflow: hidden;

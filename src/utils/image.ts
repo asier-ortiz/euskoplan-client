@@ -16,3 +16,36 @@ export const getDefaultImageUrl = (collection: string): string => {
 
   return defaultImages[collection.toLowerCase()] || defaultImages.default;
 };
+
+// Image handling utility functions
+import { ref } from 'vue';
+
+export function useImageHandler(collection: string, initialImages: Array<{ fuente: string }>) {
+  const imageUrl = ref('');
+  const imageLoaded = ref(false);
+
+  const setInitialImage = () => {
+    if (initialImages.length > 0 && initialImages[0].fuente) {
+      imageUrl.value = initialImages[0].fuente;
+    } else {
+      imageUrl.value = getDefaultImageUrl(collection);
+    }
+  };
+
+  const handleImageLoad = () => {
+    imageLoaded.value = true;
+  };
+
+  const handleImageError = () => {
+    imageUrl.value = getDefaultImageUrl(collection);
+    imageLoaded.value = true;
+  };
+
+  return {
+    imageUrl,
+    imageLoaded,
+    setInitialImage,
+    handleImageLoad,
+    handleImageError,
+  };
+}

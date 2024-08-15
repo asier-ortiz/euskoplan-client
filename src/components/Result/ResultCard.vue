@@ -3,11 +3,11 @@
     <div class="card-image" :style="{ backgroundImage: `url(${imageUrl})` }">
       <div v-if="!imageLoaded" class="skeleton-loader"></div> <!-- Skeleton loader -->
       <img
-        :src="imageUrl"
-        @load="handleImageLoad"
-        @error="handleImageError"
-        class="hidden-image"
-        alt="Image of {{ name }}"
+          :src="imageUrl"
+          @load="handleImageLoad"
+          @error="handleImageError"
+          class="hidden-image"
+          alt="Image of {{ name }}"
       />
       <!-- Event Date Overlay -->
       <div v-if="isEvent" class="event-date">{{ formattedDate }}</div>
@@ -29,10 +29,9 @@ import { ref, defineProps, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLocationStore } from '@/stores/location';
 import { calculateDistance } from '@/utils/distance';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'; // Import FontAwesomeIcon
-import { getDefaultImageUrl } from '@/utils/image'; // Import the utility function
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { useImageHandler } from '@/utils/image';
 
-// Define props with TypeScript types
 const props = defineProps({
   itemId: {
     type: [Number, String], // Accept both Number and String
@@ -58,76 +57,49 @@ const props = defineProps({
     type: [Number, String], // Accept both Number and String
     required: true,
   },
-  subtype: { // Add subtype prop
+  subtype: {
     type: String,
     required: true,
   },
-  municipio: { // Add municipio prop
+  municipio: {
     type: String,
     required: true,
   },
-  fechaInicio: { // Add fechaInicio prop
+  fechaInicio: {
     type: String,
     default: null,
   }
 });
 
-// Use Vue Router for navigation
 const router = useRouter();
-
-// Use Location Store
 const locationStore = useLocationStore();
 
-// Define a ref to store the current image URL
-const imageUrl = ref('');
-const imageLoaded = ref(false); // Ref to track if the image has loaded
+const { imageUrl, imageLoaded, setInitialImage, handleImageLoad, handleImageError } = useImageHandler(props.collection, props.images);
 
-// Distance calculation
+watch(
+    () => props.images,
+    () => setInitialImage(),
+    { immediate: true }
+);
+
 const distance = computed(() => {
   if (locationStore.userLocation && props.longitud && props.latitud) {
     return calculateDistance(
-      locationStore.userLocation.latitude,
-      locationStore.userLocation.longitude,
-      Number(props.latitud), // Convert to number
-      Number(props.longitud)  // Convert to number
+        locationStore.userLocation.latitude,
+        locationStore.userLocation.longitude,
+        Number(props.latitud),
+        Number(props.longitud)
     );
   }
   return null;
 });
 
-// Set initial image URL or default if none is available
-watch(
-  () => props.images,
-  (newImages) => {
-    if (newImages.length > 0 && newImages[0].fuente) {
-      imageUrl.value = newImages[0].fuente;
-    } else {
-      imageUrl.value = getDefaultImageUrl(props.collection);
-    }
-  },
-  { immediate: true }
-);
-
-// Handle image loading success by hiding the skeleton loader
-const handleImageLoad = () => {
-  imageLoaded.value = true;
-};
-
-// Handle image loading errors by setting the default image URL
-const handleImageError = () => {
-  imageUrl.value = getDefaultImageUrl(props.collection);
-  imageLoaded.value = true; // Hide skeleton if error occurs
-};
-
-// Navigate to detail page on card click
 const navigateToDetail = () => {
-  router.push({ name: 'Detail', params: { id: Number(props.itemId), category: props.collection } }); // Convert itemId to number
+  router.push({ name: 'Detail', params: { id: Number(props.itemId), category: props.collection } });
 };
 
-// Check if the collection is an event
 const isEvent = computed(() => props.collection.toLowerCase() === 'event');
 
-// Format the event date
 const formattedDate = computed(() => {
   if (!props.fechaInicio) return '';
   const date = new Date(props.fechaInicio);
