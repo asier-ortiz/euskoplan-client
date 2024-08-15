@@ -1,20 +1,45 @@
-// src/stores/collections.ts
-
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import config from '../config';
 import { useLocalStorage } from '@vueuse/core';
 
+import type { AccommodationModel } from '@/models/accommodation.model';
+import type { CaveModel } from '@/models/cave.model';
+import type { CulturalModel } from '@/models/cultural.model';
+import type { EventModel } from '@/models/event.model';
+import type { FairModel } from '@/models/fair.model';
+import type { MuseumModel } from '@/models/museum.model';
+import type { NaturalModel } from '@/models/natural.model';
+import type { RestaurantModel } from '@/models/restaurant.model';
+
 axios.defaults.baseURL = config.apiBaseUrl;
 
 export const useCollectionsStore = defineStore('collections', {
   state: () => ({
-    results: [],
+    results: [] as (
+        AccommodationModel[] |
+        CaveModel[] |
+        CulturalModel[] |
+        EventModel[] |
+        FairModel[] |
+        MuseumModel[] |
+        NaturalModel[] |
+        RestaurantModel[]
+        ),
     selectedCategory: useLocalStorage('selectedCategory', ''),
     searchQuery: useLocalStorage('searchQuery', ''),
     loading: false,
-    currentDetail: null,
-    relatedResources: [],
+    currentDetail: null as AccommodationModel | CaveModel | CulturalModel | EventModel | FairModel | MuseumModel | NaturalModel | RestaurantModel | null,
+    relatedResources: [] as (
+        AccommodationModel[] |
+        CaveModel[] |
+        CulturalModel[] |
+        EventModel[] |
+        FairModel[] |
+        MuseumModel[] |
+        NaturalModel[] |
+        RestaurantModel[]
+        ),
     cache: new Map(),
     sortField: useLocalStorage('sortField', 'name'),
     sortOrder: useLocalStorage('sortOrder', 'asc'),
@@ -26,7 +51,6 @@ export const useCollectionsStore = defineStore('collections', {
 
   actions: {
     async fetchResults(category: string | null, searchQuery: string, filters: any) {
-
       this.loading = true;
       const currentRequest = ++this.requestCounter; // Increment and capture the current request counter
 
