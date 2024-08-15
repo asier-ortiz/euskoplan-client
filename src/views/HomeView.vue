@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import { onMounted, nextTick, watch } from 'vue';
 import Hero from '@/components/Hero/HeroMain.vue';
 import ResultsMain from '@/components/Result/ResultsMain.vue';
 import { useCollectionsStore } from '@/stores/collections';
@@ -31,11 +31,19 @@ const performSearchAndFilter = async (skipIfNoChange = false) => {
   await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
 };
 
-onMounted(() => {
-  performSearchAndFilter(true); // Only perform search if necessary
-
-  // Restore scroll position if returning to the HomeView
+onMounted(async () => {
   const savedScrollPosition = scrollStore.getScrollPosition();
+
+  // Restore scroll position immediately to minimize delay
+  if (savedScrollPosition !== 0) {
+    window.scrollTo({ top: savedScrollPosition });
+  }
+
+  await performSearchAndFilter(true); // Only perform search if necessary
+
+  // After the main content is loaded, adjust the scroll position if necessary
+  await nextTick();
+
   if (savedScrollPosition !== 0) {
     window.scrollTo({ top: savedScrollPosition });
   }

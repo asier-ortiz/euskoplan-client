@@ -33,14 +33,18 @@ const router = createRouter({
   routes,
   scrollBehavior(to, from, savedPosition) {
     const scrollStore = useScrollStore();
+
     if (savedPosition) {
       return savedPosition;
-    } else if (to.name === 'Home' && from.name === 'Detail') {
-      // Use the stored scroll position for home view
-      return { left: 0, top: scrollStore.getScrollPosition() };
-    } else {
-      return { top: 0 };
     }
+
+    if (to.name === 'Home' && from.name === 'Detail') {
+      // Restore the saved scroll position when returning to Home from Detail
+      return { left: 0, top: scrollStore.getScrollPosition() };
+    }
+
+    // For all other routes, scroll to top
+    return { top: 0 };
   },
 });
 
@@ -49,18 +53,16 @@ router.beforeEach((to, from, next) => {
   const scrollStore = useScrollStore();
   const mapStore = useMapStore();
 
+  // Save the scroll position when leaving the home view
+  if (from.name === 'Home') {
+    scrollStore.setScrollPosition(window.scrollY);
+  }
+
   // Handle map state when navigating away from or to Detail
   if (from.name === 'Detail' && to.name === 'Home') {
     mapStore.setReturningFromDetail(true);
   } else {
     mapStore.resetReturningFromDetail();
-  }
-
-  next();
-
-  if (from.name === 'Home') {
-    // Save the scroll position when leaving the home view
-    scrollStore.setScrollPosition(window.scrollY);
   }
 
   // Always set the redirectTo path for any navigation to login
