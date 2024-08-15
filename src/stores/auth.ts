@@ -4,13 +4,14 @@ import router from '../router';
 import config from '../config';
 import Swal from 'sweetalert2';
 import { useFavoritesStore } from './favorites'; // Import Favorites Store
+import type { UserModel } from '@/models/user.model'; // Import UserModel
 
 // Configure the base URL for Axios
 axios.defaults.baseURL = config.apiBaseUrl;
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: JSON.parse(localStorage.getItem('user') || 'null'),
+    user: JSON.parse(localStorage.getItem('user') || 'null') as UserModel | null,
     token: localStorage.getItem('token'),
     redirectTo: null, // Add redirectTo to store intended path
   }),
@@ -64,7 +65,12 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser() {
       try {
         const response = await axios.get('/user/user');
-        this.user = response.data;
+        const userData: UserModel = {
+          id: response.data.id,
+          email: response.data.email,
+          nombre_usuario: response.data.nombre_usuario,
+        };
+        this.user = userData;
         localStorage.setItem('user', JSON.stringify(this.user));
       } catch (error) {
         this.user = null;
@@ -78,7 +84,12 @@ export const useAuthStore = defineStore('auth', {
     async verifyEmail(token) {
       try {
         const response = await axios.post('/account/verify', { token });
-        this.user = response.data;
+        const userData: UserModel = {
+          id: response.data.id,
+          email: response.data.email,
+          nombre_usuario: response.data.nombre_usuario,
+        };
+        this.user = userData;
         localStorage.setItem('user', JSON.stringify(this.user));
         router.push('/');
       } catch (error) {
@@ -89,7 +100,7 @@ export const useAuthStore = defineStore('auth', {
             title: 'Token expired',
             text: 'Your token has expired. We have sent you a new verification email.',
           });
-          await axios.post('/account/sendEmail', { email: this.user.email });
+          await axios.post('/account/sendEmail', { email: this.user?.email });
         }
       }
     },
@@ -104,7 +115,12 @@ export const useAuthStore = defineStore('auth', {
     async resetPassword(data) {
       try {
         const response = await axios.post('/password/reset', data);
-        this.user = response.data;
+        const userData: UserModel = {
+          id: response.data.id,
+          email: response.data.email,
+          nombre_usuario: response.data.nombre_usuario,
+        };
+        this.user = userData;
         localStorage.setItem('user', JSON.stringify(this.user));
         router.push('/auth/login');
       } catch (error) {
