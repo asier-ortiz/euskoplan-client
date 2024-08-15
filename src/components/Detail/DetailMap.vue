@@ -1,15 +1,11 @@
 <template>
   <div v-if="resource.latitud && resource.longitud" class="detail-map">
-    <!-- Add the heading for the map -->
     <h3 class="map-heading">Ubicación</h3>
     <div ref="mapContainer" class="map-container">
-      <!-- Add the toggle style button -->
       <button class="toggle-style-button" @click="toggleMapStyle" title="Toggle Dark/Light Mode">
         <FontAwesomeIcon :icon="[mapStore.mapMode === 'dark' ? 'fas' : 'fas', mapStore.mapMode === 'dark' ? 'sun' : 'moon']" />
       </button>
-      <div v-show="showZoomMessage" class="zoom-message">
-        Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom
-      </div>
+      <MapZoomMessage :mapInstance="map" />
     </div>
   </div>
 </template>
@@ -19,9 +15,9 @@ import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import mapboxgl from 'mapbox-gl';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useMapStore } from '@/stores/map';
-import { getMarkerImageUrl } from '@/utils/map';
+import { getMarkerImageUrl, handleWheelZoom } from '@/utils/map';
+import MapZoomMessage from '@/components/Misc/MapZoomMessage.vue';
 
-// Set the Mapbox access token
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const props = defineProps<{
@@ -29,18 +25,16 @@ const props = defineProps<{
 }>();
 
 const mapStore = useMapStore();
-
 const mapContainer = ref<HTMLDivElement | null>(null);
 let map: mapboxgl.Map | undefined;
 
-// State for displaying the zoom message
-const showZoomMessage = ref(false);
-let zoomMessageTimeout: number | null = null;
-
-// Computed property to determine the text color based on map mode
 const textColor = computed(() => {
   return mapStore.mapMode === 'dark' ? '#ffffff' : '#000000';
 });
+
+// Define showZoomMessage and zoomMessageTimeout
+const showZoomMessage = ref(false);
+const zoomMessageTimeout = ref<number | null>(null);
 
 const initializeMap = () => {
   if (mapContainer.value) {
@@ -73,20 +67,19 @@ const initializeMap = () => {
     markerElement.style.height = '40px';
     markerElement.style.backgroundSize = 'contain';
 
-    // Create and style the marker text to match ResultMap.vue
     const markerText = document.createElement('div');
     markerText.className = 'marker-text';
     markerText.textContent = props.resource.nombre;
-    markerText.style.color = textColor.value; // Set the text color based on map mode
-    markerText.style.fontSize = '14px'; // Match font size with ResultMap.vue
-    markerText.style.fontFamily = 'Open Sans Regular, Arial Unicode MS Regular'; // Match font family
+    markerText.style.color = textColor.value;
+    markerText.style.fontSize = '14px';
+    markerText.style.fontFamily = 'Open Sans Regular, Arial Unicode MS Regular';
     markerText.style.textAlign = 'center';
     markerText.style.width = 'max-content';
     markerText.style.transform = 'translateX(-50%)';
     markerText.style.position = 'absolute';
-    markerText.style.top = '45px'; // Adjust the position below the marker
+    markerText.style.top = '45px';
     markerText.style.left = '50%';
-    markerText.style.textShadow = mapStore.mapMode === 'dark' ? '0 0 3px #000' : '0 0 3px #fff'; // Add text halo effect
+    markerText.style.textShadow = mapStore.mapMode === 'dark' ? '0 0 3px #000' : '0 0 3px #fff';
 
     markerElement.appendChild(markerText);
 
@@ -96,23 +89,8 @@ const initializeMap = () => {
 
     map.scrollZoom.disable();
 
-    mapContainer.value?.addEventListener('wheel', handleWheelZoom);
-  }
-};
-
-const handleWheelZoom = (event: WheelEvent) => {
-  if (event.ctrlKey || event.metaKey) {
-    map?.scrollZoom.enable();
-    event.preventDefault();
-  } else {
-    map?.scrollZoom.disable();
-    showZoomMessage.value = true;
-    if (zoomMessageTimeout) {
-      clearTimeout(zoomMessageTimeout);
-    }
-    zoomMessageTimeout = setTimeout(() => {
-      showZoomMessage.value = false;
-    }, 2000);
+    // Add the event listener using handleWheelZoom
+    mapContainer.value?.addEventListener('wheel', handleWheelZoom(map, showZoomMessage, zoomMessageTimeout));
   }
 };
 
@@ -131,7 +109,6 @@ const toggleMapStyle = () => {
     map.once('style.load', () => {
       map.setCenter(currentCenter);
       map.setZoom(currentZoom);
-      // Update the text color based on the new map style
       updateMarkerTextColor();
     });
   }
@@ -141,7 +118,7 @@ const updateMarkerTextColor = () => {
   const markerTextElements = document.querySelectorAll('.marker-text');
   markerTextElements.forEach((element) => {
     (element as HTMLElement).style.color = textColor.value;
-    (element as HTMLElement).style.textShadow = mapStore.mapMode === 'dark' ? '0 0 3px #000' : '0 0 3px #fff'; // Update text halo effect
+    (element as HTMLElement).style.textShadow = mapStore.mapMode === 'dark' ? '0 0 3px #000' : '0 0 3px #fff';
   });
 };
 
@@ -152,11 +129,10 @@ onMounted(() => {
 onUnmounted(() => {
   if (map) {
     map.remove();
-    mapContainer.value?.removeEventListener('wheel', handleWheelZoom);
+    mapContainer.value?.removeEventListener('wheel', handleWheelZoom(map, showZoomMessage, zoomMessageTimeout));
   }
 });
 
-// Watch for changes in the map mode and update text color accordingly
 watch(
     () => mapStore.mapMode,
     () => {

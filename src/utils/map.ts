@@ -1,4 +1,5 @@
 // src/utils/map.ts
+import type { Ref } from 'vue';
 
 export const getMarkerImageUrl = (collection: string): string => {
     const categoryMarkerMap: { [key: string]: string } = {
@@ -21,4 +22,26 @@ export const getMarkerImageUrl = (collection: string): string => {
     };
 
     return categoryMarkerMap[collection.toLowerCase()] || '/images/map/default-marker.png';
+};
+
+export const handleWheelZoom = (
+    map: mapboxgl.Map | null,
+    showZoomMessage: Ref<boolean>,
+    zoomMessageTimeout: Ref<number | null>
+) => {
+    return (event: WheelEvent) => {
+        if (event.ctrlKey || event.metaKey) {
+            map?.scrollZoom.enable();
+            event.preventDefault();
+        } else {
+            map?.scrollZoom.disable();
+            showZoomMessage.value = true;
+            if (zoomMessageTimeout.value) {
+                clearTimeout(zoomMessageTimeout.value);
+            }
+            zoomMessageTimeout.value = window.setTimeout(() => {
+                showZoomMessage.value = false;
+            }, 2000);
+        }
+    };
 };

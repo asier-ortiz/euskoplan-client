@@ -3,9 +3,7 @@
     <button class="toggle-style-button" @click="toggleMapStyle" title="Toggle Dark/Light Mode">
       <FontAwesomeIcon :icon="[isDarkMode === 'dark' ? 'fas' : 'fas', isDarkMode === 'dark' ? 'sun' : 'moon']" />
     </button>
-    <div v-show="showZoomMessage" class="zoom-message">
-      Mantén presionada la tecla Ctrl (Cmd en Mac) para hacer zoom
-    </div>
+    <MapZoomMessage :mapInstance="map" />
 
     <!-- Info Panel -->
     <div v-if="showInfoPanel" class="info-panel visible">
@@ -35,7 +33,8 @@ import { useMapStore } from '@/stores/map';
 import { calculateDistance } from '@/utils/distance';
 import ResultPopupContent from './ResultPopupContent.vue';
 import { formatDateForApi } from "@/utils/date";
-import { getMarkerImageUrl } from '@/utils/map';
+import { getMarkerImageUrl, handleWheelZoom } from '@/utils/map';
+import MapZoomMessage from '@/components/Misc/MapZoomMessage.vue';
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 const mapContainer = ref<HTMLElement | null>(null);
@@ -46,10 +45,6 @@ const locationStore = useLocationStore();
 const isDarkMode = ref(mapStore.mapMode);
 let map: Map | null = null;
 
-// State for displaying the zoom message
-const showZoomMessage = ref(false);
-let zoomMessageTimeout: number | null = null;
-
 // Info panel state
 const showInfoPanel = ref(false);
 const selectedImage = ref('');
@@ -59,6 +54,11 @@ const selectedMunicipality = ref('');
 const selectedDistance = ref('');
 const selectedCollection = ref('');
 const selectedCode = ref('');
+
+// Ref variables for wheel zoom handling
+const showZoomMessage = ref(false);
+const zoomMessageTimeout = ref<number | null>(null);
+let wheelZoomHandler: (event: WheelEvent) => void;
 
 // Watch for active tab to ensure map is initialized properly
 const isMapTabActive = computed(() => collectionsStore.activeTab === 'map');
@@ -178,7 +178,11 @@ const initializeMap = () => {
 
     locationStore.fetchUserLocation();
 
-    mapContainer.value?.addEventListener('wheel', handleWheelZoom);
+    // Define the handler with the correct arguments
+    wheelZoomHandler = handleWheelZoom(map, showZoomMessage, zoomMessageTimeout);
+
+    // Add the event listener using the handler reference
+    mapContainer.value?.addEventListener('wheel', wheelZoomHandler);
   } else {
     map.resize();
     addMarkersAndClusters();
@@ -381,23 +385,6 @@ const addMarkersAndClusters = async () => {
       mapStore.setShouldRefitBounds(false);
     }
   });
-};
-
-// Handle wheel zoom with Ctrl/Cmd key
-const handleWheelZoom = (event: WheelEvent) => {
-  if (event.ctrlKey || event.metaKey) {
-    map?.scrollZoom.enable();
-    event.preventDefault();
-  } else {
-    map?.scrollZoom.disable();
-    showZoomMessage.value = true;
-    if (zoomMessageTimeout) {
-      clearTimeout(zoomMessageTimeout);
-    }
-    zoomMessageTimeout = setTimeout(() => {
-      showZoomMessage.value = false;
-    }, 2000);
-  }
 };
 
 // Save popup state if a popup is opened
@@ -686,7 +673,9 @@ onUnmounted(() => {
     mapStore.setMapZoom(map.getZoom());
 
     map.remove();
-    mapContainer.value?.removeEventListener('wheel', handleWheelZoom);
+    if (mapContainer.value) {
+      mapContainer.value.removeEventListener('wheel', wheelZoomHandler);
+    }
   }
 });
 </script>
