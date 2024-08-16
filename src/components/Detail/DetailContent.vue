@@ -5,7 +5,13 @@
       <div class="carousel-container">
         <div class="carousel-slide" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
           <div v-for="(imagen, index) in resource.imagenes" :key="index" class="carousel-image">
-            <img :src="imagen.fuente" :alt="imagen.titulo || 'Imagen del recurso'" />
+            <a
+              :href="imagen.fuente"
+              data-fancybox="gallery"
+              :data-caption="imagen.titulo || 'Imagen del recurso'"
+            >
+              <img :src="imagen.fuente" :alt="imagen.titulo || 'Imagen del recurso'" />
+            </a>
           </div>
         </div>
       </div>
@@ -15,7 +21,13 @@
 
     <!-- Single image or default image -->
     <div v-else class="single-image">
-      <img :src="singleImageUrl" :alt="singleImageAlt" />
+      <a
+        :href="singleImageUrl"
+        data-fancybox="gallery"
+        :data-caption="singleImageAlt"
+      >
+        <img :src="singleImageUrl" :alt="singleImageAlt" />
+      </a>
     </div>
 
     <hr class="section-separator" />
@@ -107,9 +119,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { defineProps } from 'vue';
-import { getDefaultImageUrl } from '@/utils/image'; // Import the utility function
+import { Fancybox } from '@fancyapps/ui';
+import { getDefaultImageUrl } from '@/utils/image'
 
 const props = defineProps<{
   resource: any;
@@ -122,26 +135,26 @@ const currentIndex = ref(0);
 // Computed property to get the single image URL or a default image if not available
 const singleImageUrl = computed(() => {
   return props.resource.imagenes && props.resource.imagenes.length === 1
-      ? props.resource.imagenes[0].fuente
-      : getDefaultImageUrl(props.resource.coleccion);
+    ? props.resource.imagenes[0].fuente
+    : getDefaultImageUrl(props.resource.coleccion);
 });
 
 // Computed property to get the alt text for the single image or a default text
 const singleImageAlt = computed(() => {
   return props.resource.imagenes && props.resource.imagenes.length === 1
-      ? props.resource.imagenes[0].titulo || 'Imagen del recurso'
-      : 'Imagen por defecto';
+    ? props.resource.imagenes[0].titulo || 'Imagen del recurso'
+    : 'Imagen por defecto';
 });
 
 // Watch for changes in the resource to reset the currentIndex
 watch(
-    () => props.resource,
-    (newResource, oldResource) => {
-      if (newResource !== oldResource) {
-        currentIndex.value = 0; // Reset the index to 0 when the resource changes
-      }
-    },
-    { immediate: true } // Ensure the watcher runs immediately when the component is mounted
+  () => props.resource,
+  (newResource, oldResource) => {
+    if (newResource !== oldResource) {
+      currentIndex.value = 0; // Reset the index to 0 when the resource changes
+    }
+  },
+  { immediate: true } // Ensure the watcher runs immediately when the component is mounted
 );
 
 // Functions to change the slide index
@@ -157,6 +170,13 @@ const nextSlide = () => {
   }
 };
 
+// Initialize Fancybox
+onMounted(() => {
+  Fancybox.bind('[data-fancybox="gallery"]', {
+    // Add any additional Fancybox options here
+  });
+});
+
 // Computed property to filter out empty paragraphs from the description
 const filteredDescription = computed(() => {
   // Remove empty paragraphs or those containing only non-breaking spaces
@@ -166,27 +186,27 @@ const filteredDescription = computed(() => {
 // Computed property to determine if there is any dynamic info to display
 const hasDynamicInfo = computed(() => {
   return (
-      props.resource.direccion ||
-      props.resource.codigo_postal ||
-      props.resource.numero_telefono ||
-      props.resource.email ||
-      props.resource.pagina_web ||
-      (props.resource.coleccion === 'accommodation' &&
-          (props.resource.categoria || props.resource.capacidad || props.resource.anno_apertura || props.resource.num_hab_individuales || props.resource.num_hab_dobles)) ||
-      (props.resource.coleccion === 'cave' &&
-          (props.resource.tipo_monumento || props.resource.periodo)) ||
-      (props.resource.coleccion === 'cultural' &&
-          (props.resource.tipo_monumento || props.resource.estilo_artistico)) ||
-      (props.resource.coleccion === 'event' &&
-          (props.resource.fecha_inicio || props.resource.fecha_fin)) ||
-      (props.resource.coleccion === 'fair' &&
-          (props.resource.atracciones || props.resource.horario || props.resource.tarifas)) ||
-      (props.resource.coleccion === 'natural' &&
-          (props.resource.subtipo_recurso_espacio_natural || props.resource.fauna || props.resource.flora || props.resource.subtipo_recurso_playas_pantanos_rios || props.resource.actividades || props.resource.horario)) ||
-      (props.resource.coleccion === 'restaurant' &&
-          props.resource.capacidad) ||
-      (props.resource.coleccion === 'museum' &&
-          (props.resource.tematica || props.resource.capacidad || props.resource.horario))
+    props.resource.direccion ||
+    props.resource.codigo_postal ||
+    props.resource.numero_telefono ||
+    props.resource.email ||
+    props.resource.pagina_web ||
+    (props.resource.coleccion === 'accommodation' &&
+      (props.resource.categoria || props.resource.capacidad || props.resource.anno_apertura || props.resource.num_hab_individuales || props.resource.num_hab_dobles)) ||
+    (props.resource.coleccion === 'cave' &&
+      (props.resource.tipo_monumento || props.resource.periodo)) ||
+    (props.resource.coleccion === 'cultural' &&
+      (props.resource.tipo_monumento || props.resource.estilo_artistico)) ||
+    (props.resource.coleccion === 'event' &&
+      (props.resource.fecha_inicio || props.resource.fecha_fin)) ||
+    (props.resource.coleccion === 'fair' &&
+      (props.resource.atracciones || props.resource.horario || props.resource.tarifas)) ||
+    (props.resource.coleccion === 'natural' &&
+      (props.resource.subtipo_recurso_espacio_natural || props.resource.fauna || props.resource.flora || props.resource.subtipo_recurso_playas_pantanos_rios || props.resource.actividades || props.resource.horario)) ||
+    (props.resource.coleccion === 'restaurant' &&
+      props.resource.capacidad) ||
+    (props.resource.coleccion === 'museum' &&
+      (props.resource.tematica || props.resource.capacidad || props.resource.horario))
   );
 });
 </script>
