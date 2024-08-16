@@ -175,7 +175,6 @@ const nextSlide = () => {
 // Initialize Fancybox
 onMounted(() => {
   Fancybox.bind('[data-fancybox="gallery"]', {
-    // Add any additional Fancybox options here
     on: {
       close: () => {
         emit('galleryClosed');
