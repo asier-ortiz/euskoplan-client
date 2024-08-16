@@ -137,6 +137,7 @@ const sortByDate = () => {
   justify-content: flex-end;
   margin-bottom: 1.5rem; /* Increased bottom margin */
   gap: 0.5rem;
+  flex-wrap: wrap; /* Allows buttons to wrap to the next line on small screens */
 }
 
 .sorting-buttons button {
