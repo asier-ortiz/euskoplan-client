@@ -3,10 +3,10 @@
     <Spinner v-if="loading" :visible="loading" />
     <div v-else class="detail-view">
       <DetailHeaderButtons
-          :goBackHome="goBackHome"
-          :handleAddToPlan="handleAddToPlan"
-          :toggleFavorite="toggleFavorite"
-          :isFavorite="isFavorite"
+        :goBackHome="goBackHome"
+        :handleAddToPlan="handleAddToPlan"
+        :toggleFavorite="toggleFavorite"
+        :isFavorite="isFavorite"
       />
 
       <hr class="section-separator" />
@@ -16,11 +16,12 @@
       <hr class="section-separator" />
 
       <DetailContent
-          :resource="resource"
-          :currentIndex="currentIndex"
-          :prevSlide="prevSlide"
-          :nextSlide="nextSlide"
-          :formatDate="formatDate"
+        :resource="resource"
+        :currentIndex="currentIndex"
+        :prevSlide="prevSlide"
+        :nextSlide="nextSlide"
+        :formatDate="formatDate"
+        @galleryClosed="handleGalleryClosed"
       />
 
       <DetailMap :resource="resource" :isDarkMode="isDarkMode" />
@@ -28,11 +29,11 @@
       <hr class="section-separator" />
 
       <DetailRelatedResources
-          :relatedResources="relatedResources"
-          :formatDate="formatDate"
-          :navigateToResource="navigateToResource"
-          :handleRelatedImageError="handleRelatedImageError"
-          :getDefaultImage="getDefaultImage"
+        :relatedResources="relatedResources"
+        :formatDate="formatDate"
+        :navigateToResource="navigateToResource"
+        :handleRelatedImageError="handleRelatedImageError"
+        :getDefaultImage="getDefaultImage"
       />
     </div>
   </div>
@@ -70,6 +71,8 @@ const loading = ref<boolean>(true);
 const relatedResources = ref<any[]>([]);
 const isDarkMode = ref(mapStore.mapMode);
 
+let lastFullPath = '';
+
 onBeforeRouteLeave((to, from, next) => {
   if (from.name === 'Detail') {
     mapStore.setReturningFromDetail(true);
@@ -79,16 +82,16 @@ onBeforeRouteLeave((to, from, next) => {
 
 const distance = computed(() => {
   if (
-      locationStore.userLocation &&
-      resource.value &&
-      resource.value.longitud &&
-      resource.value.latitud
+    locationStore.userLocation &&
+    resource.value &&
+    resource.value.longitud &&
+    resource.value.latitud
   ) {
     return calculateDistance(
-        locationStore.userLocation.latitude,
-        locationStore.userLocation.longitude,
-        Number(resource.value.latitud),
-        Number(resource.value.longitud)
+      locationStore.userLocation.latitude,
+      locationStore.userLocation.longitude,
+      Number(resource.value.latitud),
+      Number(resource.value.longitud)
     );
   }
   return null;
@@ -102,10 +105,15 @@ const isFavorite = computed(() => {
 });
 
 watch(
-    () => [route.params.id, route.params.category],
-    () => {
-      fetchResource();
+  () => route.fullPath, // Watch full path instead of just params
+  (newPath, oldPath) => {
+    if (newPath === oldPath || newPath.split('#')[0] === lastFullPath) {
+      // Ignore if only the hash changes or if the path is the same as the last full path without hash
+      return;
     }
+    lastFullPath = newPath.split('#')[0];
+    fetchResource();
+  }
 );
 
 const fetchResource = async () => {
@@ -113,8 +121,13 @@ const fetchResource = async () => {
   const { id, category } = route.params;
   const language = 'es';
 
-  await collectionsStore.fetchResourceById(category, Number(id), language);
-  resource.value = collectionsStore.currentDetail;
+  // Use the cached resource if available to avoid refetching
+  if (collectionsStore.currentDetail && collectionsStore.currentDetail.id === Number(id) && collectionsStore.currentDetail.coleccion === category) {
+    resource.value = collectionsStore.currentDetail;
+  } else {
+    await collectionsStore.fetchResourceById(category, Number(id), language);
+    resource.value = collectionsStore.currentDetail;
+  }
 
   await collectionsStore.fetchRelatedResources(category, language);
   relatedResources.value = collectionsStore.relatedResources;
@@ -122,10 +135,10 @@ const fetchResource = async () => {
   relatedResources.value.forEach((related) => {
     if (locationStore.userLocation && related.longitud && related.latitud) {
       related.distancia = calculateDistance(
-          locationStore.userLocation.latitude,
-          locationStore.userLocation.longitude,
-          Number(related.latitud),
-          Number(related.longitud)
+        locationStore.userLocation.latitude,
+        locationStore.userLocation.longitude,
+        Number(related.latitud),
+        Number(related.longitud)
       );
     }
   });
@@ -153,8 +166,8 @@ const toggleFavorite = () => {
     favoritesStore.addFavorite(resource.value.id, resource.value.coleccion);
   } else {
     const favoriteId = favoritesStore.getFavoriteId(
-        resource.value.id,
-        resource.value.coleccion
+      resource.value.id,
+      resource.value.coleccion
     );
     if (favoriteId) {
       favoritesStore.removeFavorite(favoriteId);
@@ -219,11 +232,17 @@ const formatDate = (dateString: string) => {
 
 const handleRelatedImageError = (index: number) => {
   relatedResources.value[index].imagenes[0].fuente = getDefaultImage(
-      relatedResources.value[index].coleccion
+    relatedResources.value[index].coleccion
   );
 };
 
+const handleGalleryClosed = () => {
+  // Perform any lightweight state updates or UI adjustments here
+  console.log('Gallery closed');
+};
+
 onMounted(() => {
+  lastFullPath = route.fullPath.split('#')[0]; // Initialize the lastFullPath
   fetchResource();
   if (authStore.isLoggedIn()) {
     favoritesStore.fetchFavorites();

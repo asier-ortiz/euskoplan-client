@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue';
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 import { Fancybox } from '@fancyapps/ui';
 import { getDefaultImageUrl } from '@/utils/image'
 
@@ -128,6 +128,8 @@ const props = defineProps<{
   resource: any;
   formatDate: (date: string) => string;
 }>();
+
+const emit = defineEmits(['galleryClosed']);
 
 // Ref to manage the current slide index
 const currentIndex = ref(0);
@@ -174,6 +176,11 @@ const nextSlide = () => {
 onMounted(() => {
   Fancybox.bind('[data-fancybox="gallery"]', {
     // Add any additional Fancybox options here
+    on: {
+      close: () => {
+        emit('galleryClosed');
+      }
+    }
   });
 });
 

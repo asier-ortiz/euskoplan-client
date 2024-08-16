@@ -163,6 +163,12 @@ export const useCollectionsStore = defineStore('collections', {
     },
 
     async fetchResourceById(category: string, id: number, language: string) {
+      // Check if the resource is already cached in currentDetail
+      if (this.currentDetail && this.currentDetail.id === id && this.currentDetail.coleccion === category) {
+        // No need to refetch if it's already in the store
+        return;
+      }
+
       // Abort previous request if exists
       if (this.fetchResourceAbortController) {
         this.fetchResourceAbortController.abort();
