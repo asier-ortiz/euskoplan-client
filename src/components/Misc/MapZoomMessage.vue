@@ -9,12 +9,25 @@ import { ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps<{
   mapInstance: mapboxgl.Map | undefined;
+  mapContainer: HTMLElement | null; // Add mapContainer as a prop
 }>();
 
 const isZoomMessageVisible = ref(false);
 let zoomMessageTimeout: number | null = null;
 
 const handleWheelZoom = (event: WheelEvent) => {
+  if (!props.mapContainer) return;
+
+  const rect = props.mapContainer.getBoundingClientRect();
+  const isInsideMap = (
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+  );
+
+  if (!isInsideMap) return;
+
   if (event.ctrlKey || event.metaKey) {
     props.mapInstance?.scrollZoom.enable();
     event.preventDefault();

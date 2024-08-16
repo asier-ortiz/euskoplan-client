@@ -3,7 +3,7 @@
     <button class="toggle-style-button" @click="toggleMapStyle" title="Toggle Dark/Light Mode">
       <FontAwesomeIcon :icon="[isDarkMode === 'dark' ? 'fas' : 'fas', isDarkMode === 'dark' ? 'sun' : 'moon']" />
     </button>
-    <MapZoomMessage :mapInstance="map" />
+    <MapZoomMessage :mapInstance="map" :mapContainer="mapContainer" />
 
     <!-- Info Panel -->
     <div v-if="showInfoPanel" class="info-panel visible">
@@ -179,7 +179,7 @@ const initializeMap = () => {
     locationStore.fetchUserLocation();
 
     // Define the handler with the correct arguments
-    wheelZoomHandler = handleWheelZoom(map, showZoomMessage, zoomMessageTimeout);
+    wheelZoomHandler = handleWheelZoom(map, showZoomMessage, zoomMessageTimeout, mapContainer.value);
 
     // Add the event listener using the handler reference
     mapContainer.value?.addEventListener('wheel', wheelZoomHandler);

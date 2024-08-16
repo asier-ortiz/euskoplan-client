@@ -5,7 +5,7 @@
       <button class="toggle-style-button" @click="toggleMapStyle" title="Toggle Dark/Light Mode">
         <FontAwesomeIcon :icon="[mapStore.mapMode === 'dark' ? 'fas' : 'fas', mapStore.mapMode === 'dark' ? 'sun' : 'moon']" />
       </button>
-      <MapZoomMessage :mapInstance="map" />
+      <MapZoomMessage :mapInstance="map" :mapContainer="mapContainer" />
     </div>
   </div>
 </template>
@@ -90,7 +90,7 @@ const initializeMap = () => {
     map.scrollZoom.disable();
 
     // Add the event listener using handleWheelZoom
-    mapContainer.value?.addEventListener('wheel', handleWheelZoom(map, showZoomMessage, zoomMessageTimeout));
+    mapContainer.value?.addEventListener('wheel', handleWheelZoom(map, showZoomMessage, zoomMessageTimeout, mapContainer.value));
   }
 };
 
@@ -129,7 +129,7 @@ onMounted(() => {
 onUnmounted(() => {
   if (map) {
     map.remove();
-    mapContainer.value?.removeEventListener('wheel', handleWheelZoom(map, showZoomMessage, zoomMessageTimeout));
+    mapContainer.value?.removeEventListener('wheel', handleWheelZoom(map, showZoomMessage, zoomMessageTimeout, mapContainer.value));
   }
 });
 
@@ -174,14 +174,14 @@ watch(
 
 .marker-text {
   position: absolute;
-  top: 45px; /* Position text below the marker */
+  top: 45px;
   left: 50%;
   transform: translateX(-50%);
-  color: inherit; /* Inherit color from the computed style */
-  font-size: 14px; /* Match font size with ResultMap.vue */
+  color: inherit;
+  font-size: 14px;
   text-align: center;
   width: max-content;
-  text-shadow: inherit; /* Inherit text shadow for halo effect */
+  text-shadow: inherit;
 }
 
 .zoom-message {

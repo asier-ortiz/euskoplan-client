@@ -1,4 +1,3 @@
-// src/utils/map.ts
 import type { Ref } from 'vue';
 
 export const getMarkerImageUrl = (collection: string): string => {
@@ -27,9 +26,22 @@ export const getMarkerImageUrl = (collection: string): string => {
 export const handleWheelZoom = (
     map: mapboxgl.Map | null,
     showZoomMessage: Ref<boolean>,
-    zoomMessageTimeout: Ref<number | null>
+    zoomMessageTimeout: Ref<number | null>,
+    mapContainer: HTMLElement | null
 ) => {
     return (event: WheelEvent) => {
+        if (!mapContainer) return;
+
+        const rect = mapContainer.getBoundingClientRect();
+        const isInsideMap = (
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom
+        );
+
+        if (!isInsideMap) return;
+
         if (event.ctrlKey || event.metaKey) {
             map?.scrollZoom.enable();
             event.preventDefault();
