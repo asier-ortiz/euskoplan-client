@@ -1,7 +1,20 @@
 <template>
   <div class="detail-content">
-    <!-- Carousel for multiple images -->
-    <div v-if="resource.imagenes && resource.imagenes.length > 1" class="detail-carousel">
+    <!-- Grid layout for large screens -->
+    <div v-if="!isMobile && resource.imagenes && resource.imagenes.length > 1" class="image-grid">
+      <div v-for="(imagen, index) in resource.imagenes" :key="index" class="grid-image">
+        <a
+          :href="imagen.fuente"
+          data-fancybox="gallery"
+          :data-caption="imagen.titulo || 'Imagen del recurso'"
+        >
+          <img :src="imagen.fuente" :alt="imagen.titulo || 'Imagen del recurso'" />
+        </a>
+      </div>
+    </div>
+
+    <!-- Carousel layout for small screens -->
+    <div v-else-if="resource.imagenes && resource.imagenes.length > 1" class="detail-carousel">
       <div class="carousel-container">
         <div class="carousel-slide" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
           <div v-for="(imagen, index) in resource.imagenes" :key="index" class="carousel-image">
@@ -109,6 +122,7 @@
 
     <hr class="section-separator" />
 
+    <!-- Services section -->
     <div v-if="resource.servicios && resource.servicios.length > 0" class="detail-services">
       <h3>Servicios</h3>
       <div class="service-tags">
@@ -122,7 +136,7 @@
 import { computed, ref, watch, onMounted } from 'vue';
 import { defineProps, defineEmits } from 'vue';
 import { Fancybox } from '@fancyapps/ui';
-import { getDefaultImageUrl } from '@/utils/image'
+import { getDefaultImageUrl } from '@/utils/image';
 
 const props = defineProps<{
   resource: any;
@@ -131,35 +145,44 @@ const props = defineProps<{
 
 const emit = defineEmits(['galleryClosed']);
 
-// Ref to manage the current slide index
 const currentIndex = ref(0);
+const isMobile = ref(false);
 
-// Computed property to get the single image URL or a default image if not available
+// Function to detect screen size
+const updateScreenSize = () => {
+  isMobile.value = window.innerWidth < 768; // Example breakpoint for mobile screens
+};
+
+// Call on component mount
+onMounted(() => {
+  window.addEventListener('resize', updateScreenSize);
+  updateScreenSize(); // Initialize screen size
+
+  Fancybox.bind('[data-fancybox="gallery"]', {
+    on: {
+      close: () => {
+        emit('galleryClosed');
+      }
+    }
+  });
+});
+
+watch(() => props.resource, () => {
+  currentIndex.value = 0;
+});
+
 const singleImageUrl = computed(() => {
   return props.resource.imagenes && props.resource.imagenes.length === 1
     ? props.resource.imagenes[0].fuente
     : getDefaultImageUrl(props.resource.coleccion);
 });
 
-// Computed property to get the alt text for the single image or a default text
 const singleImageAlt = computed(() => {
   return props.resource.imagenes && props.resource.imagenes.length === 1
     ? props.resource.imagenes[0].titulo || 'Imagen del recurso'
     : 'Imagen por defecto';
 });
 
-// Watch for changes in the resource to reset the currentIndex
-watch(
-  () => props.resource,
-  (newResource, oldResource) => {
-    if (newResource !== oldResource) {
-      currentIndex.value = 0; // Reset the index to 0 when the resource changes
-    }
-  },
-  { immediate: true } // Ensure the watcher runs immediately when the component is mounted
-);
-
-// Functions to change the slide index
 const prevSlide = () => {
   if (currentIndex.value > 0) {
     currentIndex.value--;
@@ -172,20 +195,8 @@ const nextSlide = () => {
   }
 };
 
-// Initialize Fancybox
-onMounted(() => {
-  Fancybox.bind('[data-fancybox="gallery"]', {
-    on: {
-      close: () => {
-        emit('galleryClosed');
-      }
-    }
-  });
-});
-
 // Computed property to filter out empty paragraphs from the description
 const filteredDescription = computed(() => {
-  // Remove empty paragraphs or those containing only non-breaking spaces
   return props.resource.descripcion.replace(/<p>&nbsp;<\/p>/g, '');
 });
 
@@ -225,6 +236,27 @@ const hasDynamicInfo = computed(() => {
   padding: 1rem;
 }
 
+/* Grid layout for large screens */
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.grid-image {
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.grid-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Carousel layout for small screens */
 .detail-carousel {
   position: relative;
   width: 100%;
@@ -289,6 +321,7 @@ const hasDynamicInfo = computed(() => {
   right: 0;
 }
 
+/* Other styles */
 .description {
   text-align: justify;
   font-size: 1rem;
