@@ -47,7 +47,25 @@ export const useCollectionsStore = defineStore('collections', {
     requestCounter: 0, // Add a request counter to the state
     fetchResourceAbortController: null as AbortController | null, // Controller for fetchResourceById
     fetchRelatedResourcesAbortController: null as AbortController | null, // Controller for fetchRelatedResources
+
+    // Pagination related state
+    currentPage: useLocalStorage('currentPage', 1), // Save the current page in LocalStorage
+    itemsPerPage: 24, // Number of items per page
   }),
+
+  getters: {
+    // Compute total pages based on the number of results and items per page
+    totalPages: (state) => {
+      return Math.ceil(state.results.length / state.itemsPerPage);
+    },
+
+    // Get the paginated results for the current page
+    paginatedResults: (state) => {
+      const start = (state.currentPage - 1) * state.itemsPerPage;
+      const end = start + state.itemsPerPage;
+      return state.results.slice(start, end);
+    },
+  },
 
   actions: {
     async fetchResults(category: string | null, searchQuery: string, filters: any) {
@@ -106,6 +124,7 @@ export const useCollectionsStore = defineStore('collections', {
         if (currentRequest === this.requestCounter) {
           this.results = response.data;
           this.cache.set(cacheKey, this.results);
+          this.setCurrentPage(1); // Reset to the first page when new results are fetched
         }
       } catch (error) {
         if (currentRequest === this.requestCounter) {
@@ -191,6 +210,13 @@ export const useCollectionsStore = defineStore('collections', {
         }
       } finally {
         this.fetchRelatedResourcesAbortController = null; // Reset controller after request completes
+      }
+    },
+
+    // Pagination actions
+    setCurrentPage(page: number) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
       }
     },
   },

@@ -17,19 +17,20 @@
     </div>
     <div v-if="!collectionsStore.loading" class="cards-grid">
       <ResultCard
-        v-for="item in sortedResults"
-        :key="`${item.coleccion}-${item.id}`"
-        :collection="item.coleccion"
-        :name="item.nombre"
-        :images="item.imagenes"
-        :itemId="Number(item.codigo)"
-        :longitud="Number(item.longitud)"
-        :latitud="Number(item.latitud)"
-        :subtype="getSubtype(item)"
-        :municipio="item.nombre_municipio"
-        :fechaInicio="item.fecha_inicio"
+          v-for="item in paginatedResults"
+          :key="`${item.coleccion}-${item.id}`"
+          :collection="item.coleccion"
+          :name="item.nombre"
+          :images="item.imagenes"
+          :itemId="Number(item.codigo)"
+          :longitud="Number(item.longitud)"
+          :latitud="Number(item.latitud)"
+          :subtype="getSubtype(item)"
+          :municipio="item.nombre_municipio"
+          :fechaInicio="item.fecha_inicio"
       />
     </div>
+    <ResultCardPagination />
   </div>
 </template>
 
@@ -38,26 +39,16 @@ import { computed } from 'vue';
 import { useCollectionsStore } from '@/stores/collections';
 import { useLocationStore } from '@/stores/location';
 import ResultCard from '@/components/Result/ResultCard.vue';
+import ResultCardPagination from '@/components/Result/ResultCardPagination.vue';
 import { calculateDistance } from '@/utils/distance';
 
 // Access your collections store
 const collectionsStore = useCollectionsStore();
 const locationStore = useLocationStore();
 
-// Compute the results to display
-const results = computed(() => collectionsStore.results || []); // Ensure results is defined
-
-// Determine the subtype based on collection type
-const getSubtype = (item) => {
-  if (item.coleccion.toLowerCase() === 'natural') {
-    return item.nombre_subtipo_recurso_espacio_natural || item.nombre_subtipo_recurso_playas_pantanos_rios || '';
-  }
-  return item.nombre_subtipo_recurso || '';
-};
-
-// Add computed property for sorted results
+// Compute the sorted results
 const sortedResults = computed(() => {
-  const sorted = [...results.value];
+  const sorted = [...collectionsStore.results];
   if (collectionsStore.sortField === 'name') {
     sorted.sort((a, b) => {
       const result = a.nombre.localeCompare(b.nombre);
@@ -66,16 +57,16 @@ const sortedResults = computed(() => {
   } else if (collectionsStore.sortField === 'distance' && locationStore.userLocation) {
     sorted.sort((a, b) => {
       const distanceA = calculateDistance(
-        locationStore.userLocation.latitude,
-        locationStore.userLocation.longitude,
-        a.latitud,
-        a.longitud
+          locationStore.userLocation.latitude,
+          locationStore.userLocation.longitude,
+          a.latitud,
+          a.longitud
       );
       const distanceB = calculateDistance(
-        locationStore.userLocation.latitude,
-        locationStore.userLocation.longitude,
-        b.latitud,
-        b.longitud
+          locationStore.userLocation.latitude,
+          locationStore.userLocation.longitude,
+          b.latitud,
+          b.longitud
       );
       return collectionsStore.sortOrder === 'asc' ? distanceA - distanceB : distanceB - distanceA;
     });
@@ -88,6 +79,21 @@ const sortedResults = computed(() => {
   }
   return sorted;
 });
+
+// Compute the paginated results based on the current page and sorted results
+const paginatedResults = computed(() => {
+  const start = (collectionsStore.currentPage - 1) * collectionsStore.itemsPerPage;
+  const end = start + collectionsStore.itemsPerPage;
+  return sortedResults.value.slice(start, end);
+});
+
+// Determine the subtype based on collection type
+const getSubtype = (item) => {
+  if (item.coleccion.toLowerCase() === 'natural') {
+    return item.nombre_subtipo_recurso_espacio_natural || item.nombre_subtipo_recurso_playas_pantanos_rios || '';
+  }
+  return item.nombre_subtipo_recurso || '';
+};
 
 // Determine if the current collection is an event
 const isEventCollection = computed(() => collectionsStore.selectedCategory.toLowerCase() === 'eventos');
