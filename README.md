@@ -1,45 +1,91 @@
-# euskoplan-client
+# Euskoplan Client
 
-This template should help get you started developing with Vue 3 in Vite.
+Discover the beauty of the Basque Country with Euskoplan, an interactive web platform designed for tourism enthusiasts. Create personalized itineraries, explore popular destinations, and share your travel plans with other users.
 
-## Recommended IDE Setup
+## Table of Contents
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- [Getting Started](#getting-started)
+- [Installation](#installation)
+- [Environment Setup](#environment-setup)
+- [Running the Project](#running-the-project)
+- [Backend API](#backend-api)
+- [License](#license)
+- [Screenshots](#screenshots)
 
-## Type Support for `.vue` Imports in TS
+## Getting Started
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+These instructions will help you set up the Euskoplan project on your local machine for development and testing purposes.
 
-## Customize configuration
+## Installation
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+1. **Clone the Repository**
 
-## Project Setup
+   Clone this repository to your local machine using the following command:
 
-```sh
-npm install
-```
+   ```bash
+   git clone https://github.com/asier-ortiz/euskoplan-client.git
+   cd euskoplan-client
+   ```
 
-### Compile and Hot-Reload for Development
+2. **Install Dependencies**
 
-```sh
+   Install the required dependencies by running:
+
+   ```bash
+   npm install
+   ```
+
+## Environment Setup
+
+Before running the project, you need to configure the environment variables.
+
+1. **Copy the `.env` file**
+
+    - On **Linux or macOS**:
+
+      ```bash
+      cp .env.example .env
+      ```
+
+    - On **Windows**:
+
+      ```bash
+      copy .env.example .env
+      ```
+
+2. **Add your API keys**
+
+   Open the `.env` file you just created and add your Mapbox API key:
+
+   ```plaintext
+   VITE_MAPBOX_API_KEY=your_mapbox_api_key_here
+   ```
+
+## Running the Project
+
+To start the development server, run:
+
+```bash
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+The application will be available at `http://localhost:4200` by default.
 
-```sh
-npm run build
-```
+## Backend API
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+Euskoplan relies on a Laravel-based backend API to function properly. Please follow the instructions in the [Euskoplan API repository](https://github.com/asier-ortiz/euskoplan-api) to set up and run the backend on your local machine.
 
-```sh
-npm run test:unit
-```
+Ensure that the backend API is running before attempting to use the Euskoplan frontend.
 
-### Lint with [ESLint](https://eslint.org/)
+## License
 
-```sh
-npm run lint
-```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Screenshots
+
+![Screenshot 1](./screenshots/screenshot-1.png)
+![Screenshot 1](./screenshots/screenshot-2.png)
+![Screenshot 1](./screenshots/screenshot-3.png)
+![Screenshot 1](./screenshots/screenshot-4.png)
+![Screenshot 1](./screenshots/screenshot-5.png)
+![Screenshot 1](./screenshots/screenshot-6.png)
