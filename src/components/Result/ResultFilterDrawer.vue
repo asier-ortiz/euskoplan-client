@@ -68,7 +68,7 @@
 
       <!-- Dynamic Category Selector -->
       <label v-if="currentCategories.length" for="category">
-        {{ selectedCategoryName }} Categoría
+        Categoría {{ selectedCategoryName }}
       </label>
       <select
           v-if="currentCategories.length"
@@ -86,27 +86,31 @@
 
       <!-- Date Pickers, visible only if "Eventos" is selected -->
       <div v-if="selectedCategory === 'Eventos'">
-        <div class="date-picker">
-          <label for="start-date">Fecha de Inicio:</label>
-          <DatePicker
+        <label for="date-range" style="margin-bottom: 0.5rem; display: block;">Rango de fechas</label>
+        <div class="date-picker-group">
+          <div class="date-picker">
+            <label for="start-date">Inicio</label>
+            <DatePicker
               v-model="startDate"
               id="start-date"
-              placeholder="Select start date"
+              placeholder="Fecha inicio"
               :format="'yyyy-MM-dd'"
               :value-type="'format'"
-          />
-        </div>
-        <div class="date-picker">
-          <label for="end-date">Fecha de Fin:</label>
-          <DatePicker
+            />
+          </div>
+          <div class="date-picker">
+            <label for="end-date">Fin</label>
+            <DatePicker
               v-model="endDate"
               id="end-date"
-              placeholder="Select end date"
+              placeholder="Fecha de fin"
               :format="'yyyy-MM-dd'"
               :value-type="'format'"
-          />
+            />
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -509,9 +513,24 @@ select:disabled,
   cursor: not-allowed;
 }
 
+.date-picker-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Espacio entre los pickers */
+  margin-bottom: 1rem; /* Espacio adicional debajo del grupo de pickers */
+}
+
 .date-picker {
   display: flex;
   flex-direction: column;
+}
+
+.filter-content label {
+  font-weight: 600;
+}
+
+.date-picker-group label {
+  font-weight: normal;
 }
 
 hr {
