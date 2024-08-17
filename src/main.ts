@@ -2,6 +2,7 @@ import './assets/main.css';
 import './assets/base.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
+import 'sharer.js/sharer.min.js';  // <-- Aquí
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';

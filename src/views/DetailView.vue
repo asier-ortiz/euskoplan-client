@@ -2,6 +2,9 @@
   <div class="detail-view-container">
     <Spinner v-if="loading" :visible="loading" />
     <div v-else class="detail-view">
+
+      <DetailSocialShareButtons :resource="resource" />
+
       <DetailHeaderButtons
         :goBackHome="goBackHome"
         :handleAddToPlan="handleAddToPlan"
@@ -56,6 +59,8 @@ import DetailMap from '@/components/Detail/DetailMap.vue';
 import DetailRelatedResources from '@/components/Detail/DetailRelatedResources.vue';
 import DetailHeader from '@/components/Detail/DetailHeader.vue';
 import DetailHeaderButtons from '@/components/Detail/DetailHeaderButtons.vue';
+import DetailSocialShareButtons from '@/components/Detail/DetailSocialShareButtons.vue';
+import { updateMetaTags } from '@/utils/meta'; // Importar la función para actualizar las meta etiquetas
 
 const route = useRoute();
 const router = useRouter();
@@ -105,14 +110,24 @@ const isFavorite = computed(() => {
 });
 
 watch(
-  () => route.fullPath, // Watch full path instead of just params
-  (newPath, oldPath) => {
-    if (newPath === oldPath || newPath.split('#')[0] === lastFullPath) {
-      // Ignore if only the hash changes or if the path is the same as the last full path without hash
-      return;
+  () => route.path,
+  async (newPath, oldPath) => {
+    if (newPath !== oldPath) {
+      await fetchResource();
+
+      const imageTitle = resource.value.imagenes && resource.value.imagenes[0]?.titulo
+        ? ` - ${resource.value.imagenes[0].titulo}`
+        : '';
+
+      updateMetaTags({
+        title: resource.value.nombre || 'Recurso en Euskoplan',
+        description: `${resource.value.descripcion || 'Descubre este recurso en Euskoplan.'}${imageTitle}`,
+        image: resource.value.imagenes && resource.value.imagenes[0]
+          ? resource.value.imagenes[0].fuente
+          : `${window.location.origin}/images/default-image.jpg`,
+        url: `${window.location.origin}${newPath}`,
+      });
     }
-    lastFullPath = newPath.split('#')[0];
-    fetchResource();
   }
 );
 
@@ -146,6 +161,13 @@ const fetchResource = async () => {
   loading.value = false;
   if (resource.value && resource.value.latitud && resource.value.longitud) {
     await nextTick();
+
+    updateMetaTags({
+      title: resource.value.nombre || 'Recurso en Euskoplan',
+      description: resource.value.descripcion || 'Descubre este recurso en Euskoplan.',
+      image: resource.value.imagenes && resource.value.imagenes[0] ? resource.value.imagenes[0].fuente : 'https://tusitio.com/default-image.jpg',
+      url: window.location.href,
+    });
   }
 };
 
