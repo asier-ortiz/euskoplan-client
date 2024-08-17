@@ -63,13 +63,19 @@ button {
   background-color: #007bff;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, box-shadow 0.3s, color 0.3s;
   font-size: 1rem;
 }
 
 button:disabled {
   background-color: #d3d3d3;
   cursor: not-allowed;
+}
+
+button:not(:disabled):hover {
+  background-color: #0056b3;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: white; /* Ensures text remains white on hover */
 }
 
 @media (max-width: 600px) {

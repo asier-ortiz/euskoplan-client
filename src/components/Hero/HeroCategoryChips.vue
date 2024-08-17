@@ -72,7 +72,7 @@ const isSelected = (category) => collectionsStore.selectedCategory === category;
 }
 
 .chip:hover {
-  background-color: #007bff;
+  background-color: #0056b3;
   color: white;
 }
 

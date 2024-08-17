@@ -147,7 +147,7 @@ const sortByDate = () => {
   background-color: #e0e0e0;
   color: #333;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color 0.3s, box-shadow 0.3s, color 0.3s;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -156,6 +156,12 @@ const sortByDate = () => {
 .sorting-buttons button.active {
   background-color: #007bff;
   color: white;
+}
+
+.sorting-buttons button:hover {
+  background-color: #0056b3;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: white; /* Ensures text remains white on hover */
 }
 
 .cards-grid {

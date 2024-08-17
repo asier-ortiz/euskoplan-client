@@ -50,7 +50,7 @@ export const useCollectionsStore = defineStore('collections', {
 
     // Pagination related state
     currentPage: useLocalStorage('currentPage', 1), // Save the current page in LocalStorage
-    itemsPerPage: 24, // Number of items per page
+    itemsPerPage: 12, // Number of items per page
   }),
 
   getters: {
