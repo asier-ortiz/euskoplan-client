@@ -5,7 +5,7 @@
     </button>
     <div class="action-buttons">
       <button class="header-button" @click="handleAddToPlan">
-        <font-awesome-icon :icon="['fas', 'map']" /> Añadir a a un Plan
+        <font-awesome-icon :icon="['fas', 'map']" /> Añadir a un Plan
       </button>
       <button @click="toggleFavorite" class="header-button">
         <font-awesome-icon :icon="[isFavorite ? 'fas' : 'far', 'heart']" :class="{ 'favorite-icon': isFavorite }" />

@@ -1,5 +1,6 @@
 // src/utils/meta.ts
 
+// TODO Move interfaces to models folder
 interface MetaTag {
   name?: string;
   property?: string;

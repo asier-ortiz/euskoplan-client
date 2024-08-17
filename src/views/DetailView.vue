@@ -1,43 +1,45 @@
 <template>
   <div class="detail-view-container">
     <Spinner v-if="loading" :visible="loading" />
-    <div v-else class="detail-view">
+    <div v-else class="detail-view-wrapper">
 
       <DetailSocialShareButtons :resource="resource" />
 
-      <DetailHeaderButtons
-        :goBackHome="goBackHome"
-        :handleAddToPlan="handleAddToPlan"
-        :toggleFavorite="toggleFavorite"
-        :isFavorite="isFavorite"
-      />
+      <div class="detail-view">
+        <DetailHeaderButtons
+          :goBackHome="goBackHome"
+          :handleAddToPlan="handleAddToPlan"
+          :toggleFavorite="toggleFavorite"
+          :isFavorite="isFavorite"
+        />
 
-      <hr class="section-separator" />
+        <hr class="section-separator" />
 
-      <DetailHeader :resource="resource" :distance="distance" />
+        <DetailHeader :resource="resource" :distance="distance" />
 
-      <hr class="section-separator" />
+        <hr class="section-separator" />
 
-      <DetailContent
-        :resource="resource"
-        :currentIndex="currentIndex"
-        :prevSlide="prevSlide"
-        :nextSlide="nextSlide"
-        :formatDate="formatDate"
-        @galleryClosed="handleGalleryClosed"
-      />
+        <DetailContent
+          :resource="resource"
+          :currentIndex="currentIndex"
+          :prevSlide="prevSlide"
+          :nextSlide="nextSlide"
+          :formatDate="formatDate"
+          @galleryClosed="handleGalleryClosed"
+        />
 
-      <DetailMap :resource="resource" :isDarkMode="isDarkMode" />
+        <DetailMap :resource="resource" :isDarkMode="isDarkMode" />
 
-      <hr class="section-separator" />
+        <hr class="section-separator" />
 
-      <DetailRelatedResources
-        :relatedResources="relatedResources"
-        :formatDate="formatDate"
-        :navigateToResource="navigateToResource"
-        :handleRelatedImageError="handleRelatedImageError"
-        :getDefaultImage="getDefaultImage"
-      />
+        <DetailRelatedResources
+          :relatedResources="relatedResources"
+          :formatDate="formatDate"
+          :navigateToResource="navigateToResource"
+          :handleRelatedImageError="handleRelatedImageError"
+          :getDefaultImage="getDefaultImage"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -60,7 +62,7 @@ import DetailRelatedResources from '@/components/Detail/DetailRelatedResources.v
 import DetailHeader from '@/components/Detail/DetailHeader.vue';
 import DetailHeaderButtons from '@/components/Detail/DetailHeaderButtons.vue';
 import DetailSocialShareButtons from '@/components/Detail/DetailSocialShareButtons.vue';
-import { updateMetaTags } from '@/utils/meta'; // Importar la función para actualizar las meta etiquetas
+import { updateMetaTags } from '@/utils/meta';
 
 const route = useRoute();
 const router = useRouter();
@@ -136,7 +138,6 @@ const fetchResource = async () => {
   const { id, category } = route.params;
   const language = 'es';
 
-  // Use the cached resource if available to avoid refetching
   if (collectionsStore.currentDetail && collectionsStore.currentDetail.id === Number(id) && collectionsStore.currentDetail.coleccion === category) {
     resource.value = collectionsStore.currentDetail;
   } else {
@@ -165,7 +166,7 @@ const fetchResource = async () => {
     updateMetaTags({
       title: resource.value.nombre || 'Recurso en Euskoplan',
       description: resource.value.descripcion || 'Descubre este recurso en Euskoplan.',
-      image: resource.value.imagenes && resource.value.imagenes[0] ? resource.value.imagenes[0].fuente : 'https://tusitio.com/default-image.jpg',
+      image: resource.value.imagenes && resource.value.imagenes[0] ? resource.value.imagenes[0].fuente : `${window.location.origin}/images/default-image.jpg`,
       url: window.location.href,
     });
   }
@@ -264,7 +265,7 @@ const handleGalleryClosed = () => {
 };
 
 onMounted(() => {
-  lastFullPath = route.fullPath.split('#')[0]; // Initialize the lastFullPath
+  lastFullPath = route.fullPath.split('#')[0];
   fetchResource();
   if (authStore.isLoggedIn()) {
     favoritesStore.fetchFavorites();
@@ -278,20 +279,27 @@ onMounted(() => {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   padding: 1rem;
 }
 
+.detail-view-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+  position: relative;
+}
+
 .detail-view {
+  flex: 1;
   padding: 2rem;
   font-family: 'Arial', sans-serif;
   background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   max-width: 960px;
-  width: 90%;
-  margin: 2rem auto;
-  position: relative;
   box-sizing: border-box;
 }
 
@@ -307,5 +315,15 @@ onMounted(() => {
   align-items: center;
   height: 100vh;
   background-color: #f9f9f9;
+}
+
+.social-share-buttons {
+  position: sticky;
+  top: 20px; /* Adjust as necessary to control the sticky position */
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2000;
 }
 </style>

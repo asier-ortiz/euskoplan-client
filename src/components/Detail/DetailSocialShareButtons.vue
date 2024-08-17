@@ -58,7 +58,7 @@ const shareDescription = computed(() => {
     : 'Descubre más sobre este recurso en Euskoplan.';
 });
 
-const shareHashtags = ref('Euskoplan, País Vasco, Turismo');
+const shareHashtags = ref('Euskoplan,Euskadi,Turismo');
 
 onMounted(() => {
   if (typeof window.Sharer !== 'undefined') {
@@ -69,9 +69,9 @@ onMounted(() => {
 
 <style scoped>
 .social-share-buttons {
-  position: fixed;
-  top: 60px;
-  left: 10px;
+ /* position: sticky; */
+  top: 20px; /* Position the buttons 20px from the top when sticky */
+  left: 20px; /* Position the buttons 20px from the left */
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -82,11 +82,20 @@ onMounted(() => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 24px;
+  font-size: 36px; /* Icon size */
   color: #000;
+  transition: color 0.3s ease;
 }
 
-.sharer.button i {
+.sharer.button:hover {
+  color: #007bff;
+}
+
+.sharer.button i, /* Targeting the FontAwesome icons inside the button */
+.sharer.button svg {
+  font-size: 36px; /* Ensure the icon size is also increased */
+  width: 24px;     /* Adjust the width of the SVG */
+  height: 24px;    /* Adjust the height of the SVG */
   pointer-events: none;
 }
 </style>
