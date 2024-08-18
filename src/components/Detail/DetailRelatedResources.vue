@@ -12,11 +12,14 @@
           class="card-image"
           :style="{ backgroundImage: `url(${related.imagenes[0]?.fuente || getDefaultImage(related.coleccion)})` }"
         >
+          <div v-if="!imageLoaded[index]" class="skeleton-loader"></div> <!-- Skeleton loader -->
           <img
             :src="related.imagenes[0]?.fuente || getDefaultImage(related.coleccion)"
             alt="Imagen del recurso relacionado"
             class="hidden-image"
+            @load="handleImageLoad(index)"
             @error="handleRelatedImageError(index)"
+            :class="{ loaded: imageLoaded[index] }"
           />
           <div v-if="related.coleccion.toLowerCase() === 'event'" class="event-date">
             {{ formatDate(related.fecha_inicio) }}
@@ -46,16 +49,26 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { defineProps, ref, watch } from 'vue';
 
-defineProps<{
+const props = defineProps<{
   relatedResources: any[];
   formatDate: (date: string) => string;
   navigateToResource: (resource: any) => void;
   handleRelatedImageError: (index: number) => void;
   getDefaultImage: (collection: string) => string;
 }>();
+
+const imageLoaded = ref<boolean[]>([]);
+
+// Initialize imageLoaded array
+watch(() => props.relatedResources, () => {
+  imageLoaded.value = Array(props.relatedResources.length).fill(false);
+}, { immediate: true });
+
+const handleImageLoad = (index: number) => {
+  imageLoaded.value[index] = true;
+};
 </script>
 
 <style scoped>
@@ -80,12 +93,11 @@ defineProps<{
   padding-top: 1rem; /* Add padding to increase space between heading and cards */
 }
 
-
 .result-card {
   display: flex;
   flex-direction: column;
-  width: 240px; /* Made wider for better visual appearance */
-  height: 320px;
+  width: 240px;
+  height: auto; /* Allow height to adjust based on content */
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -100,20 +112,50 @@ defineProps<{
 }
 
 .card-image {
-  flex: 2;
+  flex-grow: 1; /* Allow the image to take the remaining space */
   background-size: cover;
   background-position: center;
-  height: 60%;
   position: relative;
   border-bottom: 1px solid #ddd;
+  height: 150px; /* Provide a minimum height for the image */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hidden-image {
   display: none;
 }
 
+.hidden-image.loaded {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.skeleton-loader {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover; /* Ensure skeleton loader also respects the image's aspect ratio */
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 .card-content {
-  flex: 1;
   padding: 1rem;
   display: flex;
   flex-direction: column;

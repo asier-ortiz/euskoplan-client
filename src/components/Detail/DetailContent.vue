@@ -315,7 +315,7 @@ const hasDynamicInfo = computed(() => {
 .single-image img {
   width: 100%;
   max-width: 100%; /* Ensure the image does not exceed the container width */
-  max-height: 250px; 
+  max-height: 250px;
   border-radius: 8px;
   object-fit: cover;
   transition: transform 0.3s ease-in-out, border-radius 0.3s ease-in-out; /* Smooth transition for image and border-radius */
