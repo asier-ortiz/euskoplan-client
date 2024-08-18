@@ -258,21 +258,40 @@ const hasDynamicInfo = computed(() => {
   object-fit: cover;
   min-width: 200px; /* Ensure a minimum width */
   min-height: 200px; /* Ensure a minimum height */
-  transition: transform 0.3s ease-in-out; /* Smooth transition for image */
+  transition: transform 0.3s ease-in-out, border-radius 0.3s ease-in-out; /* Smooth transition for image and border-radius */
 }
 
 /* Zoom effect on hover for grid images */
 .grid-image:hover img {
   transform: scale(1.1); /* Zoom the image by 10% */
+  border-radius: 8px; /* Keep border-radius consistent */
+}
+
+/* Single image container */
+.single-image {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 1rem;
+  overflow: hidden; /* Ensure the overflow is hidden to enforce the border-radius */
+  border-radius: 8px;
+}
+
+/* Single image styling */
+.single-image img {
+  width: 100%;
+  max-width: 100%; /* Ensure the image does not exceed the container width */
+  height: 400px; /* Set a maximum height for the image */
+  border-radius: 8px;
+  object-fit: cover;
+  transition: transform 0.3s ease-in-out, border-radius 0.3s ease-in-out; /* Smooth transition for image and border-radius */
 }
 
 /* Zoom effect on hover for single image */
-.single-image img {
-  transition: transform 0.3s ease-in-out; /* Smooth transition for image */
-}
-
 .single-image:hover img {
   transform: scale(1.1); /* Zoom the image by 10% */
+  border-radius: 8px; /* Keep border-radius consistent */
 }
 
 /* Carousel layout for small screens */
@@ -300,20 +319,6 @@ const hasDynamicInfo = computed(() => {
 }
 
 .carousel-image img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
-
-.single-image {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 1rem;
-}
-
-.single-image img {
   width: 100%;
   height: auto;
   border-radius: 8px;
