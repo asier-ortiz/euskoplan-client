@@ -335,7 +335,7 @@ onMounted(() => {
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .social-share-desktop {
     display: none;
   }

@@ -95,7 +95,7 @@ onMounted(() => {
   pointer-events: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
 
   .sharer.button {
     margin-top: 16px;
