@@ -261,8 +261,17 @@ const hasDynamicInfo = computed(() => {
   transition: transform 0.3s ease-in-out; /* Smooth transition for image */
 }
 
-/* Zoom effect on hover */
+/* Zoom effect on hover for grid images */
 .grid-image:hover img {
+  transform: scale(1.1); /* Zoom the image by 10% */
+}
+
+/* Zoom effect on hover for single image */
+.single-image img {
+  transition: transform 0.3s ease-in-out; /* Smooth transition for image */
+}
+
+.single-image:hover img {
   transform: scale(1.1); /* Zoom the image by 10% */
 }
 
