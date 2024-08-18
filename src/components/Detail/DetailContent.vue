@@ -239,21 +239,31 @@ const hasDynamicInfo = computed(() => {
 /* Grid layout for large screens */
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Set a larger minimum size */
   gap: 1rem;
   width: 100%;
-  max-width: 1200px;
+  max-width: 100%;
 }
 
 .grid-image {
   overflow: hidden;
   border-radius: 8px;
+  transition: transform 0.3s ease-in-out; /* Smooth transition */
 }
 
 .grid-image img {
   width: 100%;
   height: auto;
   border-radius: 8px;
+  object-fit: cover;
+  min-width: 200px; /* Ensure a minimum width */
+  min-height: 200px; /* Ensure a minimum height */
+  transition: transform 0.3s ease-in-out; /* Smooth transition for image */
+}
+
+/* Zoom effect on hover */
+.grid-image:hover img {
+  transform: scale(1.1); /* Zoom the image by 10% */
 }
 
 /* Carousel layout for small screens */
@@ -385,5 +395,38 @@ const hasDynamicInfo = computed(() => {
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
   font-size: 0.9rem;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 1200px) {
+  .image-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .image-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .image-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .image-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .detail-carousel {
+    max-width: 100%;
+  }
+
+  .carousel-image {
+    min-width: 100%;
+  }
 }
 </style>
