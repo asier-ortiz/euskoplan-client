@@ -69,20 +69,16 @@ onMounted(() => {
 
 <style scoped>
 .social-share-buttons {
- /* position: sticky; */
-  top: 20px; /* Position the buttons 20px from the top when sticky */
-  left: 20px; /* Position the buttons 20px from the left */
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 2000;
 }
 
 .sharer.button {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 36px; /* Icon size */
+  font-size: 36px;
   color: #000;
   transition: color 0.3s ease;
 }
@@ -91,11 +87,26 @@ onMounted(() => {
   color: #007bff;
 }
 
-.sharer.button i, /* Targeting the FontAwesome icons inside the button */
+.sharer.button i,
 .sharer.button svg {
-  font-size: 36px; /* Ensure the icon size is also increased */
-  width: 24px;     /* Adjust the width of the SVG */
-  height: 24px;    /* Adjust the height of the SVG */
+  font-size: 36px;
+  width: 24px;
+  height: 24px;
   pointer-events: none;
+}
+
+@media (max-width: 768px) {
+
+  .sharer.button {
+    margin-top: 16px;
+    margin-right: 16px;
+  }
+
+  .social-share-buttons {
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 10px;
+    gap: 10px;
+  }
 }
 </style>

@@ -3,7 +3,8 @@
     <Spinner v-if="loading" :visible="loading" />
     <div v-else class="detail-view-wrapper">
 
-      <DetailSocialShareButtons :resource="resource" />
+      <!-- Social share buttons for desktop and tablet -->
+      <DetailSocialShareButtons :resource="resource" class="social-share-desktop" />
 
       <div class="detail-view">
         <DetailHeaderButtons
@@ -12,6 +13,9 @@
           :toggleFavorite="toggleFavorite"
           :isFavorite="isFavorite"
         />
+
+        <!-- Social share buttons for mobile -->
+        <DetailSocialShareButtons :resource="resource" class="social-share-mobile" />
 
         <hr class="section-separator" />
 
@@ -317,13 +321,31 @@ onMounted(() => {
   background-color: #f9f9f9;
 }
 
-.social-share-buttons {
-  position: sticky;
-  top: 20px; /* Adjust as necessary to control the sticky position */
-  left: 20px;
+.social-share-desktop {
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 20px;
+  left: 20px;
   gap: 10px;
   z-index: 2000;
+}
+
+.social-share-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .social-share-desktop {
+    display: none;
+  }
+
+  .social-share-mobile {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
 }
 </style>
