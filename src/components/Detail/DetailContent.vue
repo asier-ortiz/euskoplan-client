@@ -53,41 +53,41 @@
     <!-- Display dynamic info only if available -->
     <div v-if="hasDynamicInfo" class="dynamic-info">
       <!-- General Info -->
-      <p v-if="resource.direccion"><strong>Dirección:</strong> {{ resource.direccion }}</p>
-      <p v-if="resource.codigo_postal"><strong>Código Postal:</strong> {{ resource.codigo_postal }}</p>
-      <p v-if="resource.numero_telefono"><strong>Teléfono:</strong> {{ resource.numero_telefono }}</p>
-      <p v-if="resource.numero_telefono_2"><strong>Teléfono 2:</strong> {{ resource.numero_telefono_2 }}</p>
-      <p v-if="resource.email"><strong>Email:</strong> {{ resource.email }}</p>
+      <p v-if="resource.direccion"><strong>Dirección:</strong> <span v-html="resource.direccion"></span></p>
+      <p v-if="resource.codigo_postal"><strong>Código Postal:</strong> <span v-html="resource.codigo_postal"></span></p>
+      <p v-if="resource.numero_telefono"><strong>Teléfono:</strong> <span v-html="resource.numero_telefono"></span></p>
+      <p v-if="resource.numero_telefono_2"><strong>Teléfono 2:</strong> <span v-html="resource.numero_telefono_2"></span></p>
+      <p v-if="resource.email"><strong>Email:</strong> <span v-html="resource.email"></span></p>
       <p v-if="resource.pagina_web"><strong>Sitio Web:</strong><a :href="resource.pagina_web" target="_blank">{{ resource.pagina_web }}</a></p>
 
       <!-- Accommodation Specific -->
       <template v-if="resource.coleccion === 'accommodation'">
-        <p v-if="resource.categoria"><strong>Categoría:</strong> {{ resource.categoria }}</p>
-        <p v-if="resource.capacidad"><strong>Capacidad:</strong> {{ resource.capacidad }}</p>
-        <p v-if="resource.anno_apertura"><strong>Año de Apertura:</strong> {{ resource.anno_apertura }}</p>
-        <p v-if="resource.num_hab_individuales"><strong>Habitaciones Individuales:</strong> {{ resource.num_hab_individuales }}</p>
-        <p v-if="resource.num_hab_dobles"><strong>Habitaciones Dobles:</strong> {{ resource.num_hab_dobles }}</p>
-        <p v-if="resource.num_hab_salon"><strong>Salones:</strong> {{ resource.num_hab_salon }}</p>
-        <p v-if="resource.num_hab_hasta_4_plazas"><strong>Habitaciones hasta 4 plazas:</strong> {{ resource.num_hab_hasta_4_plazas }}</p>
-        <p v-if="resource.num_hab_mas_4_plazas"><strong>Habitaciones más de 4 plazas:</strong> {{ resource.num_hab_mas_4_plazas }}</p>
+        <p v-if="resource.categoria"><strong>Categoría:</strong> <span v-html="resource.categoria"></span></p>
+        <p v-if="resource.capacidad"><strong>Capacidad:</strong> <span v-html="resource.capacidad"></span></p>
+        <p v-if="resource.anno_apertura"><strong>Año de Apertura:</strong> <span v-html="resource.anno_apertura"></span></p>
+        <p v-if="resource.num_hab_individuales"><strong>Habitaciones Individuales:</strong> <span v-html="resource.num_hab_individuales"></span></p>
+        <p v-if="resource.num_hab_dobles"><strong>Habitaciones Dobles:</strong> <span v-html="resource.num_hab_dobles"></span></p>
+        <p v-if="resource.num_hab_salon"><strong>Salones:</strong> <span v-html="resource.num_hab_salon"></span></p>
+        <p v-if="resource.num_hab_hasta_4_plazas"><strong>Habitaciones hasta 4 plazas:</strong> <span v-html="resource.num_hab_hasta_4_plazas"></span></p>
+        <p v-if="resource.num_hab_mas_4_plazas"><strong>Habitaciones más de 4 plazas:</strong> <span v-html="resource.num_hab_mas_4_plazas"></span></p>
       </template>
 
       <!-- Cave Specific -->
       <template v-if="resource.coleccion === 'cave'">
-        <p v-if="resource.tipo_monumento"><strong>Tipo de Monumento:</strong> {{ resource.tipo_monumento }}</p>
-        <p v-if="resource.periodo"><strong>Período:</strong> {{ resource.periodo }}</p>
+        <p v-if="resource.tipo_monumento"><strong>Tipo de Monumento:</strong> <span v-html="resource.tipo_monumento"></span></p>
+        <p v-if="resource.periodo"><strong>Período:</strong> <span v-html="resource.periodo"></span></p>
       </template>
 
       <!-- Cultural Specific -->
       <template v-if="resource.coleccion === 'cultural'">
-        <p v-if="resource.tipo_monumento"><strong>Tipo de Monumento:</strong> {{ resource.tipo_monumento }}</p>
-        <p v-if="resource.estilo_artistico"><strong>Estilo Artístico:</strong> {{ resource.estilo_artistico }}</p>
+        <p v-if="resource.tipo_monumento"><strong>Tipo de Monumento:</strong> <span v-html="resource.tipo_monumento"></span></p>
+        <p v-if="resource.estilo_artistico"><strong>Estilo Artístico:</strong> <span v-html="resource.estilo_artistico"></span></p>
       </template>
 
       <!-- Event Specific -->
       <template v-if="resource.coleccion === 'event'">
-        <p v-if="resource.fecha_inicio"><strong>Fecha de Inicio:</strong> {{ formatDate(resource.fecha_inicio) }}</p>
-        <p v-if="resource.fecha_fin"><strong>Fecha de Fin:</strong> {{ formatDate(resource.fecha_fin) }}</p>
+        <p v-if="resource.fecha_inicio"><strong>Fecha de Inicio:</strong> <span v-html="formatDate(resource.fecha_inicio)"></span></p>
+        <p v-if="resource.fecha_fin"><strong>Fecha de Fin:</strong> <span v-html="formatDate(resource.fecha_fin)"></span></p>
       </template>
 
       <!-- Fair Specific -->
@@ -99,23 +99,23 @@
 
       <!-- Natural Specific -->
       <template v-if="resource.coleccion === 'natural'">
-        <p v-if="resource.subtipo_recurso_espacio_natural"><strong>Subtipo Espacio Natural:</strong> {{ resource.subtipo_recurso_espacio_natural }}</p>
-        <p v-if="resource.fauna"><strong>Fauna:</strong> {{ resource.fauna }}</p>
-        <p v-if="resource.flora"><strong>Flora:</strong> {{ resource.flora }}</p>
-        <p v-if="resource.subtipo_recurso_playas_pantanos_rios"><strong>Subtipo Playas/Pantanos/Ríos:</strong> {{ resource.subtipo_recurso_playas_pantanos_rios }}</p>
+        <p v-if="resource.subtipo_recurso_espacio_natural"><strong>Subtipo Espacio Natural:</strong> <span v-html="resource.subtipo_recurso_espacio_natural"></span></p>
+        <p v-if="resource.fauna"><strong>Fauna:</strong> <span v-html="resource.fauna"></span></p>
+        <p v-if="resource.flora"><strong>Flora:</strong> <span v-html="resource.flora"></span></p>
+        <p v-if="resource.subtipo_recurso_playas_pantanos_rios"><strong>Subtipo Playas/Pantanos/Ríos:</strong> <span v-html="resource.subtipo_recurso_playas_pantanos_rios"></span></p>
         <p v-if="resource.actividades"><strong>Actividades:</strong><span v-html="resource.actividades"></span></p>
         <p v-if="resource.horario"><strong>Horario:</strong><span v-html="resource.horario"></span></p>
       </template>
 
       <!-- Restaurant Specific -->
       <template v-if="resource.coleccion === 'restaurant'">
-        <p v-if="resource.capacidad"><strong>Capacidad:</strong> {{ resource.capacidad }}</p>
+        <p v-if="resource.capacidad"><strong>Capacidad:</strong> <span v-html="resource.capacidad"></span></p>
       </template>
 
       <!-- Museum Specific -->
       <template v-if="resource.coleccion === 'museum'">
-        <p v-if="resource.tematica"><strong>Temática:</strong> {{ resource.tematica }}</p>
-        <p v-if="resource.capacidad"><strong>Capacidad:</strong> {{ resource.capacidad }}</p>
+        <p v-if="resource.tematica"><strong>Temática:</strong> <span v-html="resource.tematica"></span></p>
+        <p v-if="resource.capacidad"><strong>Capacidad:</strong> <span v-html="resource.capacidad"></span></p>
         <p v-if="resource.horario"><strong>Horario:</strong> <span v-html="resource.horario"></span></p>
       </template>
     </div>
