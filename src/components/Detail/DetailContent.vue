@@ -120,10 +120,8 @@
 
       <!-- Natural Specific -->
       <template v-if="resource.coleccion === 'natural'">
-        <p v-if="resource.subtipo_recurso_espacio_natural"><strong>Subtipo Espacio Natural:</strong> <span v-html="resource.subtipo_recurso_espacio_natural"></span></p>
         <p v-if="resource.fauna"><strong>Fauna:</strong> <span v-html="resource.fauna"></span></p>
         <p v-if="resource.flora"><strong>Flora:</strong> <span v-html="resource.flora"></span></p>
-        <p v-if="resource.subtipo_recurso_playas_pantanos_rios"><strong>Subtipo Playas/Pantanos/Ríos:</strong> <span v-html="resource.subtipo_recurso_playas_pantanos_rios"></span></p>
         <p v-if="resource.actividades"><strong>Actividades:</strong><span v-html="resource.actividades"></span></p>
         <p v-if="resource.horario"><strong>Horario:</strong><span v-html="resource.horario"></span></p>
       </template>
@@ -250,7 +248,7 @@ const hasDynamicInfo = computed(() => {
     (props.resource.coleccion === 'fair' &&
       (props.resource.atracciones || props.resource.horario || props.resource.tarifas)) ||
     (props.resource.coleccion === 'natural' &&
-      (props.resource.subtipo_recurso_espacio_natural || props.resource.fauna || props.resource.flora || props.resource.subtipo_recurso_playas_pantanos_rios || props.resource.actividades || props.resource.horario)) ||
+      (props.resource.fauna || props.resource.flora || props.resource.actividades || props.resource.horario)) ||
     (props.resource.coleccion === 'restaurant' &&
       props.resource.capacidad) ||
     (props.resource.coleccion === 'museum' &&
