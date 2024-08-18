@@ -3,12 +3,19 @@
     <!-- Grid layout for large screens -->
     <div v-if="!isMobile && resource.imagenes && resource.imagenes.length > 1" class="image-grid">
       <div v-for="(imagen, index) in resource.imagenes" :key="index" class="grid-image">
+        <div v-if="!imageLoaded[index]" class="skeleton-loader"></div>
         <a
           :href="imagen.fuente"
           data-fancybox="gallery"
           :data-caption="imagen.titulo || 'Imagen del recurso'"
         >
-          <img :src="imagen.fuente" :alt="imagen.titulo || 'Imagen del recurso'" />
+          <img
+            :src="imagen.fuente"
+            :alt="imagen.titulo || 'Imagen del recurso'"
+            @load="handleImageLoad(index)"
+            @error="handleImageLoad(index)"
+            :class="{ 'hidden-image': !imageLoaded[index] }"
+          />
         </a>
       </div>
     </div>
@@ -18,12 +25,19 @@
       <div class="carousel-container">
         <div class="carousel-slide" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
           <div v-for="(imagen, index) in resource.imagenes" :key="index" class="carousel-image">
+            <div v-if="!imageLoaded[index]" class="skeleton-loader"></div>
             <a
               :href="imagen.fuente"
               data-fancybox="gallery"
               :data-caption="imagen.titulo || 'Imagen del recurso'"
             >
-              <img :src="imagen.fuente" :alt="imagen.titulo || 'Imagen del recurso'" />
+              <img
+                :src="imagen.fuente"
+                :alt="imagen.titulo || 'Imagen del recurso'"
+                @load="handleImageLoad(index)"
+                @error="handleImageLoad(index)"
+                :class="{ 'hidden-image': !imageLoaded[index] }"
+              />
             </a>
           </div>
         </div>
@@ -34,12 +48,19 @@
 
     <!-- Single image or default image -->
     <div v-else class="single-image">
+      <div v-if="!imageLoaded[0]" class="skeleton-loader"></div>
       <a
         :href="singleImageUrl"
         data-fancybox="gallery"
         :data-caption="singleImageAlt"
       >
-        <img :src="singleImageUrl" :alt="singleImageAlt" />
+        <img
+          :src="singleImageUrl"
+          :alt="singleImageAlt"
+          @load="handleImageLoad(0)"
+          @error="handleImageLoad(0)"
+          :class="{ 'hidden-image': !imageLoaded[0] }"
+        />
       </a>
     </div>
 
@@ -147,10 +168,20 @@ const emit = defineEmits(['galleryClosed']);
 
 const currentIndex = ref(0);
 const isMobile = ref(false);
+const imageLoaded = ref<boolean[]>([]);
 
 // Function to detect screen size
 const updateScreenSize = () => {
   isMobile.value = window.innerWidth < 768; // Example breakpoint for mobile screens
+};
+
+// Initialize imageLoaded array
+watch(() => props.resource.imagenes, () => {
+  imageLoaded.value = Array(props.resource.imagenes ? props.resource.imagenes.length : 1).fill(false);
+});
+
+const handleImageLoad = (index: number) => {
+  imageLoaded.value[index] = true;
 };
 
 // Call on component mount
@@ -246,6 +277,7 @@ const hasDynamicInfo = computed(() => {
 }
 
 .grid-image {
+  position: relative;
   overflow: hidden;
   border-radius: 8px;
   transition: transform 0.3s ease-in-out; /* Smooth transition */
@@ -269,10 +301,11 @@ const hasDynamicInfo = computed(() => {
 
 /* Single image container */
 .single-image {
+  position: relative;
   display: flex;
   justify-content: center;
   width: 100%;
-  max-width: 600px;
+  max-width: 350px;
   margin-bottom: 1rem;
   overflow: hidden; /* Ensure the overflow is hidden to enforce the border-radius */
   border-radius: 8px;
@@ -282,7 +315,7 @@ const hasDynamicInfo = computed(() => {
 .single-image img {
   width: 100%;
   max-width: 100%; /* Ensure the image does not exceed the container width */
-  height: 400px; /* Set a maximum height for the image */
+  max-height: 250px; 
   border-radius: 8px;
   object-fit: cover;
   transition: transform 0.3s ease-in-out, border-radius 0.3s ease-in-out; /* Smooth transition for image and border-radius */
@@ -314,6 +347,7 @@ const hasDynamicInfo = computed(() => {
 }
 
 .carousel-image {
+  position: relative;
   min-width: 100%;
   transition: transform 0.5s ease-in-out;
 }
@@ -343,6 +377,38 @@ const hasDynamicInfo = computed(() => {
 
 .next-button {
   right: 0;
+}
+
+/* Skeleton loader */
+.skeleton-loader {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Hidden image until loaded */
+.hidden-image {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Show image after load */
+.hidden-image.loaded {
+  opacity: 1;
 }
 
 /* Other styles */
