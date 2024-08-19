@@ -65,18 +65,22 @@ router.beforeEach((to, from, next) => {
     mapStore.resetReturningFromDetail();
   }
 
-  // Only set redirectTo if navigating to login from a non-auth route
-  if (!authStore.isLoggedIn() && to.name === 'Login' && from.name !== 'Signup' && from.name !== 'Login') {
-    authStore.setRedirectTo(from.fullPath);
+  // Redirect to login if the route requires auth and the user isn't logged in
+  if (to.matched.some((record) => record.meta.requiresAuth) && !authStore.isLoggedIn()) {
+    return next({ name: 'Login' });
   }
 
-  if (to.matched.some((record) => record.meta.requiresAuth) && !authStore.isLoggedIn()) {
-    next({ name: 'Login' });
-  } else if (to.name === 'Login' && authStore.isLoggedIn()) {
-    next({ path: '/' });
-  } else {
-    next();
+  // If the user is trying to access the login page and is already logged in, redirect to home
+  if (to.name === 'Login' && authStore.isLoggedIn()) {
+    if (from.name === 'PasswordReset' || from.name === 'PasswordRecovery') {
+      authStore.setRedirectTo(null); // Clear redirectTo path after password reset
+    }
+    return next({ path: '/' });
   }
+
+  // Continue navigation if no conditions match
+  next();
 });
+
 
 export default router;
