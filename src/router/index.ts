@@ -65,9 +65,9 @@ router.beforeEach((to, from, next) => {
     mapStore.resetReturningFromDetail();
   }
 
-  // Always set the redirectTo path for any navigation to login
-  if (!authStore.isLoggedIn() && to.name !== 'Login') {
-    authStore.setRedirectTo(to.fullPath);
+  // Only set redirectTo if navigating to login from a non-auth route
+  if (!authStore.isLoggedIn() && to.name === 'Login' && from.name !== 'Signup' && from.name !== 'Login') {
+    authStore.setRedirectTo(from.fullPath);
   }
 
   if (to.matched.some((record) => record.meta.requiresAuth) && !authStore.isLoggedIn()) {

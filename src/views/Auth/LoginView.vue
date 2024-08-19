@@ -88,7 +88,7 @@ const onSubmit = handleSubmit(async (values) => {
     loading.value = true;
     console.log('Enviando:', values); // Log para depuración
     await authStore.login(values);
-    Swal.fire({
+    await Swal.fire({
       icon: 'success',
       title: 'Éxito',
       text: '¡Inicio de sesión exitoso!',
@@ -96,7 +96,7 @@ const onSubmit = handleSubmit(async (values) => {
     // No necesitamos un redireccionamiento adicional aquí
   } catch (error) {
     if (error.message === 'Invalid credentials') {
-      Swal.fire({
+      await Swal.fire({
         icon: 'error',
         title: 'Error al iniciar sesión',
         text: 'Correo electrónico o contraseña inválidos. Inténtalo de nuevo.',

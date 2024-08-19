@@ -133,7 +133,6 @@
 
       <!-- Museum Specific -->
       <template v-if="resource.coleccion === 'museum'">
-        <p v-if="resource.tematica"><strong>Temática:</strong> <span v-html="resource.tematica"></span></p>
         <p v-if="resource.capacidad"><strong>Capacidad:</strong> <span v-html="resource.capacidad"></span></p>
         <p v-if="resource.horario"><strong>Horario:</strong> <span v-html="resource.horario"></span></p>
       </template>
@@ -252,7 +251,7 @@ const hasDynamicInfo = computed(() => {
     (props.resource.coleccion === 'restaurant' &&
       props.resource.capacidad) ||
     (props.resource.coleccion === 'museum' &&
-      (props.resource.tematica || props.resource.capacidad || props.resource.horario))
+      (props.resource.capacidad || props.resource.horario))
   );
 });
 </script>

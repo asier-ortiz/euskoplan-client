@@ -27,7 +27,8 @@
 
 <script setup lang="ts">
 import { defineProps, ref, watch } from 'vue';
-import { getDefaultImageUrl } from '@/utils/image'; // Import the utility function
+import { getDefaultImageUrl } from '@/utils/image';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps<{
   imageSrc: string;

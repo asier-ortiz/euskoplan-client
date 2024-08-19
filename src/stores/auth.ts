@@ -29,7 +29,7 @@ export const useAuthStore = defineStore('auth', {
         // Use the redirect path or default to home
         const redirectTo = this.redirectTo || '/';
         this.redirectTo = null; // Clear redirect path after use
-        router.push(redirectTo);
+        await router.push(redirectTo);
       } catch (error) {
         throw new Error('Invalid credentials');
       }
@@ -47,15 +47,15 @@ export const useAuthStore = defineStore('auth', {
         const favoritesStore = useFavoritesStore();
         favoritesStore.clearFavorites();
 
-        router.push('/');
-        Swal.fire({
+        await router.push('/');
+        await Swal.fire({
           icon: 'success',
           title: 'Logged out',
           text: 'You have been logged out successfully.',
         });
       } catch (error) {
         console.error(error);
-        Swal.fire({
+        await Swal.fire({
           icon: 'error',
           title: 'Logout failed',
           text: 'There was a problem logging you out. Please try again.',
@@ -78,7 +78,7 @@ export const useAuthStore = defineStore('auth', {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         delete axios.defaults.headers.common['Authorization'];
-        router.push('/auth/login');
+        await router.push('/auth/login');
       }
     },
     async verifyEmail(token) {
@@ -91,11 +91,11 @@ export const useAuthStore = defineStore('auth', {
         };
         this.user = userData;
         localStorage.setItem('user', JSON.stringify(this.user));
-        router.push('/');
+        await router.push('/');
       } catch (error) {
         console.error(error);
         if (error.response && error.response.status === 400) {
-          Swal.fire({
+          await Swal.fire({
             icon: 'error',
             title: 'Token expired',
             text: 'Your token has expired. We have sent you a new verification email.',
@@ -107,7 +107,7 @@ export const useAuthStore = defineStore('auth', {
     async requestPasswordReset(email) {
       try {
         await axios.post('/password/sendEmail', { email });
-        router.push('/auth/password-reset');
+        await router.push('/auth/password-reset');
       } catch (error) {
         console.error(error);
       }
@@ -122,7 +122,7 @@ export const useAuthStore = defineStore('auth', {
         };
         this.user = userData;
         localStorage.setItem('user', JSON.stringify(this.user));
-        router.push('/auth/login');
+        await router.push('/auth/login');
       } catch (error) {
         console.error(error);
       }
