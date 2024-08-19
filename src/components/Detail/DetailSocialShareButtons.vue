@@ -79,6 +79,7 @@ onMounted(() => {
   border: none;
   cursor: pointer;
   font-size: 36px;
+  margin-right: 15px;
   color: #000;
   transition: color 0.3s ease;
 }
@@ -97,9 +98,12 @@ onMounted(() => {
 
 @media (max-width: 900px) {
 
+  .sharer.button:not(:last-child) {
+    margin-right: 32px;
+  }
   .sharer.button {
+    margin-right: 0px;
     margin-top: 16px;
-    margin-right: 16px;
   }
 
   .social-share-buttons {
