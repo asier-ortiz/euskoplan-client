@@ -1,7 +1,7 @@
 // src/store/filter.ts
 import { defineStore } from 'pinia';
 import axios from 'axios';
-import { useLocalStorage } from '@vueuse/core';
+import { useSessionStorage } from '@vueuse/core';
 import config from '../config'; // Import the configuration
 
 // Set the base URL for axios from your configuration
@@ -12,10 +12,10 @@ export const useFilterStore = defineStore('filter', {
         provinces: ['Araba/Álava', 'Gipuzkoa', 'Bizkaia'],
         localities: [],
         filteredLocalities: [],
-        selectedProvince: useLocalStorage('selectedProvince', null),
-        selectedLocality: useLocalStorage('selectedLocality', null),
-        startDate: useLocalStorage('startDate', null),
-        endDate: useLocalStorage('endDate', null),
+        selectedProvince: useSessionStorage('selectedProvince', null),
+        selectedLocality: useSessionStorage('selectedLocality', null),
+        startDate: useSessionStorage('startDate', null),
+        endDate: useSessionStorage('endDate', null),
         categories: {
             accommodation: [],
             cave: [],
@@ -29,7 +29,7 @@ export const useFilterStore = defineStore('filter', {
             restaurant: [],
         },
         // Store each collection's category in local storage
-        selectedCategories: useLocalStorage('selectedCategories', {
+        selectedCategories: useSessionStorage('selectedCategories', {
             accommodation: null,
             cave: null,
             cultural: null,

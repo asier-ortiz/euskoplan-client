@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import config from '../config';
-import { useLocalStorage } from '@vueuse/core';
+import { useSessionStorage } from '@vueuse/core';
 
 import type { AccommodationModel } from '@/models/accommodation.model';
 import type { CaveModel } from '@/models/cave.model';
@@ -26,8 +26,8 @@ export const useCollectionsStore = defineStore('collections', {
         NaturalModel[] |
         RestaurantModel[]
         ),
-    selectedCategory: useLocalStorage('selectedCategory', ''),
-    searchQuery: useLocalStorage('searchQuery', ''),
+    selectedCategory: useSessionStorage('selectedCategory', ''),
+    searchQuery: useSessionStorage('searchQuery', ''),
     loading: false,
     currentDetail: null as AccommodationModel | CaveModel | CulturalModel | EventModel | FairModel | MuseumModel | NaturalModel | RestaurantModel | null,
     relatedResources: [] as (
@@ -41,15 +41,15 @@ export const useCollectionsStore = defineStore('collections', {
         RestaurantModel[]
         ),
     cache: new Map(),
-    sortField: useLocalStorage('sortField', 'name'),
-    sortOrder: useLocalStorage('sortOrder', 'asc'),
-    activeTab: useLocalStorage('activeTab', 'cards'),
+    sortField: useSessionStorage('sortField', 'name'),
+    sortOrder: useSessionStorage('sortOrder', 'asc'),
+    activeTab: useSessionStorage('activeTab', 'cards'),
     requestCounter: 0, // Add a request counter to the state
     fetchResourceAbortController: null as AbortController | null, // Controller for fetchResourceById
     fetchRelatedResourcesAbortController: null as AbortController | null, // Controller for fetchRelatedResources
 
     // Pagination related state
-    currentPage: useLocalStorage('currentPage', 1), // Save the current page in LocalStorage
+    currentPage: useSessionStorage('currentPage', 1), // Save the current page in LocalStorage
     itemsPerPage: 12, // Number of items per page
   }),
 
