@@ -106,12 +106,16 @@ export const useAuthStore = defineStore('auth', {
         }
       }
     },
-    async requestPasswordReset(email) {
+    async requestPasswordReset(email: string) {
       try {
         await axios.post('/password/sendEmail', { email });
-        await router.push('/auth/password-reset');
       } catch (error) {
-        console.error(error);
+        console.error('Error during password reset request:', error);
+        if (error.response && error.response.status === 404) {
+          throw new Error('Email not found');
+        } else {
+          throw new Error('Failed to send password reset email');
+        }
       }
     },
     async resetPassword(data) {
@@ -127,6 +131,20 @@ export const useAuthStore = defineStore('auth', {
         await router.push('/auth/login');
       } catch (error) {
         console.error(error);
+      }
+    },
+    async findPasswordResetToken(token: string) {
+      try {
+        const response = await axios.get(`/password/find/${token}`);
+        return response.data;
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          throw new Error('Invalid token');
+        } else if (error.response && error.response.status === 400) {
+          throw new Error('Token expired');
+        } else {
+          throw new Error('Failed to verify token');
+        }
       }
     },
     async register(credentials) {
