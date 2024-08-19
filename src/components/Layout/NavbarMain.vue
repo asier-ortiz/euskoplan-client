@@ -34,9 +34,9 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted} from 'vue';
-import {RouterLink, useRouter} from 'vue-router';
-import {useAuthStore} from '@/stores/auth';
+import { onMounted } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
 
 const authStore = useAuthStore();
@@ -47,8 +47,9 @@ const logout = async () => {
   router.push('/');
 };
 
+// This ensures the navbar correctly displays the user's email after login/verification
 onMounted(async () => {
-  if (authStore.token) {
+  if (authStore.token && !authStore.user) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${authStore.token}`;
     await authStore.fetchUser();
   }

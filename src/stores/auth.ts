@@ -81,19 +81,21 @@ export const useAuthStore = defineStore('auth', {
         await router.push('/auth/login');
       }
     },
-    async verifyEmail(token) {
+    async verifyEmail(token: string) {
       try {
+        console.log('Sending verification request with token:', token);
         const response = await axios.post('/account/verify', { token });
-        const userData: UserModel = {
-          id: response.data.id,
-          email: response.data.email,
-          nombre_usuario: response.data.nombre_usuario,
-        };
-        this.user = userData;
+
+        // Handle success
+        this.token = response.data.token;
+        localStorage.setItem('token', this.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+        this.user = response.data.user;
         localStorage.setItem('user', JSON.stringify(this.user));
-        await router.push('/');
       } catch (error) {
-        console.error(error);
+        console.error('Verification error:', error);
+        console.error('Error response data:', error.response.data); // Log the response data for more context
+
         if (error.response && error.response.status === 400) {
           await Swal.fire({
             icon: 'error',
@@ -101,6 +103,13 @@ export const useAuthStore = defineStore('auth', {
             text: 'Your token has expired. We have sent you a new verification email.',
           });
           await axios.post('/account/sendEmail', { email: this.user?.email });
+        } else {
+          // Handle other errors, such as 422
+          await Swal.fire({
+            icon: 'error',
+            title: 'Verification failed',
+            text: 'There was an error verifying your email. Please try again.',
+          });
         }
       }
     },
