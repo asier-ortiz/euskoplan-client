@@ -13,9 +13,19 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: JSON.parse(localStorage.getItem('user') || 'null') as UserModel | null,
     token: localStorage.getItem('token'),
-    redirectTo: null, // Add redirectTo to store intended path
+    redirectTo: null, // Store intended path for redirection
   }),
   actions: {
+    async initializeAuth() {
+      if (this.token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+        try {
+          await this.fetchUser();
+        } catch (error) {
+          await this.logout(); // Logout if token validation fails
+        }
+      }
+    },
     async login(credentials) {
       try {
         const response = await axios.post('/user/login', credentials);
@@ -23,10 +33,10 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('token', this.token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
 
-        // Additional call to fetch user data
+        // Fetch user data after successful login
         await this.fetchUser();
 
-        // Use the redirect path or default to home
+        // Redirect to the intended path or home
         const redirectTo = this.redirectTo || '/';
         this.redirectTo = null; // Clear redirect path after use
         await router.push(redirectTo);
@@ -37,28 +47,15 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       try {
         await axios.post('/user/logout');
-        this.user = null;
-        this.token = null;
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        delete axios.defaults.headers.common['Authorization'];
-
-        // Clear the favorites store on logout
-        const favoritesStore = useFavoritesStore();
-        favoritesStore.clearFavorites();
-
+      } catch (error) {
+        console.error('Logout request failed', error);
+      } finally {
+        this.clearAuthData();
         await router.push('/');
         await Swal.fire({
           icon: 'success',
           title: 'Logged out',
           text: 'You have been logged out successfully.',
-        });
-      } catch (error) {
-        console.error(error);
-        await Swal.fire({
-          icon: 'error',
-          title: 'Logout failed',
-          text: 'There was a problem logging you out. Please try again.',
         });
       }
     },
@@ -73,12 +70,9 @@ export const useAuthStore = defineStore('auth', {
         this.user = userData;
         localStorage.setItem('user', JSON.stringify(this.user));
       } catch (error) {
-        this.user = null;
-        this.token = null;
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        delete axios.defaults.headers.common['Authorization'];
+        this.clearAuthData();
         await router.push('/auth/login');
+        throw error;
       }
     },
     async verifyEmail(token: string) {
@@ -86,7 +80,7 @@ export const useAuthStore = defineStore('auth', {
         console.log('Sending verification request with token:', token);
         const response = await axios.post('/account/verify', { token });
 
-        // Handle success
+        // Handle successful verification
         this.token = response.data.token;
         localStorage.setItem('token', this.token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
@@ -94,7 +88,7 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('user', JSON.stringify(this.user));
       } catch (error) {
         console.error('Verification error:', error);
-        console.error('Error response data:', error.response.data); // Log the response data for more context
+        console.error('Error response data:', error.response?.data);
 
         if (error.response && error.response.status === 400) {
           await Swal.fire({
@@ -104,7 +98,6 @@ export const useAuthStore = defineStore('auth', {
           });
           await axios.post('/account/sendEmail', { email: this.user?.email });
         } else {
-          // Handle other errors, such as 422
           await Swal.fire({
             icon: 'error',
             title: 'Verification failed',
@@ -154,10 +147,8 @@ export const useAuthStore = defineStore('auth', {
     async checkUsernameAvailability(username) {
       try {
         const response = await axios.get(`/user/find/username/${username}`);
-        // If the status is 200, the username is available
         return response.status === 200;
       } catch (error) {
-        // If the status is 409, the username is unavailable
         if (error.response && error.response.status === 409) {
           return false;
         }
@@ -167,10 +158,8 @@ export const useAuthStore = defineStore('auth', {
     async checkEmailAvailability(email) {
       try {
         const response = await axios.get(`/user/find/email/${email}`);
-        // If the status is 200, the email is available
         return response.status === 200;
       } catch (error) {
-        // If the status is 409, the email is unavailable
         if (error.response && error.response.status === 409) {
           return false;
         }
@@ -182,6 +171,17 @@ export const useAuthStore = defineStore('auth', {
     },
     setRedirectTo(path) {
       this.redirectTo = path;
+    },
+    clearAuthData() {
+      this.user = null;
+      this.token = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      delete axios.defaults.headers.common['Authorization'];
+
+      // Clear the favorites store on logout
+      const favoritesStore = useFavoritesStore();
+      favoritesStore.clearFavorites();
     },
   },
 });

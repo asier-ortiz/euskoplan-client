@@ -16,11 +16,14 @@ import Navbar from '@/components/Layout/NavbarMain.vue';
 import Footer from '@/components/Layout/FooterMain.vue';
 import ScrollToTop from '@/components/Misc/ScrollToTop.vue';
 import { useLocationStore } from '@/stores/location';
+import { useAuthStore } from '@/stores/auth';
 
 const locationStore = useLocationStore();
+const authStore = useAuthStore();
 
 onMounted(() => {
   locationStore.fetchUserLocation();
+  authStore.initializeAuth(); // Initialize authentication state on app load
 });
 </script>
 
