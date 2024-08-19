@@ -10,11 +10,15 @@
             class="form-control"
             id="username"
             v-model="username"
+            @input="onUsernameInput"
             @blur="handleBlur('username')"
-            :class="{ 'is-invalid': touched.username && errors.username }"
+            :class="{ 'is-invalid': touched.username && (errors.username || usernameTaken) }"
           />
           <div class="invalid-feedback" v-if="touched.username && errors.username">
             {{ errors.username }}
+          </div>
+          <div class="invalid-feedback" v-if="usernameTaken">
+            Este nombre de usuario ya está en uso.
           </div>
         </div>
         <div class="mb-3">
@@ -24,11 +28,15 @@
             class="form-control"
             id="email"
             v-model="email"
+            @input="onEmailInput"
             @blur="handleBlur('email')"
-            :class="{ 'is-invalid': touched.email && errors.email }"
+            :class="{ 'is-invalid': touched.email && (errors.email || emailTaken) }"
           />
           <div class="invalid-feedback" v-if="touched.email && errors.email">
             {{ errors.email }}
+          </div>
+          <div class="invalid-feedback" v-if="emailTaken">
+            Este correo electrónico ya está en uso.
           </div>
         </div>
         <div class="mb-3">
@@ -39,6 +47,7 @@
               class="form-control"
               id="password"
               v-model="password"
+              @input="validatePassword"
               @blur="handleBlur('password')"
               :class="{ 'is-invalid': touched.password && errors.password }"
             />
@@ -58,6 +67,7 @@
               class="form-control"
               id="password_confirm"
               v-model="password_confirm"
+              @input="validatePasswordConfirm"
               @blur="handleBlur('password_confirm')"
               :class="{ 'is-invalid': touched.password_confirm && errors.password_confirm }"
             />
@@ -69,7 +79,7 @@
             {{ errors.password_confirm }}
           </div>
         </div>
-        <button type="submit" class="btn btn-primary w-100" :disabled="loading">
+        <button type="submit" class="btn btn-primary w-100" :disabled="!formValid || loading || errors.username || errors.email || errors.password || errors.password_confirm || usernameTaken || emailTaken">
           <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
           Registrarse
         </button>
@@ -82,18 +92,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import * as yup from 'yup';
 import { useForm, useField } from 'vee-validate';
+import { debounce } from 'lodash-es';
 import router from '@/router';
 
 const authStore = useAuthStore();
 
 const schema = yup.object({
-  username: yup.string().required('El nombre de usuario es obligatorio'),
-  email: yup.string().email('Correo electrónico inválido').required('El correo electrónico es obligatorio'),
-  password: yup.string().required('La contraseña es obligatoria'),
+  username: yup
+    .string()
+    .required('El nombre de usuario es obligatorio')
+    .min(5, 'El nombre de usuario debe tener al menos 5 caracteres'),
+  email: yup
+    .string()
+    .email('Correo electrónico inválido')
+    .required('El correo electrónico es obligatorio'),
+  password: yup
+    .string()
+    .required('La contraseña es obligatoria')
+    .min(6, 'La contraseña debe tener al menos 6 caracteres'),
   password_confirm: yup
     .string()
     .oneOf([yup.ref('password')], 'Las contraseñas deben coincidir')
@@ -115,6 +135,10 @@ const touched = ref({
   password_confirm: false,
 });
 
+const usernameTaken = ref(false);
+const emailTaken = ref(false);
+const formValid = ref(false);
+
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 const loading = ref(false);
@@ -132,12 +156,102 @@ const handleBlur = (field: string) => {
   touched.value[field] = true;
 };
 
+// Handle username input changes
+const onUsernameInput = () => {
+  if (username.value === '') {
+    usernameTaken.value = false;
+    errors.username = '';
+  } else {
+    debouncedCheckUsername();
+  }
+  validateForm();
+};
+
+// Handle email input changes
+const onEmailInput = () => {
+  if (email.value === '') {
+    emailTaken.value = false;
+    errors.email = '';
+  } else {
+    debouncedCheckEmail();
+  }
+  validateForm();
+};
+
+// Validate password input
+const validatePassword = () => {
+  if (password.value.length < 6) {
+    errors.password = 'La contraseña debe tener al menos 6 caracteres.';
+  } else {
+    errors.password = '';
+  }
+  validatePasswordConfirm();
+  validateForm();
+};
+
+// Validate password confirmation input
+const validatePasswordConfirm = () => {
+  if (password.value !== password_confirm.value) {
+    errors.password_confirm = 'Las contraseñas deben coincidir.';
+  } else {
+    errors.password_confirm = '';
+  }
+  validateForm();
+};
+
+// Check if username is available
+const checkUsernameAvailability = async () => {
+  if (username.value.length >= 5) {
+    const isAvailable = await authStore.checkUsernameAvailability(username.value);
+    usernameTaken.value = !isAvailable;
+    if (!isAvailable) {
+      errors.username = 'Este nombre de usuario ya está en uso.';
+    } else {
+      errors.username = '';
+    }
+  }
+  validateForm();
+};
+
+// Check if email is available and valid
+const checkEmailAvailability = async () => {
+  if (errors.email === '') {
+    const isAvailable = await authStore.checkEmailAvailability(email.value);
+    emailTaken.value = !isAvailable;
+    if (!isAvailable) {
+      errors.email = 'Este correo electrónico ya está en uso.';
+    } else {
+      errors.email = '';
+    }
+  }
+  validateForm();
+};
+
+// Debounce the checks to avoid excessive API calls
+const debouncedCheckUsername = debounce(checkUsernameAvailability, 500);
+const debouncedCheckEmail = debounce(checkEmailAvailability, 500);
+
+// Validate the entire form to enable/disable the submit button
+const validateForm = () => {
+  formValid.value = !(
+    errors.username ||
+    errors.email ||
+    errors.password ||
+    errors.password_confirm ||
+    usernameTaken.value ||
+    emailTaken.value ||
+    username.value === '' ||
+    email.value === '' ||
+    password.value === '' ||
+    password_confirm.value === ''
+  );
+};
+
 const onSubmit = handleSubmit(async (values) => {
   try {
     loading.value = true;
-    console.log('Registrando:', values); // Log para depuración
     await authStore.register(values);
-    router.push('/auth/login');
+    await router.push('/auth/login');
   } catch (error) {
     console.error('Error de registro:', error);
   } finally {

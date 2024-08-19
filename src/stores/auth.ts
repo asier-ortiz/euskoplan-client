@@ -142,10 +142,35 @@ export const useAuthStore = defineStore('auth', {
         throw new Error('Registration failed');
       }
     },
+    async checkUsernameAvailability(username) {
+      try {
+        const response = await axios.get(`/user/find/username/${username}`);
+        // If the status is 200, the username is available
+        return response.status === 200;
+      } catch (error) {
+        // If the status is 409, the username is unavailable
+        if (error.response && error.response.status === 409) {
+          return false;
+        }
+        throw new Error('Failed to check username availability');
+      }
+    },
+    async checkEmailAvailability(email) {
+      try {
+        const response = await axios.get(`/user/find/email/${email}`);
+        // If the status is 200, the email is available
+        return response.status === 200;
+      } catch (error) {
+        // If the status is 409, the email is unavailable
+        if (error.response && error.response.status === 409) {
+          return false;
+        }
+        throw new Error('Failed to check email availability');
+      }
+    },
     isLoggedIn() {
       return !!this.token;
     },
-    // Method to set redirect path
     setRedirectTo(path) {
       this.redirectTo = path;
     },
