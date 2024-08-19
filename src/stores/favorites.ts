@@ -35,7 +35,7 @@ export const useFavoritesStore = defineStore('favorites', {
         const response = await axios.get('/favourite'); // Use relative path
         this.favorites = response.data.favoritos || {};
       } catch (error) {
-        await Swal.fire({
+        Swal.fire({
           icon: 'error',
           title: 'Oops...',
           text: 'Failed to fetch favorites.',
@@ -53,14 +53,14 @@ export const useFavoritesStore = defineStore('favorites', {
         });
 
         if (response.status === 202) {
-          await Swal.fire({
+          Swal.fire({
             icon: 'success',
             title: 'Added!',
             text: 'Resource has been added to your favorites.',
           });
 
           // Refetch favorites to update the state
-          await this.fetchFavorites();
+          this.fetchFavorites();
         }
       } catch (error: any) {
         Swal.fire({
@@ -76,17 +76,17 @@ export const useFavoritesStore = defineStore('favorites', {
         const response = await axios.delete(`/favourite/${favoriteId}`);
 
         if (response.status === 202) {
-          await Swal.fire({
+          Swal.fire({
             icon: 'success',
             title: 'Removed!',
             text: 'Resource has been removed from your favorites.',
           });
 
           // Refetch favorites to update the state
-          await this.fetchFavorites();
+          this.fetchFavorites();
         }
       } catch (error) {
-        await Swal.fire({
+        Swal.fire({
           icon: 'error',
           title: 'Oops...',
           text: 'Failed to remove favorite.',
@@ -95,33 +95,33 @@ export const useFavoritesStore = defineStore('favorites', {
     },
 
     isFavorite(favoritableId: number, favoritableType: string): boolean {
-      return Object.values(this.favorites).some((fav: any) =>
-          fav.some(
-              (item) =>
-                  item.recurso.id === favoritableId &&
-                  item.recurso.coleccion === favoritableType
-          )
+      return Object.values(this.favorites).some((fav) =>
+        fav.some(
+          (item) =>
+            item.recurso.id === favoritableId &&
+            item.recurso.coleccion === favoritableType
+        )
       );
     },
 
     getFavoriteId(
-        favoritableId: number,
-        favoritableType: string
+      favoritableId: number,
+      favoritableType: string
     ): number | null {
       const categoryFavorites = Object.entries(this.favorites).find(
-          ([_, items]) =>
-              items.some(
-                  (item) =>
-                      item.recurso.id === favoritableId &&
-                      item.recurso.coleccion === favoritableType
-              )
+        ([_, items]) =>
+          items.some(
+            (item) =>
+              item.recurso.id === favoritableId &&
+              item.recurso.coleccion === favoritableType
+          )
       );
       if (categoryFavorites) {
         const [, items] = categoryFavorites;
         const favoriteItem = items.find(
-            (item) =>
-                item.recurso.id === favoritableId &&
-                item.recurso.coleccion === favoritableType
+          (item) =>
+            item.recurso.id === favoritableId &&
+            item.recurso.coleccion === favoritableType
         );
         return favoriteItem ? favoriteItem.id : null;
       }
