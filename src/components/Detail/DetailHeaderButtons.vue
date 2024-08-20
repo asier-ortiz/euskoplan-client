@@ -17,14 +17,14 @@
 
 <script setup lang="ts">
 import { defineProps } from 'vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-defineProps<{
-  goBackHome: () => void;
-  handleAddToPlan: () => void;
-  toggleFavorite: () => void;
-  isFavorite: boolean;
-}>();
+const props = defineProps({
+  goBackHome: Function,
+  handleAddToPlan: Function,  // This function will open the modal
+  toggleFavorite: Function,
+  isFavorite: Boolean,
+});
 </script>
 
 <style scoped>

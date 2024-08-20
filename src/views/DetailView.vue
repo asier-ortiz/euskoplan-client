@@ -9,7 +9,7 @@
       <div class="detail-view">
         <DetailHeaderButtons
           :goBackHome="goBackHome"
-          :handleAddToPlan="handleAddToPlan"
+          :handleAddToPlan="openPlanModal"
           :toggleFavorite="toggleFavorite"
           :isFavorite="isFavorite"
         />
@@ -46,6 +46,7 @@
       </div>
     </div>
   </div>
+  <DetailPlanForm :showModal="showPlanModal" @close="closePlanModal" />
 </template>
 
 <script setup lang="ts">
@@ -66,6 +67,7 @@ import DetailRelatedResources from '@/components/Detail/DetailRelatedResources.v
 import DetailHeader from '@/components/Detail/DetailHeader.vue';
 import DetailHeaderButtons from '@/components/Detail/DetailHeaderButtons.vue';
 import DetailSocialShareButtons from '@/components/Detail/DetailSocialShareButtons.vue';
+import DetailPlanForm from '@/components/Detail/DetailPlanForm.vue';
 import { updateMetaTags } from '@/utils/meta';
 
 const route = useRoute();
@@ -81,6 +83,7 @@ const currentIndex = ref<number>(0);
 const loading = ref<boolean>(true);
 const relatedResources = ref<any[]>([]);
 const isDarkMode = ref(mapStore.mapMode);
+const showPlanModal = ref(false);
 
 let lastFullPath = '';
 
@@ -176,6 +179,14 @@ const fetchResource = async () => {
   }
 };
 
+const openPlanModal = () => {
+  showPlanModal.value = true;
+};
+
+const closePlanModal = () => {
+  showPlanModal.value = false;
+};
+
 const toggleFavorite = () => {
   if (!authStore.isLoggedIn()) {
     Swal.fire({
@@ -199,25 +210,6 @@ const toggleFavorite = () => {
     if (favoriteId) {
       favoritesStore.removeFavorite(favoriteId);
     }
-  }
-};
-
-const handleAddToPlan = () => {
-  if (!authStore.isLoggedIn()) {
-    Swal.fire({
-      icon: 'info',
-      title: 'Necesitas iniciar sesión',
-      text: 'Regístrate o inicia sesión para poder añadir este recurso a tu plan.',
-      confirmButtonText: 'Iniciar sesión',
-    }).then(() => {
-      router.push('/auth/login');
-    });
-  } else {
-    Swal.fire({
-      icon: 'success',
-      title: 'Añadido al plan',
-      text: 'Este recurso ha sido añadido a tu plan.',
-    });
   }
 };
 
@@ -264,7 +256,6 @@ const handleRelatedImageError = (index: number) => {
 };
 
 const handleGalleryClosed = () => {
-  // Perform any lightweight state updates or UI adjustments here
   console.log('Gallery closed');
 };
 
