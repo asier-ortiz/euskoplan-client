@@ -120,7 +120,7 @@ export const usePlanStore = defineStore('plan', {
     async createStep(stepData: StepModel, planId: number) {
       this.loading = true;
       try {
-        const response = await axios.post(`/step`, { ...stepData, plan_id: planId });
+        const response = await axios.post(`/step/${planId}`, { ...stepData });
         if (this.currentPlan && this.currentPlan.id === planId && this.currentPlan.pasos) {
           this.currentPlan.pasos.push(response.data);
         }

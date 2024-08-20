@@ -215,7 +215,7 @@ const addToSelectedPlan = async () => {
   const lastIndex = selectedPlan.value.pasos.length;
   const stepData = {
     indice: lastIndex,
-    indicaciones: null,
+    indicaciones: "",
     id_recurso: newPlan.value.pasos[0].id_recurso,
     tipo_recurso: newPlan.value.pasos[0].tipo_recurso,
   };
