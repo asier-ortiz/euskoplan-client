@@ -5,7 +5,6 @@
 
       <transition name="fade">
         <div v-show="!loadingPlans" class="modal-content">
-
           <button class="close-btn" @click="$emit('close')">×</button>
 
           <div class="modal-header">
@@ -48,9 +47,11 @@
                 <textarea
                   id="descripcion"
                   v-model="descripcion"
+                  :maxlength="500"
                   :class="{ 'is-invalid': errors.descripcion }"
                   placeholder="Describe brevemente el plan"
                 ></textarea>
+                <div class="char-counter">{{ descripcion.length }}/500</div>
               </div>
 
               <div class="form-group switch-container">
@@ -66,8 +67,8 @@
                 </label>
                 <span class="switch-description">
                   {{ newPlan.publico
-                  ? 'Cualquier persona podrá ver el plan'
-                  : 'Solo tú podrás ver este plan' }}
+                  ? 'Cualquier persona podrá ver este plan.'
+                  : 'Solo tú podrás ver este plan.' }}
                 </span>
               </div>
 
@@ -254,6 +255,7 @@ onMounted(async () => {
   box-sizing: border-box;
   position: relative;
   animation: slide-down 0.3s ease-out;
+  min-height: 400px; /* Tamaño mínimo para evitar cambios de tamaño */
 }
 
 @keyframes slide-down {
@@ -291,7 +293,7 @@ onMounted(async () => {
 .close-btn {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 15px;
   background-color: #007bff;
   color: white;
   border: none;
@@ -311,6 +313,7 @@ onMounted(async () => {
 .modal-body {
   display: flex;
   flex-direction: column;
+  min-height: 300px; /* Altura mínima para evitar cambios de tamaño */
 }
 
 .form-group {
@@ -341,10 +344,20 @@ onMounted(async () => {
   margin-top: 5px;
 }
 
+.char-counter {
+  font-size: 0.875rem;
+  color: #555;
+  text-align: right;
+  margin-top: 5px;
+}
+
 .switch-container {
   display: flex;
   align-items: center;
   gap: 10px;
+  background-color: #f0f8ff;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .switch-container label {
@@ -354,7 +367,7 @@ onMounted(async () => {
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 30px;
 }
 
 .submit-button {
@@ -399,7 +412,7 @@ onMounted(async () => {
 
 .plan-list li.selected,
 .plan-list li:hover {
-  background-color: #f1f1f1;
+  background-color: #f0f8ff;
 }
 
 .fade-in {
