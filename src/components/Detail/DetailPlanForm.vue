@@ -190,6 +190,13 @@ const onSubmit = async () => {
     newPlan.value.descripcion = descripcion.value;
 
     await planStore.createPlan(newPlan.value);
+
+    // Reset inputs
+    titulo.value = '';
+    descripcion.value = '';
+    newPlan.value.publico = false;
+    togglePublicoLabel();
+
     emit('close');
   } catch (validationErrors: any) {
     validationErrors.inner.forEach((error: any) => {
@@ -214,6 +221,13 @@ const addToSelectedPlan = async () => {
   };
 
   await planStore.createStep(stepData, selectedPlan.value.id);
+
+  // Reset inputs
+  titulo.value = '';
+  descripcion.value = '';
+  newPlan.value.publico = false;
+  togglePublicoLabel();
+
   emit('close');
 };
 
