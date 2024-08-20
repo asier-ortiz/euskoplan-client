@@ -57,6 +57,7 @@ export const usePlanStore = defineStore('plan', {
       try {
         const response = await axios.post('/plan', planData);
         this.plans.push(response.data);
+        this.userPlans.push(response.data); // Asegúrate de agregar el nuevo plan a userPlans
         return response.data;
       } catch (error) {
         console.error('Error creating plan:', error);

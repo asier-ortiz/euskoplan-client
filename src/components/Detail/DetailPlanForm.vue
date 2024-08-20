@@ -189,13 +189,16 @@ const onSubmit = async () => {
     newPlan.value.titulo = titulo.value;
     newPlan.value.descripcion = descripcion.value;
 
-    await planStore.createPlan(newPlan.value);
+    const createdPlan = await planStore.createPlan(newPlan.value);
 
     // Reset inputs
     titulo.value = '';
     descripcion.value = '';
     newPlan.value.publico = false;
     togglePublicoLabel();
+
+    // Recargar los planes del usuario
+    await planStore.fetchUserPlans();
 
     emit('close');
   } catch (validationErrors: any) {
