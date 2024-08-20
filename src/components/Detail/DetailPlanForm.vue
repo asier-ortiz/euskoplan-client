@@ -132,6 +132,7 @@ import { ref, computed, onMounted } from 'vue';
 import * as yup from 'yup';
 import { usePlanStore } from '@/stores/plan';
 import LoadingSpinner from '@/components/Misc/LoadingSpinner.vue';
+import Swal from 'sweetalert2';
 
 const emit = defineEmits(['close']);
 const props = defineProps({
@@ -191,20 +192,22 @@ const onSubmit = async () => {
 
     const createdPlan = await planStore.createPlan(newPlan.value);
 
-    // Reset inputs
     titulo.value = '';
     descripcion.value = '';
     newPlan.value.publico = false;
     togglePublicoLabel();
 
-    // Recargar los planes del usuario
     await planStore.fetchUserPlans();
 
     emit('close');
+
+    Swal.fire('Success', 'Plan created successfully!', 'success');
   } catch (validationErrors: any) {
     validationErrors.inner.forEach((error: any) => {
       errors.value[error.path] = error.message;
     });
+
+    Swal.fire('Error', 'Failed to create plan.', 'error');
   }
 };
 
@@ -223,15 +226,21 @@ const addToSelectedPlan = async () => {
     tipo_recurso: newPlan.value.pasos[0].tipo_recurso,
   };
 
-  await planStore.createStep(stepData, selectedPlan.value.id);
+  try {
+    await planStore.createStep(stepData, selectedPlan.value.id);
 
-  // Reset inputs
-  titulo.value = '';
-  descripcion.value = '';
-  newPlan.value.publico = false;
-  togglePublicoLabel();
+    titulo.value = '';
+    descripcion.value = '';
+    newPlan.value.publico = false;
+    togglePublicoLabel();
 
-  emit('close');
+    emit('close');
+
+    Swal.fire('Success', 'Step added to plan successfully!', 'success');
+  } catch (error) {
+
+    Swal.fire('Error', 'Failed to add step to plan.', 'error');
+  }
 };
 
 const filteredPlans = computed(() => {
@@ -248,6 +257,7 @@ onMounted(async () => {
   loadingPlans.value = false;
 });
 </script>
+
 
 <style scoped>
 .modal-overlay {
