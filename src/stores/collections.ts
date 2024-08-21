@@ -26,7 +26,7 @@ export const useCollectionsStore = defineStore('collections', {
         NaturalModel[] |
         RestaurantModel[]
         ),
-    selectedCategory: useSessionStorage('selectedCategory', ''),
+    selectedCategory: useSessionStorage('selectedCategory', 'Espacios Naturales'),
     searchQuery: useSessionStorage('searchQuery', ''),
     loading: false,
     currentDetail: null as AccommodationModel | CaveModel | CulturalModel | EventModel | FairModel | MuseumModel | NaturalModel | RestaurantModel | null,

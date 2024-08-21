@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia';
-import { useSessionStorage } from '@vueuse/core';
+import { useLocalStorage, useSessionStorage } from '@vueuse/core';
 
 export const useMapStore = defineStore('map', {
   state: () => ({
     mapCenter: useSessionStorage('mapCenter', { lat: 43.0000, lng: -2.6197 }), // Default to Basque Country coordinates
     mapZoom: useSessionStorage('mapZoom', 10), // Store map zoom level
-    mapMode: useSessionStorage('mapMode', 'light'), // Store map mode (light or dark)
+    mapMode: useLocalStorage('mapMode', 'light'), // Store map mode (light or dark)
     mapPopup: useSessionStorage('mapPopup', null), // Store map popup state
     didCategoryChange: false, // Track if the category changed
     shouldRefitBounds: false, // Track if the map should refit bounds after filter changes
