@@ -11,9 +11,11 @@ import Account from '@/views/AccountView.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useScrollStore } from '@/stores/scroll';
 import { useMapStore } from '@/stores/map';
+import Landing from '@/views/LandingView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'Home', component: Home },
+  { path: '/landing', name: 'Landing', component: Landing },
   { path: '/auth/login', name: 'Login', component: Login },
   { path: '/auth/signup', name: 'Signup', component: Signup },
   { path: '/auth/email-verify', name: 'EmailVerify', component: EmailVerify },

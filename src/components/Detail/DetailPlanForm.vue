@@ -12,7 +12,7 @@
               :class="{ active: activeTab === 'new' }"
               @click="toggleTab('new')"
             >
-              Crear Nuevo Plan
+              Crear un Nuevo Plan
             </button>
             <button
               :class="{ active: activeTab === 'existing' }"
@@ -55,16 +55,18 @@
               </div>
 
               <div class="form-group switch-container">
-                <label for="publicoSwitch">Plan {{ publicoLabel }}</label>
-                <label class="switch">
-                  <input
-                    type="checkbox"
-                    id="publicoSwitch"
-                    v-model="newPlan.publico"
-                    @change="togglePublicoLabel"
-                  />
-                  <span class="slider round"></span>
-                </label>
+                <div class="switch-row">
+                  <label for="publicoSwitch">Plan {{ publicoLabel }}</label>
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      id="publicoSwitch"
+                      v-model="newPlan.publico"
+                      @change="togglePublicoLabel"
+                    />
+                    <span class="slider round"></span>
+                  </label>
+                </div>
                 <span class="switch-description">
                   {{ newPlan.publico
                   ? 'Cualquier persona podrá ver este plan.'
@@ -258,7 +260,6 @@ onMounted(async () => {
 });
 </script>
 
-
 <style scoped>
 .modal-overlay {
   position: fixed;
@@ -282,7 +283,7 @@ onMounted(async () => {
   box-sizing: border-box;
   position: relative;
   animation: slide-down 0.3s ease-out;
-  min-height: 400px; /* Tamaño mínimo para evitar cambios de tamaño */
+  min-height: 400px;
 }
 
 @keyframes slide-down {
@@ -319,8 +320,8 @@ onMounted(async () => {
 
 .close-btn {
   position: absolute;
-  top: 10px;
-  right: 15px;
+  top: 5px;
+  right: 0px;
   background-color: #007bff;
   color: white;
   border: none;
@@ -340,7 +341,7 @@ onMounted(async () => {
 .modal-body {
   display: flex;
   flex-direction: column;
-  min-height: 300px; /* Altura mínima para evitar cambios de tamaño */
+  min-height: 300px;
 }
 
 .form-group {
@@ -380,15 +381,25 @@ onMounted(async () => {
 
 .switch-container {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
   background-color: #f0f8ff;
   padding: 10px;
   border-radius: 8px;
 }
 
-.switch-container label {
-  margin: 0;
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px; /* Space between the row and the description */
+}
+
+.switch-description {
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: 0;
+  margin-top: 5px;
+  display: block;
 }
 
 .form-actions {
@@ -417,7 +428,7 @@ onMounted(async () => {
 }
 
 .plan-list-container {
-  max-height: 200px;
+  height: 200px;
   overflow-y: auto;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -505,9 +516,30 @@ input:checked + .slider:before {
   color: #333;
 }
 
-.switch-description {
-  font-size: 0.8rem;
-  color: #666;
-  margin-left: 10px;
+@media (max-width: 400px) {
+  .switch-container {
+    gap: 5px;
+    padding: 5px;
+  }
+
+  .switch-description {
+    font-size: 0.75rem;
+  }
+
+  .switch {
+    width: 30px;
+    height: 15px;
+  }
+
+  .slider:before {
+    height: 11px;
+    width: 11px;
+    left: 2px;
+    bottom: 2px;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(15px);
+  }
 }
 </style>
