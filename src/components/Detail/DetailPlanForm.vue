@@ -231,16 +231,17 @@ const addToSelectedPlan = async () => {
   try {
     await planStore.createStep(stepData, selectedPlan.value.id);
 
+    // Clear the form inputs and the selected plan
     titulo.value = '';
     descripcion.value = '';
     newPlan.value.publico = false;
+    selectedPlan.value = null;  // Clear the selected plan after submission
     togglePublicoLabel();
 
     emit('close');
 
     Swal.fire('Success', 'Step added to plan successfully!', 'success');
   } catch (error) {
-
     Swal.fire('Error', 'Failed to add step to plan.', 'error');
   }
 };
