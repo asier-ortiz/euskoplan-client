@@ -214,7 +214,11 @@ const onSubmit = async () => {
 };
 
 const selectPlan = (plan: any) => {
-  selectedPlan.value = plan;
+  if (selectedPlan.value && selectedPlan.value.id === plan.id) {
+    selectedPlan.value = null;
+  } else {
+    selectedPlan.value = plan;
+  }
 };
 
 const addToSelectedPlan = async () => {
