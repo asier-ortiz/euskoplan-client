@@ -169,6 +169,9 @@ export const useFilterStore = defineStore('filter', {
                 nombre_municipio: this.selectedLocality || undefined,
                 fecha_inicio: this.startDate || undefined,
                 fecha_fin: this.endDate || undefined,
+                nombre_subtipo_recurso_espacio_natural: this.selectedCategories.natural.espacio_natural || undefined,
+                nombre_subtipo_recurso_playas_pantanos_rios: this.selectedCategories.natural.playas_pantanos_rios || undefined,
+                nombre_subtipo_recurso: this.nombre_subtipo_recurso || undefined
             };
 
             // Add selected subcategories

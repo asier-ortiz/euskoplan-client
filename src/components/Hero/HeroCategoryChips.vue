@@ -39,6 +39,8 @@ const toggleCategory = async (category) => {
   collectionsStore.setSelectedCategory(newCategory);
 
   if (newCategory) {
+    collectionsStore.setCurrentPage(1);
+
     const filters = filterStore.getFilters();
     await collectionsStore.fetchResults(newCategory, collectionsStore.searchQuery, filters);
     mapStore.setDidCategoryChange(true);
