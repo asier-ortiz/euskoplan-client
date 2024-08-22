@@ -8,6 +8,8 @@ import {
   faLocationDot,
   faSun,
   faMoon,
+  faGlobe,
+  faCaretDown,
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
 import {
@@ -33,7 +35,9 @@ library.add(
   faMoon,
   faFacebookF,
   faTwitter,
-  faWhatsapp
+  faWhatsapp,
+  faGlobe,
+  faCaretDown
 );
 
 export { FontAwesomeIcon };
