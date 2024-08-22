@@ -78,9 +78,9 @@ export const useFilterStore = defineStore('filter', {
             this.selectedProvince = province;
             if (province) {
                 this.filteredLocalities = this.localities.filter(
-                    (locality) => locality.nombre_provincia === province
+                  (locality) => locality.nombre_provincia === province
                 );
-                this.selectedLocality = null;
+                this.selectedLocality = null;  // Reset the selected locality
             } else {
                 this.filteredLocalities = this.localities;
             }

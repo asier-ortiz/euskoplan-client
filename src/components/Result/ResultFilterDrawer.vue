@@ -16,11 +16,11 @@
           <button class="chip-close" @click="removeLocality">&times;</button>
         </span>
         <span v-if="startDate" class="chip">
-          Start: {{ formattedStartDate }}
+          Inicio: {{ formattedStartDate }}
           <button class="chip-close" @click="removeStartDate">&times;</button>
         </span>
         <span v-if="endDate" class="chip">
-          End: {{ formattedEndDate }}
+          Fin: {{ formattedEndDate }}
           <button class="chip-close" @click="removeEndDate">&times;</button>
         </span>
         <span v-if="selectedSubCategory" class="chip">
@@ -217,6 +217,17 @@ const selectedCategoryName = computed(() => selectedCategory.value);
 // Synchronize subcategory selection with the filter store
 const selectedSubCategory = ref(null);
 
+// Watch for changes in selectedProvince and reset selectedLocality
+watch(selectedProvince, async (newProvince) => {
+  if (newProvince) {
+    selectedLocality.value = null;  // Reset the selected locality
+    localitySearch.value = '';  // Clear the locality search input
+
+    // Filter localities by the selected province
+    await filterStore.filterLocalitiesByProvince(newProvince);
+  }
+});
+
 // Watch for changes in selected category and clear local filters
 watch(selectedCategory, () => {
   clearLocalFilters();
@@ -313,26 +324,21 @@ const applyFilters = async () => {
 
   // Use fetchResults to get data based on both search and filters
   await collectionsStore.fetchResults(
-      selectedCategoryName.value,
-      collectionsStore.searchQuery,
-      filters
+    selectedCategoryName.value,
+    collectionsStore.searchQuery,
+    filters
   );
 
   // Determine if a significant filter change justifies refitting the map bounds
   const significantFilterChange = filters.nombre_provincia || filters.nombre_municipio || filters.fecha_inicio || filters.fecha_fin || selectedSubCategory.value;
 
-  if (significantFilterChange) {
-    mapStore.shouldRefitBounds = true; // Only set to true for significant changes
-  } else {
-    mapStore.shouldRefitBounds = false; // Avoid refitting bounds for minor changes
-  }
+  mapStore.shouldRefitBounds = !!significantFilterChange;
 
   // Close any open popups on the map
   mapStore.setMapPopup(null);
 
   emit('filtersApplied');
 };
-
 
 // Helper function to get the correct subcategory filter parameter
 const getSubCategoryFilter = () => {
