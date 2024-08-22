@@ -242,11 +242,17 @@ const onSubmit = async () => {
 
     await planStore.createPlan(newPlanPayload);
 
+    // Reset form fields
     title.value = '';
     description.value = '';
     newPlan.value.publico = false;
     togglePublicPrivateLabel();
 
+    // Reset errors after successful submission
+    errors.value = {};
+    isTouched.value = false;
+
+    // Refresh user plans
     await planStore.fetchUserPlans();
 
     emit('close');
@@ -286,6 +292,10 @@ const addToSelectedPlan = async () => {
     newPlan.value.publico = false;
     selectedPlan.value = null;  // Clear the selected plan after submission
     togglePublicPrivateLabel();
+
+    // Reset errors after adding to an existing plan
+    errors.value = {};
+    isTouched.value = false;
 
     emit('close');
 
@@ -362,7 +372,9 @@ onMounted(async () => {
   background-color: transparent;
   cursor: pointer;
   transition: background-color 0.3s;
+  font-weight: bold;
 }
+
 
 .modal-header button.active {
   border-bottom: 2px solid #007bff;
