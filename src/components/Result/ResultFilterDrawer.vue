@@ -94,7 +94,7 @@
               v-model="startDate"
               id="start-date"
               placeholder="Fecha inicio"
-              :format="'yyyy-MM-dd'"
+              :format="'dd/MM/yyyy'"
               :value-type="'format'"
             />
           </div>
@@ -104,7 +104,7 @@
               v-model="endDate"
               id="end-date"
               placeholder="Fecha de fin"
-              :format="'yyyy-MM-dd'"
+              :format="'dd/MM/yyyy'"
               :value-type="'format'"
             />
           </div>
@@ -270,10 +270,10 @@ const anyFilterSelected = computed(() => {
 
 // Formatted dates for displaying in chips
 const formattedStartDate = computed(() =>
-  startDate.value ? new Date(startDate.value).toLocaleDateString() : ''
+  startDate.value ? new Date(startDate.value).toLocaleDateString('es-ES') : ''
 );
 const formattedEndDate = computed(() =>
-  endDate.value ? new Date(endDate.value).toLocaleDateString() : ''
+  endDate.value ? new Date(endDate.value).toLocaleDateString('es-ES') : ''
 );
 
 // Function to clear local filters and reset UI elements
