@@ -24,8 +24,7 @@
             </ul>
           </li>
           <li v-else class="nav-item d-flex align-items-center">
-            <RouterLink class="nav-link text-light me-2" to="/auth/login">Login</RouterLink>
-            <RouterLink class="nav-link text-light" to="/auth/signup">Signup</RouterLink>
+            <RouterLink class="nav-link text-light me-2" to="/auth/login">Regístrate o inicia sesión</RouterLink>
           </li>
         </ul>
       </div>
