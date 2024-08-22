@@ -50,6 +50,7 @@
 
 <script setup lang="ts">
 import { defineProps, ref, watch } from 'vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps<{
   relatedResources: any[];

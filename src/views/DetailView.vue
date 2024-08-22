@@ -170,6 +170,8 @@ const fetchResource = async () => {
         Number(related.latitud),
         Number(related.longitud)
       );
+    } else {
+      related.distancia = null;
     }
   });
 
