@@ -189,6 +189,22 @@ const fetchResource = async () => {
 };
 
 const openPlanModal = () => {
+  if (!authStore.isLoggedIn()) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Necesitas iniciar sesión',
+      text: 'Regístrate o inicia sesión para añadir este recurso a un plan.',
+      showCancelButton: true,
+      confirmButtonText: 'Iniciar sesión',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        router.push('/auth/login');
+      }
+    });
+    return;
+  }
+
   showPlanModal.value = true;
 };
 
@@ -202,9 +218,13 @@ const toggleFavorite = () => {
       icon: 'info',
       title: 'Necesitas iniciar sesión',
       text: 'Regístrate o inicia sesión para poder guardar este recurso en tus favoritos.',
+      showCancelButton: true,
       confirmButtonText: 'Iniciar sesión',
-    }).then(() => {
-      router.push('/auth/login');
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        router.push('/auth/login');
+      }
     });
     return;
   }
