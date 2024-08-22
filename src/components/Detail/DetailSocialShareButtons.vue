@@ -79,7 +79,7 @@ onMounted(() => {
   border: none;
   cursor: pointer;
   font-size: 36px;
-  margin-right: 15px;
+  margin-right: 0px;
   color: #000;
   transition: color 0.3s ease;
 }

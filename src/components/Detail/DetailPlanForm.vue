@@ -79,8 +79,9 @@
                 <button
                   type="submit"
                   class="submit-button"
-                  :disabled="!isFormValid"
+                  :disabled="!isFormValid || loading"
                 >
+                  <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                   Crear Plan
                 </button>
               </div>
@@ -116,9 +117,10 @@
               <div class="form-actions">
                 <button
                   class="submit-button"
-                  :disabled="!selectedPlan"
+                  :disabled="!selectedPlan || loading"
                   @click="addToSelectedPlan"
                 >
+                  <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                   Añadir a Plan
                 </button>
               </div>
@@ -157,6 +159,7 @@ const filterTerm = ref('');
 const publicLabel = ref('Privado');
 const loadingPlans = ref(true);
 const selectedPlan = ref(null);
+const loading = ref(false);  // Track loading state
 
 const planStore = usePlanStore();
 
@@ -224,6 +227,8 @@ const onSubmit = async () => {
       throw new Error('Validation failed');
     }
 
+    loading.value = true;  // Start loading
+
     // Construct the payload for creating a new plan
     const newPlanPayload = {
       idioma: 'es',
@@ -258,9 +263,10 @@ const onSubmit = async () => {
     emit('close');
 
     await Swal.fire('Success', '¡Plan creado con éxito!', 'success');
-
   } catch (error) {
     await Swal.fire('Error', 'Error al crear el plan.', 'error');
+  } finally {
+    loading.value = false;  // Stop loading after submission
   }
 };
 
@@ -284,6 +290,8 @@ const addToSelectedPlan = async () => {
   };
 
   try {
+    loading.value = true;  // Start loading
+
     await planStore.createStep(stepData, selectedPlan.value.id);
 
     // Clear the form inputs and the selected plan
@@ -302,6 +310,8 @@ const addToSelectedPlan = async () => {
     Swal.fire('Success', '¡Recurso añadido al plan con éxito!', 'success');
   } catch (error) {
     Swal.fire('Error', 'Error al añadir el paso al plan.', 'error');
+  } finally {
+    loading.value = false;  // Stop loading after submission
   }
 };
 
@@ -374,7 +384,6 @@ onMounted(async () => {
   transition: background-color 0.3s;
   font-weight: bold;
 }
-
 
 .modal-header button.active {
   border-bottom: 2px solid #007bff;
