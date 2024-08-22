@@ -59,8 +59,13 @@ export const usePlanStore = defineStore('plan', {
         this.plans.push(response.data);
         this.userPlans.push(response.data); // Asegúrate de agregar el nuevo plan a userPlans
         return response.data;
-      } catch (error) {
-        console.error('Error creating plan:', error);
+      } catch (error: any) {
+        if (error.response) {
+          console.error('Error creating plan:', error.response.data);
+        } else {
+          console.error('Error creating plan:', error.message);
+        }
+        throw error; // Re-throw the error to handle it elsewhere if needed
       } finally {
         this.loading = false;
       }

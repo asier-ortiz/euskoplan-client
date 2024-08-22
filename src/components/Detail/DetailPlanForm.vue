@@ -33,7 +33,9 @@
                 <input
                   type="text"
                   id="titulo"
-                  v-model="titulo"
+                  v-model="title"
+                  @input="validateTitle"
+                  @blur="onBlurTitle"
                   :class="{ 'is-invalid': errors.titulo }"
                   placeholder="Introduce el título del plan"
                 />
@@ -46,23 +48,22 @@
                 <label for="descripcion">Descripción (Opcional)</label>
                 <textarea
                   id="descripcion"
-                  v-model="descripcion"
+                  v-model="description"
                   :maxlength="500"
-                  :class="{ 'is-invalid': errors.descripcion }"
                   placeholder="Describe brevemente el plan"
                 ></textarea>
-                <div class="char-counter">{{ descripcion.length }}/500</div>
+                <div class="char-counter">{{ description.length }}/500</div>
               </div>
 
               <div class="form-group switch-container">
                 <div class="switch-row">
-                  <label for="publicoSwitch">Plan {{ publicoLabel }}</label>
+                  <label for="publicoSwitch">Plan {{ publicLabel }}</label>
                   <label class="switch">
                     <input
                       type="checkbox"
                       id="publicoSwitch"
                       v-model="newPlan.publico"
-                      @change="togglePublicoLabel"
+                      @change="togglePublicPrivateLabel"
                     />
                     <span class="slider round"></span>
                   </label>
@@ -139,13 +140,21 @@ import Swal from 'sweetalert2';
 const emit = defineEmits(['close']);
 const props = defineProps({
   showModal: Boolean,
+  idRecurso: {
+    type: Number,
+    required: true,
+  },
+  coleccion: {
+    type: String,
+    required: true,
+  },
 });
 
 const activeTab = ref<'new' | 'existing'>('new');
-const titulo = ref('');
-const descripcion = ref('');
+const title = ref('');
+const description = ref('');
 const filterTerm = ref('');
-const publicoLabel = ref('Privado');
+const publicLabel = ref('Privado');
 const loadingPlans = ref(true);
 const selectedPlan = ref(null);
 
@@ -160,56 +169,92 @@ const newPlan = ref({
     {
       indice: 0,
       indicaciones: null,
-      id_recurso: 1,
-      tipo_recurso: 'cave',
+      id_recurso: props.idRecurso,
+      tipo_recurso: props.coleccion,
     },
   ],
 });
 
+const errors = ref<{ titulo?: string }>({});
+const isTouched = ref(false);
+
 const schema = yup.object({
-  titulo: yup.string().required('El título es obligatorio'),
+  titulo: yup
+    .string()
+    .required('El título es obligatorio')
+    .min(5, 'El título debe tener al menos 5 caracteres'),
 });
 
-const errors = ref<{ titulo?: string }>({});
+const onBlurTitle = () => {
+  isTouched.value = true;
+  validateTitle();
+};
+
+const validateTitle = () => {
+  if (!isTouched.value) {
+    return;
+  }
+
+  if (title.value === '') {
+    errors.value.titulo = 'El título es obligatorio';
+  } else if (title.value.length < 5) {
+    errors.value.titulo = 'El título debe tener al menos 5 caracteres';
+  } else {
+    errors.value.titulo = undefined;
+  }
+};
 
 const toggleTab = (tab: 'new' | 'existing') => {
   activeTab.value = tab;
 };
 
-const togglePublicoLabel = () => {
-  publicoLabel.value = newPlan.value.publico ? 'Público' : 'Privado';
+const togglePublicPrivateLabel = () => {
+  publicLabel.value = newPlan.value.publico ? 'Público' : 'Privado';
 };
 
 const isFormValid = computed(() => {
-  return titulo.value !== '' && !errors.value.titulo;
+  return title.value.length >= 5 && !errors.value.titulo;
 });
 
 const onSubmit = async () => {
   try {
-    await schema.validateSync({ titulo: titulo.value }, { abortEarly: false });
+    validateTitle();
 
-    errors.value = {};
-    newPlan.value.titulo = titulo.value;
-    newPlan.value.descripcion = descripcion.value;
+    if (errors.value.titulo) {
+      throw new Error('Validation failed');
+    }
 
-    const createdPlan = await planStore.createPlan(newPlan.value);
+    // Construct the payload for creating a new plan
+    const newPlanPayload = {
+      idioma: 'es',
+      titulo: title.value,
+      descripcion: description.value || null,
+      publico: newPlan.value.publico,
+      pasos: [
+        {
+          indice: 0,
+          indicaciones: null,
+          id_recurso: props.idRecurso,
+          tipo_recurso: props.coleccion,
+        },
+      ],
+    };
 
-    titulo.value = '';
-    descripcion.value = '';
+    await planStore.createPlan(newPlanPayload);
+
+    title.value = '';
+    description.value = '';
     newPlan.value.publico = false;
-    togglePublicoLabel();
+    togglePublicPrivateLabel();
 
     await planStore.fetchUserPlans();
 
     emit('close');
 
-    Swal.fire('Success', 'Plan created successfully!', 'success');
-  } catch (validationErrors: any) {
-    validationErrors.inner.forEach((error: any) => {
-      errors.value[error.path] = error.message;
-    });
+    await Swal.fire('Success', '¡Plan creado con éxito!', 'success');
 
-    Swal.fire('Error', 'Failed to create plan.', 'error');
+  } catch (error) {
+    await Swal.fire('Error', 'Error al crear el plan.', 'error');
   }
 };
 
@@ -236,17 +281,17 @@ const addToSelectedPlan = async () => {
     await planStore.createStep(stepData, selectedPlan.value.id);
 
     // Clear the form inputs and the selected plan
-    titulo.value = '';
-    descripcion.value = '';
+    title.value = '';
+    description.value = '';
     newPlan.value.publico = false;
     selectedPlan.value = null;  // Clear the selected plan after submission
-    togglePublicoLabel();
+    togglePublicPrivateLabel();
 
     emit('close');
 
-    Swal.fire('Success', 'Step added to plan successfully!', 'success');
+    Swal.fire('Success', '¡Recurso añadido al plan con éxito!', 'success');
   } catch (error) {
-    Swal.fire('Error', 'Failed to add step to plan.', 'error');
+    Swal.fire('Error', 'Error al añadir el paso al plan.', 'error');
   }
 };
 

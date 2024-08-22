@@ -46,7 +46,14 @@
       </div>
     </div>
   </div>
-  <DetailPlanForm :showModal="showPlanModal" @close="closePlanModal" />
+
+  <DetailPlanForm
+    v-if="resource"
+    :showModal="showPlanModal"
+    @close="closePlanModal"
+    :idRecurso="resource.id"
+    :coleccion="resource.coleccion"
+  />
 </template>
 
 <script setup lang="ts">
