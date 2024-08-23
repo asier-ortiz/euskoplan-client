@@ -29,8 +29,10 @@ const restoreScrollPosition = () => {
 };
 
 const fetchData = async () => {
+  collectionsStore.clearErrorState();  // Clear any previous errors before retrying
   await collectionsStore.fetchResults(collectionsStore.selectedCategory, collectionsStore.searchQuery, filterStore.getFilters());
 };
+
 
 onBeforeMount(() => {
   restoreScrollPosition();
@@ -39,6 +41,5 @@ onBeforeMount(() => {
 onMounted(async () => {
   await nextTick();
   restoreScrollPosition();
-  fetchData(); // Fetch data when the component mounts
 });
 </script>

@@ -29,7 +29,8 @@ export const useCollectionsStore = defineStore('collections', {
     selectedCategory: useSessionStorage('selectedCategory', 'Espacios Naturales'),
     searchQuery: useSessionStorage('searchQuery', ''),
     loading: false,
-    apiError: false,  // New state to track API errors
+    apiError: false,  // Global API error state
+    apiErrorMessage: '',  // Optional: Store error message for better feedback
     currentDetail: null as AccommodationModel | CaveModel | CulturalModel | EventModel | FairModel | MuseumModel | NaturalModel | RestaurantModel | null,
     relatedResources: [] as (
       AccommodationModel[] |
@@ -45,13 +46,13 @@ export const useCollectionsStore = defineStore('collections', {
     sortField: useSessionStorage('sortField', 'name'),
     sortOrder: useSessionStorage('sortOrder', 'asc'),
     activeTab: useSessionStorage('activeTab', 'cards'),
-    requestCounter: 0, // Add a request counter to the state
-    fetchResourceAbortController: null as AbortController | null, // Controller for fetchResourceById
-    fetchRelatedResourcesAbortController: null as AbortController | null, // Controller for fetchRelatedResources
+    requestCounter: 0,  // Add a request counter to the state
+    fetchResourceAbortController: null as AbortController | null,  // Controller for fetchResourceById
+    fetchRelatedResourcesAbortController: null as AbortController | null,  // Controller for fetchRelatedResources
 
     // Pagination related state
-    currentPage: useSessionStorage('currentPage', 1), // Save the current page in LocalStorage
-    itemsPerPage: 12, // Number of items per page
+    currentPage: useSessionStorage('currentPage', 1),  // Save the current page in LocalStorage
+    itemsPerPage: 12,  // Number of items per page
   }),
 
   getters: {
@@ -70,9 +71,12 @@ export const useCollectionsStore = defineStore('collections', {
 
   actions: {
     async fetchResults(category: string | null, searchQuery: string, filters: any) {
+      if (this.apiError) return;  // Prevent further API calls if an error exists
+
       this.loading = true;
-      this.apiError = false; // Reset API error state before starting fetch
-      const currentRequest = ++this.requestCounter; // Increment and capture the current request counter
+      this.apiError = false;  // Reset API error state before starting fetch
+      this.apiErrorMessage = '';  // Clear any previous error message
+      const currentRequest = ++this.requestCounter;  // Increment and capture the current request counter
 
       const cacheKey = JSON.stringify({ category, searchQuery, filters });
 
@@ -126,13 +130,14 @@ export const useCollectionsStore = defineStore('collections', {
         if (currentRequest === this.requestCounter) {
           this.results = response.data;
           this.cache.set(cacheKey, this.results);
-          this.setCurrentPage(1); // Reset to the first page when new results are fetched
+          this.setCurrentPage(1);  // Reset to the first page when new results are fetched
         }
       } catch (error) {
         if (currentRequest === this.requestCounter) {
           console.error(`Error fetching results for category ${category}:`, error);
           this.results = [];
           this.apiError = true;  // Set API error state on failure
+          this.apiErrorMessage = 'Failed to fetch data. Please try again.';  // Example error message
         }
       } finally {
         // Only stop loading if this is the latest request
@@ -160,7 +165,7 @@ export const useCollectionsStore = defineStore('collections', {
 
     setSelectedCategory(category: string | null) {
       if (this.selectedCategory !== category) {
-        this.searchQuery = ''; // Reset the search query
+        this.searchQuery = '';  // Reset the search query
         this.selectedCategory = category || '';
       }
     },
@@ -190,7 +195,7 @@ export const useCollectionsStore = defineStore('collections', {
           console.error(`Error fetching ${category} with id ${id}:`, error);
         }
       } finally {
-        this.fetchResourceAbortController = null; // Reset controller after request completes
+        this.fetchResourceAbortController = null;  // Reset controller after request completes
       }
     },
 
@@ -218,8 +223,14 @@ export const useCollectionsStore = defineStore('collections', {
           console.error(`Error fetching related resources for category ${category}:`, error);
         }
       } finally {
-        this.fetchRelatedResourcesAbortController = null; // Reset controller after request completes
+        this.fetchRelatedResourcesAbortController = null;  // Reset controller after request completes
       }
+    },
+
+    // Clear error state to allow retrying API calls
+    clearErrorState() {
+      this.apiError = false;
+      this.apiErrorMessage = '';
     },
 
     // Pagination actions

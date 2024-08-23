@@ -49,18 +49,19 @@ export const useFilterStore = defineStore('filter', {
             if (state.selectedLocality) count++;
             if (state.startDate) count++;
             if (state.endDate) count++;
+
+            // Check natural categories separately
+            if (state.selectedCategories.natural.espacio_natural || state.selectedCategories.natural.playas_pantanos_rios) {
+                count++;
+            }
+
+            // Check other categories
             for (const category in state.selectedCategories) {
-                if (category === 'natural') {
-                    if (
-                        state.selectedCategories.natural.espacio_natural ||
-                        state.selectedCategories.natural.playas_pantanos_rios
-                    ) {
-                        count++;
-                    }
-                } else if (state.selectedCategories[category]) {
+                if (category !== 'natural' && state.selectedCategories[category]) {
                     count++;
                 }
             }
+
             return count;
         },
     },
@@ -74,31 +75,12 @@ export const useFilterStore = defineStore('filter', {
                 console.error('Error fetching localities:', error);
             }
         },
-        filterLocalitiesByProvince(province) {
-            this.selectedProvince = province;
-            if (province) {
-                this.filteredLocalities = this.localities.filter(
-                  (locality) => locality.nombre_provincia === province
-                );
-                this.selectedLocality = null;  // Reset the selected locality
-            } else {
-                this.filteredLocalities = this.localities;
-            }
-        },
-        setSelectedLocality(locality) {
-            this.selectedLocality = locality;
-        },
-        setStartDate(date) {
-            this.startDate = date;
-        },
-        setEndDate(date) {
-            this.endDate = date;
-        },
+
         async fetchCategories() {
             try {
                 const accommodationResponse = await axios.get('/accommodation/categories/es');
                 this.categories.accommodation = accommodationResponse.data.map(
-                    (cat) => cat.nombre_subtipo_recurso
+                  (cat) => cat.nombre_subtipo_recurso
                 );
 
                 const caveResponse = await axios.get('/cave/categories/es');
@@ -115,21 +97,46 @@ export const useFilterStore = defineStore('filter', {
 
                 const naturalResponse = await axios.get('/natural/categories/es');
                 this.categories.natural.espacio_natural = naturalResponse.data.espacio_natural.map(
-                    (cat) => cat.nombre_subtipo_recurso_espacio_natural
+                  (cat) => cat.nombre_subtipo_recurso_espacio_natural
                 );
                 this.categories.natural.playas_pantanos_rios =
-                    naturalResponse.data.playas_pantanos_rios.map(
-                        (cat) => cat.nombre_subtipo_recurso_playas_pantanos_rios
-                    );
+                  naturalResponse.data.playas_pantanos_rios.map(
+                    (cat) => cat.nombre_subtipo_recurso_playas_pantanos_rios
+                  );
 
                 const restaurantResponse = await axios.get('/restaurant/categories/es');
                 this.categories.restaurant = restaurantResponse.data.map(
-                    (cat) => cat.nombre_subtipo_recurso
+                  (cat) => cat.nombre_subtipo_recurso
                 );
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }
         },
+
+        filterLocalitiesByProvince(province) {
+            this.selectedProvince = province;
+            if (province) {
+                this.filteredLocalities = this.localities.filter(
+                  (locality) => locality.nombre_provincia === province
+                );
+                this.selectedLocality = null;  // Reset the selected locality
+            } else {
+                this.filteredLocalities = this.localities;
+            }
+        },
+
+        setSelectedLocality(locality) {
+            this.selectedLocality = locality;
+        },
+
+        setStartDate(date) {
+            this.startDate = date;
+        },
+
+        setEndDate(date) {
+            this.endDate = date;
+        },
+
         setSelectedCategory(collection, category) {
             if (collection === 'natural') {
                 if (this.categories.natural.espacio_natural.includes(category)) {
@@ -144,6 +151,7 @@ export const useFilterStore = defineStore('filter', {
             }
             console.log('Selected Categories:', this.selectedCategories); // Debugging log
         },
+
         clearFilters() {
             this.selectedProvince = null;
             this.selectedLocality = null;
@@ -163,6 +171,7 @@ export const useFilterStore = defineStore('filter', {
             };
             console.log('Filters cleared');
         },
+
         getFilters() {
             const filters = {
                 nombre_provincia: this.selectedProvince || undefined,

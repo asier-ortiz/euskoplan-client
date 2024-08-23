@@ -44,18 +44,18 @@
       <label for="locality">Municipio</label>
       <div class="select-wrapper" :class="{ disabled: !selectedProvince }">
         <input
-            type="text"
-            v-model="localitySearch"
-            placeholder="Filtrar Municipios"
-            class="locality-search-input"
-            :disabled="!selectedProvince"
-            @input="filterLocalities"
+          type="text"
+          v-model="localitySearch"
+          placeholder="Filtrar Municipios"
+          class="locality-search-input"
+          :disabled="!selectedProvince"
+          @input="filterLocalities"
         />
         <select
-            id="locality"
-            v-model="selectedLocality"
-            @change="applyFilters"
-            :disabled="!selectedProvince"
+          id="locality"
+          v-model="selectedLocality"
+          @change="applyFilters"
+          :disabled="!selectedProvince"
         >
           <option value="" disabled>Selecciona un Municipio</option>
           <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.nombre">
@@ -71,10 +71,10 @@
         Categoría {{ selectedCategoryName }}
       </label>
       <select
-          v-if="currentCategories.length"
-          id="category"
-          v-model="selectedSubCategory"
-          @change="debouncedApplyFilters"
+        v-if="currentCategories.length"
+        id="category"
+        v-model="selectedSubCategory"
+        @change="debouncedApplyFilters"
       >
         <option value="" disabled>Selecciona una categoría para {{ selectedCategoryName }}</option>
         <option v-for="category in currentCategories" :key="category" :value="category">
@@ -119,7 +119,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFilterStore } from '@/stores/filter';
 import { useCollectionsStore } from '@/stores/collections';
-import { useMapStore } from '@/stores/map'; // Import the map store
+import { useMapStore } from '@/stores/map';
 import DatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { defineProps, defineEmits } from 'vue';
@@ -137,7 +137,7 @@ const emit = defineEmits(['close', 'filtersApplied']);
 
 const filterStore = useFilterStore();
 const collectionsStore = useCollectionsStore();
-const mapStore = useMapStore(); // Use the map store
+const mapStore = useMapStore();
 
 // Ensure categories are fetched when component mounts
 onMounted(() => {
@@ -298,6 +298,12 @@ const debouncedApplyFilters = debounce(() => {
 
 // Function to apply filters and update the store
 const applyFilters = async () => {
+  // Prevent further API calls if there's an error in the main view
+  if (collectionsStore.apiError) return;
+
+  // Clear any existing error state before making new API calls
+  collectionsStore.clearErrorState();
+
   // Update the filter store with the current selections
   filterStore.selectedProvince = selectedProvince.value;
   filterStore.setSelectedLocality(selectedLocality.value);
@@ -405,6 +411,12 @@ const removeEndDate = async () => {
 
 // Function to remove the selected category
 const removeSelectedCategory = async () => {
+  if (selectedCategory.value === 'Espacios Naturales') {
+    filterStore.selectedCategories.natural.espacio_natural = null;
+    filterStore.selectedCategories.natural.playas_pantanos_rios = null;
+  } else {
+    filterStore.selectedCategories[selectedCategory.value.toLowerCase()] = null;
+  }
   selectedSubCategory.value = null;
   await debouncedApplyFilters(); // Trigger query after removal
 };
@@ -522,8 +534,8 @@ select:disabled,
 .date-picker-group {
   display: flex;
   flex-direction: column;
-  gap: 1rem; /* Espacio entre los pickers */
-  margin-bottom: 1rem; /* Espacio adicional debajo del grupo de pickers */
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .date-picker {

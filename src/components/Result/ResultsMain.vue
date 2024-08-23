@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import ResultCardContainer from './ResultCardContainer.vue';
 import ResultMap from './ResultMap.vue';
 import FilterDrawer from '@/components/Result/ResultFilterDrawer.vue';
@@ -58,14 +58,6 @@ const resultsCount = computed(() => {
   return collectionsStore.results.length;
 });
 
-// Watch for changes in filters to ensure the correct results are fetched
-watch(
-  () => collectionsStore.results,
-  (newResults) => {
-    console.log('Results updated:', newResults);
-  },
-  { immediate: true }
-);
 </script>
 
 <style scoped>
