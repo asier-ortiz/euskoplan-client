@@ -7,18 +7,18 @@
             :data-description="shareDescription"
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-    title="Compartir en Facebook">
-    <font-awesome-icon :icon="['fab', 'facebook-f']" />
+            title="Compartir en Facebook">
+      <font-awesome-icon :icon="['fab', 'facebook-f']" />
     </button>
     <button class="sharer button"
-            data-sharer="twitter"
+            data-sharer="x"
             :data-url="shareUrl"
             :data-title="shareTitle"
             :data-hashtags="shareHashtags"
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-            title="Compartir en Twitter">
-      <font-awesome-icon :icon="['fab', 'twitter']" />
+            title="Compartir en X">
+      <font-awesome-icon :icon="['fab', 'x-twitter']" />
     </button>
     <button class="sharer button"
             data-sharer="whatsapp"

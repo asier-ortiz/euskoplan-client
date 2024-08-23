@@ -1,24 +1,63 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <!-- Left-aligned brand and links -->
-      <RouterLink class="navbar-brand text-light euskoplan-brand" to="/landing">Euskoplan</RouterLink>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <!-- Left-aligned brand with icon -->
+      <RouterLink class="navbar-brand text-light euskoplan-brand d-flex align-items-center" to="/landing">
+        <img src="/images/euskoplan-icon.png" alt="Euskoplan Icon" class="euskoplan-icon me-2" />
+        Euskoplan
+      </RouterLink>
+
+      <!-- Toggler and Language Picker (both controls for mobile) -->
+      <div class="d-flex align-items-center d-lg-none">
+        <!-- Language Picker for small screens (visible with hamburger) -->
+        <div class="language-selector-mobile">
+          <div class="language-picker" @click="toggleDropdown">
+            <font-awesome-icon :icon="['fas', 'globe']" class="globe-icon" />
+            <span class="language-text">Español</span>
+            <font-awesome-icon :icon="['fas', 'caret-down']" class="select-arrow" />
+          </div>
+          <div v-if="dropdownVisible" class="language-dropdown">
+            <div class="dropdown-item" @click="selectLanguage('es')">Español</div>
+            <div class="dropdown-item" @click="selectLanguage('eu')">Euskera</div>
+          </div>
+        </div>
+
+        <!-- Toggler for collapsed content (hamburger menu) -->
+        <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+
+      <!-- Collapsible content -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <RouterLink class="nav-link text-light" to="/">Explora</RouterLink>
+            <RouterLink
+              class="nav-link text-light"
+              :class="{ active: isActive('/') }"
+              to="/"
+            >
+              Explora
+            </RouterLink>
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link text-light" to="/plans">Planes</RouterLink>
+            <RouterLink
+              class="nav-link text-light"
+              :class="{ active: isActive('/plans') }"
+              to="/plans"
+            >
+              Planes
+            </RouterLink>
           </li>
         </ul>
+
+        <!-- Add the separator and space -->
+        <hr class="dropdown-divider-white d-lg-none my-2" />
+
         <ul class="navbar-nav ms-auto align-items-center">
-          <!-- Custom Language Picker -->
-          <li class="nav-item me-3 position-relative language-selector">
+          <!-- Language Picker for large screens -->
+          <li v-if="isDesktop" class="nav-item me-3 position-relative language-selector-desktop">
             <div class="language-picker" @click="toggleDropdown">
               <font-awesome-icon :icon="['fas', 'globe']" class="globe-icon" />
               <span class="language-text">Español</span>
@@ -29,6 +68,7 @@
               <div class="dropdown-item" @click="selectLanguage('eu')">Euskera</div>
             </div>
           </li>
+
           <!-- Right-aligned login/register or account dropdown -->
           <li v-if="authStore.isLoggedIn()" class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-light" href="#" role="button" id="navbarDropdown"
@@ -55,15 +95,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useRoute, RouterLink, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 
 const dropdownVisible = ref(false);
+const isDesktop = ref(window.innerWidth >= 992);
 
 const toggleDropdown = () => {
   dropdownVisible.value = !dropdownVisible.value;
@@ -79,26 +122,31 @@ const logout = async () => {
   router.push('/');
 };
 
-// Close dropdown when clicking outside
+const handleResize = () => {
+  isDesktop.value = window.innerWidth >= 992;
+};
+
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement;
-  if (!target.closest('.language-selector')) {
+  if (!target.closest('.language-selector-desktop') && !target.closest('.language-selector-mobile')) {
     dropdownVisible.value = false;
   }
 };
 
+const isActive = (path: string) => {
+  return route.path === path;
+};
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  window.addEventListener('resize', handleResize);
 });
 
-// Cleanup event listener
-import { onBeforeUnmount } from 'vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('resize', handleResize);
 });
 
-// Ensure the navbar correctly displays the user's email after login/verification
 onMounted(async () => {
   if (authStore.token && !authStore.user) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${authStore.token}`;
@@ -109,54 +157,72 @@ onMounted(async () => {
 
 <style scoped>
 .navbar {
-  margin-bottom: 0; /* Remove bottom margin */
+  margin-bottom: 0;
+  position: sticky; /* Hacer la navbar sticky */
+  top: 0; /* Posicionarla en la parte superior */
+  z-index: 1030; /* Asegurar que la navbar se mantenga encima de otros elementos */
+  background-color: #343a40; /* Asegurarse de que la navbar tenga un fondo sólido */
 }
 
 .euskoplan-brand {
-  font-size: 1.5rem; /* Larger text for Euskoplan */
-  font-weight: bold; /* Make it bold */
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.euskoplan-icon {
+  height: 28px;
+  width: auto;
+  margin-right: 8px;
 }
 
 .nav-link {
+  display: inline-block;
   transition: color 0.3s ease, background-color 0.3s ease;
-  border-radius: 5px; /* Ensure corners are always rounded */
-  padding: 0.5rem 1rem; /* Add padding to make the hover effect more prominent */
-  margin-right: 1rem; /* Add space between the links */
+  border-radius: 5px;
+  padding: 0.5rem 0.75rem;
+  margin-right: 1rem;
 }
 
+.nav-link.active,
 .nav-link:hover {
-  color: #ffffff; /* Change text color on hover for readability */
-  background-color: #0056b3; /* Background color change on hover */
+  color: #ffffff;
+  background-color: #0056b3;
 }
 
 .login-button {
-  background-color: #007bff; /* Always have a background for the login/register button */
-  border-radius: 5px; /* Rounded corners */
-  padding: 0.5rem 1rem; /* Padding for a button-like appearance */
+  display: inline-block;
+  background-color: #007bff;
+  border-radius: 5px;
+  padding: 0.5rem 0.75rem;
 }
 
 .login-button:hover {
-  background-color: #0056b3; /* Darker blue on hover */
-  color: #ffffff; /* Ensure text remains white */
+  background-color: #0056b3;
+  color: #ffffff;
 }
 
-/* Custom Language Picker styling */
-.language-selector {
+.language-selector-mobile,
+.language-selector-desktop {
   position: relative;
 }
 
-.language-picker {
+.language-picker,
+.nav-item .nav-link {
   display: flex;
   align-items: center;
   cursor: pointer;
-  gap: 0.3rem; /* Adjust gap between icon and text */
+  gap: 0.3rem;
   color: white;
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 5px;
   transition: background-color 0.3s ease;
 }
 
-.language-picker:hover {
+.language-picker:hover,
+.nav-item .nav-link:hover {
   background-color: #0056b3;
 }
 
@@ -170,14 +236,14 @@ onMounted(async () => {
 }
 
 .select-arrow {
-  margin-left: 0.2rem; /* Adjust space between text and arrow */
+  margin-left: 0.2rem;
   color: white;
   transition: color 0.3s ease;
 }
 
 .language-dropdown {
   position: absolute;
-  top: 140%; /* Further space the dropdown from the selector */
+  top: 140%;
   left: 0;
   background-color: #343a40;
   border-radius: 5px;
@@ -198,42 +264,43 @@ onMounted(async () => {
   background-color: #0056b3;
 }
 
-@media (max-width: 768px) {
-  .dropdown-menu {
-    position: static;
-    float: none;
-    width: auto;
-    margin-top: 0;
+.dropdown-menu .dropdown-item:hover {
+  background-color: #f0f8ff !important;
+  color: #000000;
+}
+
+.dropdown-divider-white {
+  border-top: 1px solid #ffffff;
+}
+
+@media (max-width: 991px) {
+  .navbar-nav .nav-item {
+    text-align: left;
+    width: 100%;
+    margin-top: 0.5rem;
   }
 
-  .dropdown-menu-end {
-    margin-bottom: 1rem;
+  .login-button {
+    padding-left: 1rem;
   }
 
-  .dropdown-toggle::after {
-    margin-left: 0.255em;
+  .dropdown-divider-white {
+    margin: 1rem 0;
   }
+}
 
-  /* Ensure navbar items are properly aligned in mobile mode */
+@media (min-width: 992px) {
+
   .navbar-collapse {
-    justify-content: space-between;
+    justify-content: flex-end;
   }
 
-  .navbar-nav.me-auto {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+  .language-selector-desktop {
+    margin-right: 1rem;
   }
 
-  .navbar-nav.ms-auto {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  /* Make the language picker always visible */
-  .language-picker {
-    max-width: 100%; /* Full width in mobile view */
+  .navbar-toggler {
+    margin-left: auto;
   }
 }
 </style>

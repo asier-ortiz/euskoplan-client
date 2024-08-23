@@ -16,7 +16,7 @@ import {
   faLaravel,
   faVuejs,
   faFacebookF,
-  faTwitter,
+  faXTwitter, // Cambiar faTwitter por faXTwitter
   faWhatsapp,
   faTelegramPlane,
 } from '@fortawesome/free-brands-svg-icons';
@@ -34,7 +34,7 @@ library.add(
   faSun,
   faMoon,
   faFacebookF,
-  faTwitter,
+  faXTwitter, // Cambiar faTwitter por faXTwitter
   faWhatsapp,
   faGlobe,
   faCaretDown

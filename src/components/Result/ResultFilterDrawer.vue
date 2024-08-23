@@ -432,7 +432,7 @@ const removeSelectedCategory = async () => {
   background: white;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
   padding: 1rem;
-  z-index: 1000;
+  z-index: 1040; /* To show the drawer over the navbar */
   overflow-y: auto;
   transition: right 0.3s ease; /* Transition for the slide-in effect */
 }
