@@ -29,10 +29,9 @@ const restoreScrollPosition = () => {
 };
 
 const fetchData = async () => {
-  collectionsStore.clearErrorState();  // Clear any previous errors before retrying
+  collectionsStore.clearErrorState();
   await collectionsStore.fetchResults(collectionsStore.selectedCategory, collectionsStore.searchQuery, filterStore.getFilters());
 };
-
 
 onBeforeMount(() => {
   restoreScrollPosition();

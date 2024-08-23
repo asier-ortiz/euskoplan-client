@@ -4,28 +4,40 @@
             data-sharer="facebook"
             :data-url="shareUrl"
             :data-title="shareTitle"
-            :data-description="shareDescription">
-      <font-awesome-icon :icon="['fab', 'facebook-f']" />
+            :data-description="shareDescription"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+    title="Compartir en Facebook">
+    <font-awesome-icon :icon="['fab', 'facebook-f']" />
     </button>
     <button class="sharer button"
             data-sharer="twitter"
             :data-url="shareUrl"
             :data-title="shareTitle"
-            :data-hashtags="shareHashtags">
+            :data-hashtags="shareHashtags"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Compartir en Twitter">
       <font-awesome-icon :icon="['fab', 'twitter']" />
     </button>
     <button class="sharer button"
             data-sharer="whatsapp"
             :data-url="shareUrl"
             :data-title="shareTitle"
-            :data-text="shareDescription">
+            :data-text="shareDescription"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Compartir en WhatsApp">
       <font-awesome-icon :icon="['fab', 'whatsapp']" />
     </button>
     <button class="sharer button"
             data-sharer="telegram"
             :data-url="shareUrl"
             :data-title="shareTitle"
-            :data-text="shareDescription">
+            :data-text="shareDescription"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Compartir en Telegram">
       <font-awesome-icon :icon="['fab', 'telegram-plane']" />
     </button>
   </div>
@@ -34,6 +46,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { Tooltip } from 'bootstrap';
 
 const props = defineProps<{
   resource: {
@@ -64,6 +77,27 @@ onMounted(() => {
   if (typeof window.Sharer !== 'undefined') {
     window.Sharer.init();
   }
+
+  // Function to adjust tooltip placement based on screen width
+  const adjustTooltipPlacement = () => {
+    const screenWidth = window.innerWidth;
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(tooltipTriggerEl => {
+      const placement = screenWidth > 900 ? 'left' : 'top';
+      tooltipTriggerEl.setAttribute('data-bs-placement', placement);
+      const tooltipInstance = Tooltip.getInstance(tooltipTriggerEl);
+      if (tooltipInstance) {
+        tooltipInstance.dispose(); // Dispose the existing tooltip
+      }
+      new Tooltip(tooltipTriggerEl); // Reinitialize the tooltip
+    });
+  };
+
+  // Initialize all tooltips and adjust their placement
+  adjustTooltipPlacement();
+
+  // Re-adjust tooltips placement on window resize
+  window.addEventListener('resize', adjustTooltipPlacement);
 });
 </script>
 
@@ -97,7 +131,6 @@ onMounted(() => {
 }
 
 @media (max-width: 900px) {
-
   .sharer.button:not(:last-child) {
     margin-right: 32px;
   }
