@@ -14,6 +14,21 @@ import type { RestaurantModel } from '@/models/restaurant.model';
 
 axios.defaults.baseURL = config.apiBaseUrl;
 
+const categories = [
+  'Alojamientos',
+  'Cuevas y Restos Arqueológicos',
+  'Edificios Religiosos y Castillos',
+  'Eventos',
+  'Parques Temáticos',
+  'Museos y Centros de Interpretación',
+  'Espacios Naturales',
+  'Restaurantes',
+];
+
+function getRandomCategory() {
+  return categories[Math.floor(Math.random() * categories.length)];
+}
+
 export const useCollectionsStore = defineStore('collections', {
   state: () => ({
     results: [] as (
@@ -26,7 +41,7 @@ export const useCollectionsStore = defineStore('collections', {
       NaturalModel[] |
       RestaurantModel[]
       ),
-    selectedCategory: useSessionStorage('selectedCategory', 'Espacios Naturales'),
+    selectedCategory: useSessionStorage('selectedCategory', getRandomCategory()),  // Random initial value
     searchQuery: useSessionStorage('searchQuery', ''),
     loading: false,
     apiError: false,  // Global API error state
