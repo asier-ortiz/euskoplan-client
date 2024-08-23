@@ -2,7 +2,8 @@
   <div>
     <Hero />
     <div class="container">
-      <ResultsMain v-if="collectionsStore.selectedCategory" />
+      <ResultsMain v-if="!collectionsStore.apiError && collectionsStore.selectedCategory" />
+      <ApiError v-else-if="collectionsStore.apiError" @retry="fetchData" />
     </div>
   </div>
 </template>
@@ -11,10 +12,13 @@
 import { onMounted, nextTick, onBeforeMount } from 'vue';
 import Hero from '@/components/Hero/HeroMain.vue';
 import ResultsMain from '@/components/Result/ResultsMain.vue';
+import ApiError from '@/components/Misc/ApiError.vue';
 import { useCollectionsStore } from '@/stores/collections';
+import { useFilterStore } from '@/stores/filter'
 import { useScrollStore } from '@/stores/scroll';
 
 const collectionsStore = useCollectionsStore();
+const filterStore = useFilterStore()
 const scrollStore = useScrollStore();
 
 const restoreScrollPosition = () => {
@@ -24,13 +28,17 @@ const restoreScrollPosition = () => {
   }
 };
 
+const fetchData = async () => {
+  await collectionsStore.fetchResults(collectionsStore.selectedCategory, collectionsStore.searchQuery, filterStore.getFilters());
+};
+
 onBeforeMount(() => {
   restoreScrollPosition();
 });
 
 onMounted(async () => {
-  // Restore scroll position after DOM updates
   await nextTick();
   restoreScrollPosition();
+  fetchData(); // Fetch data when the component mounts
 });
 </script>

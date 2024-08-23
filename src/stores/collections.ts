@@ -17,29 +17,30 @@ axios.defaults.baseURL = config.apiBaseUrl;
 export const useCollectionsStore = defineStore('collections', {
   state: () => ({
     results: [] as (
-        AccommodationModel[] |
-        CaveModel[] |
-        CulturalModel[] |
-        EventModel[] |
-        FairModel[] |
-        MuseumModel[] |
-        NaturalModel[] |
-        RestaurantModel[]
-        ),
+      AccommodationModel[] |
+      CaveModel[] |
+      CulturalModel[] |
+      EventModel[] |
+      FairModel[] |
+      MuseumModel[] |
+      NaturalModel[] |
+      RestaurantModel[]
+      ),
     selectedCategory: useSessionStorage('selectedCategory', 'Espacios Naturales'),
     searchQuery: useSessionStorage('searchQuery', ''),
     loading: false,
+    apiError: false,  // New state to track API errors
     currentDetail: null as AccommodationModel | CaveModel | CulturalModel | EventModel | FairModel | MuseumModel | NaturalModel | RestaurantModel | null,
     relatedResources: [] as (
-        AccommodationModel[] |
-        CaveModel[] |
-        CulturalModel[] |
-        EventModel[] |
-        FairModel[] |
-        MuseumModel[] |
-        NaturalModel[] |
-        RestaurantModel[]
-        ),
+      AccommodationModel[] |
+      CaveModel[] |
+      CulturalModel[] |
+      EventModel[] |
+      FairModel[] |
+      MuseumModel[] |
+      NaturalModel[] |
+      RestaurantModel[]
+      ),
     cache: new Map(),
     sortField: useSessionStorage('sortField', 'name'),
     sortOrder: useSessionStorage('sortOrder', 'asc'),
@@ -70,6 +71,7 @@ export const useCollectionsStore = defineStore('collections', {
   actions: {
     async fetchResults(category: string | null, searchQuery: string, filters: any) {
       this.loading = true;
+      this.apiError = false; // Reset API error state before starting fetch
       const currentRequest = ++this.requestCounter; // Increment and capture the current request counter
 
       const cacheKey = JSON.stringify({ category, searchQuery, filters });
@@ -130,6 +132,7 @@ export const useCollectionsStore = defineStore('collections', {
         if (currentRequest === this.requestCounter) {
           console.error(`Error fetching results for category ${category}:`, error);
           this.results = [];
+          this.apiError = true;  // Set API error state on failure
         }
       } finally {
         // Only stop loading if this is the latest request
