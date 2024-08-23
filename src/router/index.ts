@@ -13,6 +13,8 @@ import Plans from '@/views/PlanListView.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useScrollStore } from '@/stores/scroll';
 import { useMapStore } from '@/stores/map';
+import { useCollectionsStore } from '@/stores/collections';
+import { useFilterStore } from '@/stores/filter';
 
 const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'Home', component: Home },
@@ -52,7 +54,7 @@ const router = createRouter({
   },
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const scrollStore = useScrollStore();
   const mapStore = useMapStore();
@@ -69,22 +71,20 @@ router.beforeEach((to, from, next) => {
     mapStore.resetReturningFromDetail();
   }
 
+  // Initiate fetch on first load of HomeView, but do not block rendering
+  if (to.name === 'Home' && !from.name) {
+    const collectionsStore = useCollectionsStore();
+    const filterStore = useFilterStore();
+    collectionsStore.fetchResults(collectionsStore.selectedCategory, collectionsStore.searchQuery, filterStore.getFilters());
+  }
+
   // Redirect to login if the route requires auth and the user isn't logged in
   if (to.matched.some((record) => record.meta.requiresAuth) && !authStore.isLoggedIn()) {
     return next({ name: 'Login' });
   }
 
-  // If the user is trying to access the login page and is already logged in, redirect to home
-  if (to.name === 'Login' && authStore.isLoggedIn()) {
-    if (from.name === 'PasswordReset' || from.name === 'PasswordRecovery') {
-      authStore.setRedirectTo(null); // Clear redirectTo path after password reset
-    }
-    return next({ path: '/' });
-  }
-
   // Continue navigation if no conditions match
   next();
 });
-
 
 export default router;

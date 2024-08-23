@@ -2,7 +2,7 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
       <!-- Left-aligned brand and links -->
-      <RouterLink class="navbar-brand text-light euskoplan-brand" to="/">Euskoplan</RouterLink>
+      <RouterLink class="navbar-brand text-light euskoplan-brand" to="/landing">Euskoplan</RouterLink>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
               aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -13,7 +13,7 @@
             <RouterLink class="nav-link text-light" to="/">Explora</RouterLink>
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link text-light" to="/">Planes</RouterLink>
+            <RouterLink class="nav-link text-light" to="/plans">Planes</RouterLink>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto align-items-center">
