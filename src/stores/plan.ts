@@ -57,7 +57,7 @@ export const usePlanStore = defineStore('plan', {
       try {
         const response = await axios.post('/plan', planData);
         this.plans.push(response.data);
-        this.userPlans.push(response.data); // Asegúrate de agregar el nuevo plan a userPlans
+        this.userPlans.push(response.data);
         return response.data;
       } catch (error: any) {
         if (error.response) {
@@ -167,5 +167,26 @@ export const usePlanStore = defineStore('plan', {
         this.loading = false;
       }
     },
+
+    async suggestItinerary(itineraryData: {
+      provincia: string;
+      mes: number;
+      año: number;
+      dias: number;
+      tipo_viaje: string;
+    }) {
+      this.loading = true;
+      try {
+        const response = await axios.post('/plan/suggest-itinerary', itineraryData);
+        console.log('Itinerary response:', response.data);
+        return response.data;
+      } catch (error: any) {
+        console.error('Error suggesting itinerary:', error.response ? error.response.data : error.message);
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
   },
 });

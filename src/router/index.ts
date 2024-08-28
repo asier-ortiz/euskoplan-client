@@ -10,6 +10,7 @@ import Detail from '@/views/DetailView.vue';
 import Account from '@/views/AccountView.vue';
 import Landing from '@/views/LandingView.vue';
 import Plans from '@/views/PlanListView.vue';
+import PlanGenerate from '@/views/PlanGenerateView.vue'
 import { useAuthStore } from '@/stores/auth';
 import { useScrollStore } from '@/stores/scroll';
 import { useMapStore } from '@/stores/map';
@@ -19,19 +20,19 @@ import { useFilterStore } from '@/stores/filter';
 const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'Home', component: Home },
   { path: '/landing', name: 'Landing', component: Landing },
+
   { path: '/plans', name: 'Plans', component: Plans },
+  { path: '/plan-generate', name: 'PlanGenerate', component: PlanGenerate, meta: { requiresAuth: true }  },
+
   { path: '/auth/login', name: 'Login', component: Login },
   { path: '/auth/signup', name: 'Signup', component: Signup },
   { path: '/auth/email-verify', name: 'EmailVerify', component: EmailVerify },
   { path: '/auth/password-reset', name: 'PasswordReset', component: PasswordReset },
   { path: '/auth/password-recovery', name: 'PasswordRecovery', component: PasswordRecovery },
+
   { path: '/detail/:category/:id', name: 'Detail', component: Detail },
-  {
-    path: '/account',
-    name: 'Account',
-    component: Account,
-    meta: { requiresAuth: true },
-  },
+  { path: '/account', name: 'Account', component: Account, meta: { requiresAuth: true } },
+
 ];
 
 const router = createRouter({

@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+  <nav class="navbar-main navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container-fluid d-flex justify-content-between align-items-center">
       <!-- Left-aligned brand with icon -->
       <RouterLink class="navbar-brand text-light euskoplan-brand d-flex align-items-center" to="/landing">
@@ -48,6 +48,16 @@
               to="/plans"
             >
               Planes
+            </RouterLink>
+          </li>
+          <!-- Nuevo enlace para Plan Generate -->
+          <li class="nav-item">
+            <RouterLink
+              class="nav-link text-light"
+              :class="{ active: isActive('/plan-generate') }"
+              to="/plan-generate"
+            >
+              Generar Plan con IA
             </RouterLink>
           </li>
         </ul>
@@ -99,7 +109,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, RouterLink, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const authStore = useAuthStore();
 const router = useRouter();

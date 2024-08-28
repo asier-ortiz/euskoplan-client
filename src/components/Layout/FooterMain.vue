@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer bg-dark text-lg-start text-white">
+  <footer class="footer-main footer bg-dark text-lg-start text-white">
     <div class="container p-4 d-flex justify-content-between align-items-center">
       <div class="text-left">
         <p class="mb-0">&copy; {{ currentYear }} Euskoplan. All rights reserved.</p>
