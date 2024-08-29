@@ -2,7 +2,7 @@
 
 # Euskoplan Client
 
-Discover the beauty of the Basque Country with Euskoplan, an interactive web platform designed for tourism enthusiasts. Create personalized itineraries, explore popular destinations, and share your travel plans with other users.
+Discover the beauty of the Basque Country with Euskoplan, an interactive web platform designed for tourism enthusiasts. Create personalized itineraries manually or with the help of AI, explore popular destinations, and share your travel plans with other users.
 
 ## Table of Contents
 
