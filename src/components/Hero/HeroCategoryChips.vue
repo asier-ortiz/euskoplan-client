@@ -65,7 +65,7 @@ const isSelected = (category) => collectionsStore.selectedCategory === category;
   padding: 0.2rem 0.5rem;
   border-radius: 15px;
   cursor: pointer;
-  background-color: #f8f9fa;
+  background-color: #e0e0e0;
   color: #343a40;
   font-size: 0.9rem;
   transition: background-color 0.3s, color 0.3s;

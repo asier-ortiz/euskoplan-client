@@ -35,7 +35,7 @@
           :class="{ selected: selectedDays === day }"
           @click="selectDays(day)"
         >
-          {{ day }} día(s)
+          {{ day }} día{{ day > 1 ? 's' : '' }}
         </button>
       </div>
     </div>
@@ -58,7 +58,7 @@
       @click="generatePlan"
     >
       <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-      <span v-else>Generar Plan</span>
+      <span v-else>Generar Itinerario</span>
     </button>
   </div>
 </template>
@@ -202,8 +202,8 @@ h3 {
 }
 
 button {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid #007bff;
+  padding: 0.5rem 1rem;
+  border: none;
   border-radius: 25px;
   background-color: #e0e0e0;
   color: #333;
@@ -215,7 +215,7 @@ button {
   font-size: 0.875rem;
 }
 
-button.selected {
+button.selected, button.active {
   background-color: #007bff;
   color: #fff;
 }
