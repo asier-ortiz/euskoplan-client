@@ -1,23 +1,26 @@
 <template>
   <div class="result-card" @click="navigateToDetail">
     <div class="card-image" :style="{ backgroundImage: `url(${imageUrl})` }">
-      <div v-if="!imageLoaded" class="skeleton-loader"></div> <!-- Skeleton loader -->
+      <div v-if="!imageLoaded" class="skeleton-loader"></div>
       <img
-          :src="imageUrl"
-          @load="handleImageLoad"
-          @error="handleImageError"
-          class="hidden-image"
-          alt="Image of {{ name }}"
+        :src="imageUrl"
+        @load="handleImageLoad"
+        @error="handleImageError"
+        class="hidden-image"
+        alt="Image of {{ name }}"
       />
       <!-- Event Date Overlay -->
       <div v-if="isEvent" class="event-date">{{ formattedDate }}</div>
+      <!-- Population and Area Overlay for Locality -->
+      <div v-if="isLocality" class="overlay population">{{ formattedPopulation }} hab.</div>
+      <div v-if="isLocality" class="overlay area">{{ formattedArea }}</div>
     </div>
     <div class="card-content">
-      <h3>{{ subtype }}</h3> <!-- Display subtype -->
+      <h3>{{ subtype }}</h3>
       <h2>{{ name }}</h2>
-      <p v-if="municipio" class="municipio-text">{{ municipio }}</p> <!-- Display municipio -->
+      <p v-if="municipality" class="location-text">{{ municipality }}</p>
       <p v-if="distance !== null">
-        <font-awesome-icon icon="location-dot" class="location-icon" /> <!-- Add location icon -->
+        <font-awesome-icon icon="location-dot" class="location-icon" />
         {{ distance.toFixed(2) }} km
       </p>
     </div>
@@ -25,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, watch, computed } from 'vue';
+import { defineProps, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLocationStore } from '@/stores/location';
 import { calculateDistance } from '@/utils/distance';
@@ -34,7 +37,7 @@ import { useImageHandler } from '@/utils/image';
 
 const props = defineProps({
   itemId: {
-    type: [Number, String], // Accept both Number and String
+    type: [Number, String],
     required: true,
   },
   collection: {
@@ -49,24 +52,32 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  longitud: {
-    type: [Number, String], // Accept both Number and String
+  longitude: {
+    type: [Number, String],
     required: true,
   },
-  latitud: {
-    type: [Number, String], // Accept both Number and String
+  latitude: {
+    type: [Number, String],
     required: true,
   },
   subtype: {
     type: String,
     required: true,
   },
-  municipio: {
+  municipality: {
     type: String,
     required: true,
   },
-  fechaInicio: {
+  startDate: {
     type: String,
+    default: null,
+  },
+  area: {
+    type: [Number, String],
+    default: null,
+  },
+  population: {
+    type: [Number, String],
     default: null,
   }
 });
@@ -77,18 +88,18 @@ const locationStore = useLocationStore();
 const { imageUrl, imageLoaded, setInitialImage, handleImageLoad, handleImageError } = useImageHandler(props.collection, props.images);
 
 watch(
-    () => props.images,
-    () => setInitialImage(),
-    { immediate: true }
+  () => props.images,
+  () => setInitialImage(),
+  { immediate: true }
 );
 
 const distance = computed(() => {
-  if (locationStore.userLocation && props.longitud && props.latitud) {
+  if (locationStore.userLocation && props.longitude && props.latitude) {
     return calculateDistance(
-        locationStore.userLocation.latitude,
-        locationStore.userLocation.longitude,
-        Number(props.latitud),
-        Number(props.longitud)
+      locationStore.userLocation.latitude,
+      locationStore.userLocation.longitude,
+      Number(props.latitude),
+      Number(props.longitude)
     );
   }
   return null;
@@ -98,12 +109,29 @@ const navigateToDetail = () => {
   router.push({ name: 'Detail', params: { id: Number(props.itemId), category: props.collection } });
 };
 
+// Determine if the current collection is an event
 const isEvent = computed(() => props.collection.toLowerCase() === 'event');
 
+// Determine if the current collection is a locality
+const isLocality = computed(() => props.collection.toLowerCase() === 'locality');
+
+// Format the start date for events
 const formattedDate = computed(() => {
-  if (!props.fechaInicio) return '';
-  const date = new Date(props.fechaInicio);
+  if (!props.startDate) return '';
+  const date = new Date(props.startDate);
   return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+});
+
+// TODO Move to a global utility function
+
+// Format population with commas for readability
+const formattedPopulation = computed(() => {
+  return props.population ? parseInt(props.population, 10).toLocaleString() : '';
+});
+
+// Format area with two decimal places
+const formattedArea = computed(() => {
+  return props.area ? parseFloat(props.area).toFixed(2) + ' km²' : '';
 });
 </script>
 
@@ -112,13 +140,13 @@ const formattedDate = computed(() => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 320px; /* Increased height for more visual appeal */
+  height: 320px;
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s; /* Added transition effects */
+  transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
-  background-color: white; /* Background color for the card */
+  background-color: white;
 }
 
 .result-card:hover {
@@ -130,7 +158,7 @@ const formattedDate = computed(() => {
   flex: 2;
   height: 60%;
   position: relative;
-  border-bottom: 1px solid #ddd; /* Divider between image and content */
+  border-bottom: 1px solid #ddd;
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -140,13 +168,13 @@ const formattedDate = computed(() => {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Ensures image covers the entire container */
-  transition: opacity 0.3s ease; /* Smooth transition for image */
-  opacity: 0; /* Start invisible */
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+  opacity: 0;
 }
 
 .hidden-image.loaded {
-  opacity: 1; /* Fade in image once loaded */
+  opacity: 1;
 }
 
 .skeleton-loader {
@@ -176,17 +204,17 @@ const formattedDate = computed(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #ffffff; /* White background for card content */
-  text-align: center; /* Center align content */
+  background-color: #ffffff;
+  text-align: center;
 }
 
 .card-content h3 {
-  margin: 0 0 0.25rem; /* Add margin-bottom for spacing */
-  font-size: 0.8rem; /* Smaller font size for subtype text */
-  color: #666666; /* Gray color for the subtype text */
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  color: #666666;
   text-transform: uppercase;
   font-weight: normal;
-  letter-spacing: 0.5px; /* Add letter spacing for a cleaner look */
+  letter-spacing: 0.5px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -195,11 +223,11 @@ const formattedDate = computed(() => {
 }
 
 .card-content h2 {
-  margin: 0 0 0.5rem; /* Add margin-bottom for spacing */
-  font-size: 1.4rem; /* Slightly reduced font size for better balance */
-  color: #333333; /* Darker color for the name text */
+  margin: 0 0 0.5rem;
+  font-size: 1.4rem;
+  color: #333333;
   font-weight: bold;
-  line-height: 1.2; /* Improved line spacing */
+  line-height: 1.2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -208,17 +236,17 @@ const formattedDate = computed(() => {
 }
 
 .card-content p {
-  margin: 0.25rem 0; /* Ensure some margin for the municipio text */
-  font-size: 1rem; /* Adjust font size for municipio and distance text */
-  color: #555555; /* Slightly lighter color for text */
+  margin: 0.25rem 0;
+  font-size: 1rem;
+  color: #555555;
 }
 
 .card-content .location-icon {
-  margin-right: 0.5rem; /* Space between icon and text */
-  color: #007bff; /* Color for the location icon */
+  margin-right: 0.5rem;
+  color: #007bff;
 }
 
-.municipio-text {
+.location-text {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -237,5 +265,25 @@ const formattedDate = computed(() => {
   padding: 5px;
   border-radius: 5px;
   font-size: 0.8rem;
+}
+
+/* Style for population and area overlays */
+.overlay {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+}
+
+.overlay.population {
+  bottom: 5px;
+  left: 5px;
+}
+
+.overlay.area {
+  bottom: 5px;
+  right: 5px;
 }
 </style>

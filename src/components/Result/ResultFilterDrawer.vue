@@ -41,27 +41,29 @@
       </select>
 
       <!-- Locality Selector with Filter Input Inside -->
-      <label for="locality">Municipio</label>
-      <div class="select-wrapper" :class="{ disabled: !selectedProvince }">
-        <input
-          type="text"
-          v-model="localitySearch"
-          placeholder="Filtrar Municipios"
-          class="locality-search-input"
-          :disabled="!selectedProvince"
-          @input="filterLocalities"
-        />
-        <select
-          id="locality"
-          v-model="selectedLocality"
-          @change="applyFilters"
-          :disabled="!selectedProvince"
-        >
-          <option value="" disabled>Selecciona un Municipio</option>
-          <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.nombre">
-            {{ locality.nombre }}
-          </option>
-        </select>
+      <div v-if="selectedCategory !== 'Localidades'">
+        <label for="locality">Municipio</label>
+        <div class="select-wrapper" :class="{ disabled: !selectedProvince }">
+          <input
+            type="text"
+            v-model="localitySearch"
+            placeholder="Filtrar Municipios"
+            class="locality-search-input"
+            :disabled="!selectedProvince"
+            @input="filterLocalities"
+          />
+          <select
+            id="locality"
+            v-model="selectedLocality"
+            @change="applyFilters"
+            :disabled="!selectedProvince"
+          >
+            <option value="" disabled>Selecciona un Municipio</option>
+            <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.nombre">
+              {{ locality.nombre }}
+            </option>
+          </select>
+        </div>
       </div>
 
       <hr />

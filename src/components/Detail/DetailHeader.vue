@@ -1,14 +1,11 @@
 <template>
   <div class="detail-header">
     <h1>{{ resource.nombre }}</h1>
-    <h2>
-      {{
-        resource.nombre_subtipo_recurso ||
-        resource.nombre_subtipo_recurso_espacio_natural ||
-        resource.nombre_subtipo_recurso_playas_pantanos_rios
-      }}
-    </h2>
-    <p v-if="resource.nombre_municipio" class="municipio-text">
+    <h2 v-if="subtype">{{ subtype }}</h2> <!-- Display the computed subtype -->
+    <p v-if="resource.coleccion === 'locality' && resource.nombre_provincia" class="location-text">
+      {{ resource.nombre_provincia }}
+    </p>
+    <p v-else-if="resource.nombre_municipio" class="location-text">
       {{ resource.nombre_municipio }}
     </p>
     <p v-if="distance !== null">
@@ -25,17 +22,18 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 defineProps<{
   resource: any;
   distance: number | null;
+  subtype: string;
 }>();
 </script>
 
 <style scoped>
 .detail-header {
-  position: relative; /* Allows positioning of the pseudo-element */
+  position: relative;
   text-align: center;
   margin: 2rem auto;
   width: 100%;
   max-width: 600px;
-  z-index: 1; /* Ensures text is above the background */
+  z-index: 1;
 }
 
 .detail-header::before {
@@ -44,23 +42,23 @@ defineProps<{
   top: -20%;
   left: 50%;
   transform: translateX(-50%);
-  width: 200%; /* Extend more towards the sides */
-  height: 140%; /* Extend a bit more towards the bottom */
+  width: 200%;
+  height: 140%;
   background: radial-gradient(
     circle at center,
     rgba(240, 220, 250, 0.2) 0%,
     rgba(240, 220, 250, 0.1) 40%,
     transparent 80%
   );
-  border-radius: 50%; /* Creates a more organic, cloud-like shape */
+  border-radius: 50%;
   z-index: 0;
-  pointer-events: none; /* Ensures background doesn't interfere with interactions */
+  pointer-events: none;
 }
 
 .detail-header h1,
 .detail-header h2,
 .detail-header p {
-  position: relative; /* Keeps text above the background */
+  position: relative;
   z-index: 1;
 }
 
@@ -87,7 +85,7 @@ defineProps<{
   color: #007bff;
 }
 
-.municipio-text {
+.location-text {
   font-size: 1rem;
   color: #555555;
   margin-top: 0.5rem;

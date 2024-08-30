@@ -3,18 +3,21 @@
     <button class="close-btn" @click="$emit('close')">×</button>
     <div class="card-image">
       <img
-          :src="imageUrl"
-          @load="handleImageLoad"
-          @error="handleImageError"
-          class="popup-image"
-          alt="Image of {{ title }}"
+        :src="imageUrl"
+        @load="handleImageLoad"
+        @error="handleImageError"
+        class="popup-image"
+        alt="Image of {{ title }}"
       />
       <div v-if="!imageLoaded" class="skeleton-loader"></div> <!-- Skeleton loader -->
     </div>
     <div class="card-content">
       <h3 class="popup-subtype">{{ subtype }}</h3>
       <h2 class="popup-title">{{ title }}</h2>
-      <p class="municipio-text">{{ municipality }}</p>
+      <!-- Show province only if the collection is "locality" -->
+      <p v-if="collection === 'locality'" class="province-text">{{ province }}</p>
+      <!-- Show municipality if the collection is not "locality" -->
+      <p v-else class="municipio-text">{{ municipality }}</p>
       <p class="distance-text">
         <font-awesome-icon icon="location-dot" class="location-icon" /> {{ distance }} km
       </p>
@@ -25,6 +28,7 @@
   </div>
 </template>
 
+
 <script setup lang="ts">
 import { defineProps, ref, watch } from 'vue';
 import { getDefaultImageUrl } from '@/utils/image';
@@ -34,6 +38,7 @@ const props = defineProps<{
   imageSrc: string;
   subtype: string;
   title: string;
+  province:string;
   municipality: string;
   distance: string;
   collection: string;

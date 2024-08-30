@@ -21,15 +21,17 @@ const collectionsStore = useCollectionsStore();
 const filterStore = useFilterStore();
 const mapStore = useMapStore();
 
+// TODO Hacer un getter en el collectionsStore para obtener las categorías
 const categories = [
   'Alojamientos',
   'Cuevas y Restos Arqueológicos',
   'Edificios Religiosos y Castillos',
-  'Eventos',
-  'Parques Temáticos',
-  'Museos y Centros de Interpretación',
   'Espacios Naturales',
-  'Restaurantes'
+  'Eventos',
+  'Localidades',
+  'Museos y Centros de Interpretación',
+  'Parques Temáticos',
+  'Restaurantes',
 ];
 
 const toggleCategory = async (category) => {

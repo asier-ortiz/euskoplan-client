@@ -8,6 +8,7 @@ import type { CaveModel } from '@/models/cave.model';
 import type { CulturalModel } from '@/models/cultural.model';
 import type { EventModel } from '@/models/event.model';
 import type { FairModel } from '@/models/fair.model';
+import type { LocalityModel } from '@/models/locality.model'
 import type { MuseumModel } from '@/models/museum.model';
 import type { NaturalModel } from '@/models/natural.model';
 import type { RestaurantModel } from '@/models/restaurant.model';
@@ -18,10 +19,11 @@ const categories = [
   'Alojamientos',
   'Cuevas y Restos Arqueológicos',
   'Edificios Religiosos y Castillos',
-  'Eventos',
-  'Parques Temáticos',
-  'Museos y Centros de Interpretación',
   'Espacios Naturales',
+  'Eventos',
+  'Localidades',
+  'Museos y Centros de Interpretación',
+  'Parques Temáticos',
   'Restaurantes',
 ];
 
@@ -37,6 +39,7 @@ export const useCollectionsStore = defineStore('collections', {
       CulturalModel[] |
       EventModel[] |
       FairModel[] |
+      LocalityModel[] |
       MuseumModel[] |
       NaturalModel[] |
       RestaurantModel[]
@@ -53,6 +56,7 @@ export const useCollectionsStore = defineStore('collections', {
       CulturalModel[] |
       EventModel[] |
       FairModel[] |
+      LocalityModel[] |
       MuseumModel[] |
       NaturalModel[] |
       RestaurantModel[]
@@ -115,17 +119,20 @@ export const useCollectionsStore = defineStore('collections', {
           case 'edificios religiosos y castillos':
             endpoint = '/cultural/results/filter';
             break;
+          case 'espacios naturales':
+            endpoint = '/natural/results/filter';
+            break;
           case 'eventos':
             endpoint = '/event/results/filter';
             break;
-          case 'parques temáticos':
-            endpoint = '/fair/results/filter';
+          case 'localidades':
+            endpoint = '/locality/results/filter';
             break;
           case 'museos y centros de interpretación':
             endpoint = '/museum/results/filter';
             break;
-          case 'espacios naturales':
-            endpoint = '/natural/results/filter';
+          case 'parques temáticos':
+            endpoint = '/fair/results/filter';
             break;
           case 'restaurantes':
             endpoint = '/restaurant/results/filter';

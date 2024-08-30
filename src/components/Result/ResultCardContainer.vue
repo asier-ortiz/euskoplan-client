@@ -14,20 +14,31 @@
         Fecha
         <i :class="collectionsStore.sortOrder === 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'"></i>
       </button>
+      <!-- Additional Buttons for Locality Collection -->
+      <button v-if="isLocalityCollection" @click="sortByPopulation" :class="{ active: collectionsStore.sortField === 'population' }">
+        Población
+        <i :class="collectionsStore.sortOrder === 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'"></i>
+      </button>
+      <button v-if="isLocalityCollection" @click="sortByArea" :class="{ active: collectionsStore.sortField === 'area' }">
+        Superficie
+        <i :class="collectionsStore.sortOrder === 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'"></i>
+      </button>
     </div>
     <div v-if="!collectionsStore.loading" class="cards-grid">
       <ResultCard
-          v-for="item in paginatedResults"
-          :key="`${item.coleccion}-${item.id}`"
-          :collection="item.coleccion"
-          :name="item.nombre"
-          :images="item.imagenes"
-          :itemId="Number(item.codigo)"
-          :longitud="Number(item.longitud)"
-          :latitud="Number(item.latitud)"
-          :subtype="getSubtype(item)"
-          :municipio="item.nombre_municipio"
-          :fechaInicio="item.fecha_inicio"
+        v-for="item in paginatedResults"
+        :key="`${item.coleccion}-${item.id}`"
+        :collection="item.coleccion"
+        :name="item.nombre"
+        :images="item.imagenes"
+        :itemId="Number(item.codigo)"
+        :longitude="Number(item.longitud)"
+        :latitude="Number(item.latitud)"
+        :subtype="getSubtype(item)"
+        :municipality="item.coleccion === 'locality' ? item.nombre_provincia : item.nombre_municipio"
+        :startDate="item.fecha_inicio"
+        :area="item.coleccion === 'locality' ? item.superficie : null"
+        :population="item.coleccion === 'locality' ? item.numero_habitantes : null"
       />
     </div>
     <ResultCardPagination />
@@ -41,12 +52,12 @@ import { useLocationStore } from '@/stores/location';
 import ResultCard from '@/components/Result/ResultCard.vue';
 import ResultCardPagination from '@/components/Result/ResultCardPagination.vue';
 import { calculateDistance } from '@/utils/distance';
+import { getSubtype } from '@/utils/subtype';
 
-// Access your collections store
 const collectionsStore = useCollectionsStore();
 const locationStore = useLocationStore();
 
-// Compute the sorted results
+// Sort the results based on the selected sort field
 const sortedResults = computed(() => {
   const sorted = [...collectionsStore.results];
   if (collectionsStore.sortField === 'name') {
@@ -57,16 +68,16 @@ const sortedResults = computed(() => {
   } else if (collectionsStore.sortField === 'distance' && locationStore.userLocation) {
     sorted.sort((a, b) => {
       const distanceA = calculateDistance(
-          locationStore.userLocation.latitude,
-          locationStore.userLocation.longitude,
-          a.latitud,
-          a.longitud
+        locationStore.userLocation.latitude,
+        locationStore.userLocation.longitude,
+        a.latitud,
+        a.longitud
       );
       const distanceB = calculateDistance(
-          locationStore.userLocation.latitude,
-          locationStore.userLocation.longitude,
-          b.latitud,
-          b.longitud
+        locationStore.userLocation.latitude,
+        locationStore.userLocation.longitude,
+        b.latitud,
+        b.longitud
       );
       return collectionsStore.sortOrder === 'asc' ? distanceA - distanceB : distanceB - distanceA;
     });
@@ -76,29 +87,36 @@ const sortedResults = computed(() => {
       const dateB = new Date(b.fecha_inicio);
       return collectionsStore.sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
+  } else if (collectionsStore.sortField === 'population') {
+    sorted.sort((a, b) => {
+      const populationA = parseInt(a.numero_habitantes, 10);
+      const populationB = parseInt(b.numero_habitantes, 10);
+      return collectionsStore.sortOrder === 'asc' ? populationA - populationB : populationB - populationA;
+    });
+  } else if (collectionsStore.sortField === 'area') {
+    sorted.sort((a, b) => {
+      const areaA = parseFloat(a.superficie);
+      const areaB = parseFloat(b.superficie);
+      return collectionsStore.sortOrder === 'asc' ? areaA - areaB : areaB - areaA;
+    });
   }
   return sorted;
 });
 
-// Compute the paginated results based on the current page and sorted results
+// Get the paginated results based on the current page and sorted results
 const paginatedResults = computed(() => {
   const start = (collectionsStore.currentPage - 1) * collectionsStore.itemsPerPage;
   const end = start + collectionsStore.itemsPerPage;
   return sortedResults.value.slice(start, end);
 });
 
-// Determine the subtype based on collection type
-const getSubtype = (item) => {
-  if (item.coleccion.toLowerCase() === 'natural') {
-    return item.nombre_subtipo_recurso_espacio_natural || item.nombre_subtipo_recurso_playas_pantanos_rios || '';
-  }
-  return item.nombre_subtipo_recurso || '';
-};
-
 // Determine if the current collection is an event
 const isEventCollection = computed(() => collectionsStore.selectedCategory.toLowerCase() === 'eventos');
 
-// Sort functions
+// Determine if the current collection is a locality
+const isLocalityCollection = computed(() => collectionsStore.selectedCategory.toLowerCase() === 'localidades');
+
+// Functions for sorting
 const sortByName = () => {
   if (collectionsStore.sortField === 'name') {
     collectionsStore.sortOrder = collectionsStore.sortOrder === 'asc' ? 'desc' : 'asc';
@@ -125,19 +143,37 @@ const sortByDate = () => {
     collectionsStore.setSortOrder('asc');
   }
 };
+
+const sortByPopulation = () => {
+  if (collectionsStore.sortField === 'population') {
+    collectionsStore.sortOrder = collectionsStore.sortOrder === 'asc' ? 'desc' : 'asc';
+  } else {
+    collectionsStore.setSortField('population');
+    collectionsStore.setSortOrder('asc');
+  }
+};
+
+const sortByArea = () => {
+  if (collectionsStore.sortField === 'area') {
+    collectionsStore.sortOrder = collectionsStore.sortOrder === 'asc' ? 'desc' : 'asc';
+  } else {
+    collectionsStore.setSortField('area');
+    collectionsStore.setSortOrder('asc');
+  }
+};
 </script>
 
 <style scoped>
 .results-container {
-  margin-top: 1rem; /* Reduced top margin */
+  margin-top: 1rem;
 }
 
 .sorting-buttons {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 1.5rem; /* Increased bottom margin */
+  margin-bottom: 1.5rem;
   gap: 0.5rem;
-  flex-wrap: wrap; /* Allows buttons to wrap to the next line on small screens */
+  flex-wrap: wrap;
 }
 
 .sorting-buttons button {
@@ -161,12 +197,12 @@ const sortByDate = () => {
 .sorting-buttons button:hover {
   background-color: #0056b3;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  color: white; /* Ensures text remains white on hover */
+  color: white;
 }
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjust card size */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
 }
 

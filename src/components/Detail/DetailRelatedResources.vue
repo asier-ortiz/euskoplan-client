@@ -26,18 +26,11 @@
           </div>
         </div>
         <div class="card-content">
-          <h3 v-if="related.nombre_subtipo_recurso ||
-            related.nombre_subtipo_recurso_espacio_natural ||
-            related.nombre_subtipo_recurso_playas_pantanos_rios"
-          >
-            {{
-              related.nombre_subtipo_recurso ||
-              related.nombre_subtipo_recurso_espacio_natural ||
-              related.nombre_subtipo_recurso_playas_pantanos_rios
-            }}
-          </h3>
+          <!-- Show the subtype -->
+          <h3>{{ getSubtype(related) }}</h3>
           <h2>{{ related.nombre }}</h2>
-          <p v-if="related.nombre_municipio" class="municipio-text">{{ related.nombre_municipio }}</p>
+          <!-- Show the province instead of the municipality -->
+          <p v-if="related.nombre_provincia" class="location-text">{{ related.nombre_provincia }}</p>
           <p v-if="related.distancia !== null">
             <font-awesome-icon icon="location-dot" class="location-icon" />
             {{ related.distancia.toFixed(2) }} km
@@ -50,7 +43,8 @@
 
 <script setup lang="ts">
 import { defineProps, ref, watch } from 'vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { getSubtype } from '@/utils/subtype'; // Import the getSubtype function
 
 const props = defineProps<{
   relatedResources: any[];
@@ -208,7 +202,7 @@ const handleImageLoad = (index: number) => {
   color: #007bff;
 }
 
-.municipio-text {
+.location-text {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

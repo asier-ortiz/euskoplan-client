@@ -19,7 +19,7 @@
 
         <hr class="section-separator" />
 
-        <DetailHeader :resource="resource" :distance="distance" />
+        <DetailHeader :resource="resource" :distance="distance" :subtype="getSubtype(resource)" />
 
         <hr class="section-separator" />
 
@@ -66,6 +66,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useMapStore } from '@/stores/map';
 import { calculateDistance } from '@/utils/distance';
 import { getDefaultImageUrl } from '@/utils/image';
+import { getSubtype } from '@/utils/subtype';
 import Swal from 'sweetalert2';
 import Spinner from '@/components/Misc/LoadingSpinner.vue';
 import DetailContent from '@/components/Detail/DetailContent.vue';

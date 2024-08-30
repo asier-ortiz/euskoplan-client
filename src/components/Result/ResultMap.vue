@@ -11,6 +11,7 @@
           :imageSrc="selectedImage"
           :subtype="selectedSubtype"
           :title="selectedTitle"
+          :province="selectedProvince"
           :municipality="selectedMunicipality"
           :distance="selectedDistance"
           :collection="selectedCollection"
@@ -34,6 +35,7 @@ import { calculateDistance } from '@/utils/distance';
 import ResultPopupContent from './ResultPopupContent.vue';
 import { formatDateForApi } from "@/utils/date";
 import { getMarkerImageUrl, handleWheelZoom } from '@/utils/map';
+import { getSubtype } from '@/utils/subtype';
 import MapZoomMessage from '@/components/Misc/MapZoomMessage.vue';
 
 const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -50,6 +52,7 @@ const showInfoPanel = ref(false);
 const selectedImage = ref('');
 const selectedSubtype = ref('');
 const selectedTitle = ref('');
+const selectedProvince = ref('');
 const selectedMunicipality = ref('');
 const selectedDistance = ref('');
 const selectedCollection = ref('');
@@ -74,18 +77,6 @@ const mapOptions = {
 
 // Determine which results to display on the map
 const mapResults = computed(() => collectionsStore.results);
-
-// Determine the subtype based on collection type
-const getSubtype = (item) => {
-  if (item.coleccion.toLowerCase() === 'natural') {
-    return (
-        item.nombre_subtipo_recurso_espacio_natural ||
-        item.nombre_subtipo_recurso_playas_pantanos_rios ||
-        ''
-    );
-  }
-  return item.nombre_subtipo_recurso || '';
-};
 
 // Initialize the map
 let isRestoringState = false;
@@ -357,6 +348,7 @@ const addMarkersAndClusters = async () => {
       properties: {
         title: markerData.nombre,
         subtype: getSubtype(markerData),
+        province: markerData.nombre_provincia,
         municipality: markerData.nombre_municipio,
         code: markerData.codigo,
         images: markerData.imagenes ? JSON.stringify(markerData.imagenes) : '[]',
@@ -399,11 +391,10 @@ const handleMapClick = (e) => {
 
   const feature = features[0];
 
-  selectedImage.value =
-      JSON.parse(feature.properties.images)[0]?.fuente ||
-      `/images/default/default-image.jpg`;
+  selectedImage.value = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
   selectedSubtype.value = feature.properties.subtype;
   selectedTitle.value = feature.properties.title;
+  selectedProvince.value = feature.properties.province;
   selectedMunicipality.value = feature.properties.municipality;
   selectedDistance.value = calculateDistance(
       locationStore.userLocation.latitude,
@@ -429,11 +420,10 @@ const closePopup = () => {
 const openPopup = (feature) => {
   if (!feature || !feature.properties) return;
 
-  selectedImage.value =
-      JSON.parse(feature.properties.images)[0]?.fuente ||
-      `/images/default/default-image.jpg`;
+  selectedImage.value = JSON.parse(feature.properties.images)[0]?.fuente || `/images/default/default-image.jpg`;
   selectedSubtype.value = feature.properties.subtype;
   selectedTitle.value = feature.properties.title;
+  selectedProvince.value = feature.properties.province;
   selectedMunicipality.value = feature.properties.municipality;
   selectedDistance.value = calculateDistance(
       locationStore.userLocation.latitude,

@@ -136,6 +136,12 @@
         <p v-if="resource.capacidad"><strong>Capacidad:</strong> <span v-html="resource.capacidad"></span></p>
         <p v-if="resource.horario"><strong>Horario:</strong> <span v-html="resource.horario"></span></p>
       </template>
+
+      <!-- Locality Specific -->
+      <template v-if="resource.coleccion === 'locality'">
+        <p v-if="resource.numero_habitantes"><strong>Número de Habitantes:</strong> <span v-html="resource.numero_habitantes"></span></p>
+        <p v-if="resource.superficie"><strong>Superficie:</strong> <span>{{ resource.superficie }} Km²</span></p>
+      </template>
     </div>
 
     <hr class="section-separator" />
@@ -251,7 +257,9 @@ const hasDynamicInfo = computed(() => {
     (props.resource.coleccion === 'restaurant' &&
       props.resource.capacidad) ||
     (props.resource.coleccion === 'museum' &&
-      (props.resource.capacidad || props.resource.horario))
+      (props.resource.capacidad || props.resource.horario)) ||
+    (props.resource.coleccion === 'locality' &&
+      (props.resource.numero_habitantes || props.resource.superficie))
   );
 });
 </script>

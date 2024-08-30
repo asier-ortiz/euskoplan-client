@@ -2,22 +2,25 @@ import type { Ref } from 'vue';
 
 export const getMarkerImageUrl = (collection: string): string => {
     const categoryMarkerMap: { [key: string]: string } = {
-        'alojamientos': '/images/map/accommodations-marker.png',
-        'cuevas y restos arqueológicos': '/images/map/caves-marker.png',
-        'edificios religiosos y castillos': '/images/map/culturals-marker.png',
-        'eventos': '/images/map/events-marker.png',
-        'parques temáticos': '/images/map/fairs-marker.png',
-        'museos y centros de interpretación': '/images/map/museums-marker.png',
-        'espacios naturales': '/images/map/naturals-marker.png',
-        'restaurantes': '/images/map/restaurants-marker.png',
-        'accommodation': '/images/map/accommodations-marker.png',
-        'cave': '/images/map/caves-marker.png',
-        'cultural': '/images/map/culturals-marker.png',
-        'event': '/images/map/events-marker.png',
-        'fair': '/images/map/fairs-marker.png',
-        'museum': '/images/map/museums-marker.png',
-        'natural': '/images/map/naturals-marker.png',
-        'restaurant': '/images/map/restaurants-marker.png',
+        'alojamientos': '/images/map/accommodation-marker.png',
+        'cuevas y restos arqueológicos': '/images/map/cave-marker.png',
+        'edificios religiosos y castillos': '/images/map/cultural-marker.png',
+        'espacios naturales': '/images/map/natural-marker.png',
+        'eventos': '/images/map/event-marker.png',
+        'localidades': '/images/map/locality-marker.png',
+        'museos y centros de interpretación': '/images/map/museum-marker.png',
+        'parques temáticos': '/images/map/fair-marker.png',
+        'restaurantes': '/images/map/restaurant-marker.png',
+
+        'accommodation': '/images/map/accommodation-marker.png',
+        'cave': '/images/map/cave-marker.png',
+        'cultural': '/images/map/cultural-marker.png',
+        'event': '/images/map/event-marker.png',
+        'fair': '/images/map/fair-marker.png',
+        'locality': '/images/map/locality-marker.png',
+        'museum': '/images/map/museum-marker.png',
+        'natural': '/images/map/natural-marker.png',
+        'restaurant': '/images/map/restaurant-marker.png',
     };
 
     return categoryMarkerMap[collection.toLowerCase()] || '/images/map/default-marker.png';
