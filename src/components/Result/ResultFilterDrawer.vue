@@ -113,6 +113,23 @@
         </div>
       </div>
 
+      <hr />
+
+      <!-- Distance Slider -->
+      <label for="distance">Distancia ({{ selectedDistance }} km)</label>
+      <input
+        type="range"
+        id="distance"
+        v-model="selectedDistance"
+        @input="applyFilters"
+        min="10"
+        max="100"
+        step="10"
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+      />
+
     </div>
   </div>
 </template>
@@ -218,6 +235,21 @@ const selectedCategoryName = computed(() => selectedCategory.value);
 
 // Synchronize subcategory selection with the filter store
 const selectedSubCategory = ref(null);
+
+// Variables and functions for distance filter
+const selectedDistance = ref(100); // Initial distance of 10km
+
+const onTouchStart = (event) => {
+  document.body.style.overflow = "hidden"; // Disable page scrolling
+};
+
+const onTouchMove = (event) => {
+  event.stopPropagation(); // Prevent touchmove event propagation
+};
+
+const onTouchEnd = (event) => {
+  document.body.style.overflow = ""; // Re-enable page scrolling
+};
 
 // Watch for changes in selectedProvince and reset selectedLocality
 watch(selectedProvince, async (newProvince) => {
@@ -551,6 +583,11 @@ select:disabled,
 
 .date-picker-group label {
   font-weight: normal;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin: 0.5rem 0;
 }
 
 hr {
