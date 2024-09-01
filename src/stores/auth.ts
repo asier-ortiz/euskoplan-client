@@ -10,12 +10,15 @@ import type { UserModel } from '@/models/user.model'; // Import UserModel
 axios.defaults.baseURL = config.apiBaseUrl;
 
 export const useAuthStore = defineStore('auth', {
+
   state: () => ({
     user: JSON.parse(localStorage.getItem('user') || 'null') as UserModel | null,
     token: localStorage.getItem('token'),
     redirectTo: null, // Store intended path for redirection
   }),
+
   actions: {
+
     async initializeAuth() {
       if (this.token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
@@ -26,6 +29,7 @@ export const useAuthStore = defineStore('auth', {
         }
       }
     },
+
     async login(credentials) {
       try {
         const response = await axios.post('/user/login', credentials);
@@ -44,6 +48,7 @@ export const useAuthStore = defineStore('auth', {
         throw new Error('Invalid credentials');
       }
     },
+
     async logout() {
       try {
         await axios.post('/user/logout');
@@ -59,6 +64,7 @@ export const useAuthStore = defineStore('auth', {
         });
       }
     },
+
     async fetchUser() {
       try {
         const response = await axios.get('/user/user');
@@ -75,6 +81,7 @@ export const useAuthStore = defineStore('auth', {
         throw error;
       }
     },
+
     async verifyEmail(token: string) {
       try {
         console.log('Sending verification request with token:', token);
@@ -106,6 +113,7 @@ export const useAuthStore = defineStore('auth', {
         }
       }
     },
+
     async requestPasswordReset(email: string) {
       try {
         await axios.post('/password/sendEmail', { email });
@@ -118,6 +126,7 @@ export const useAuthStore = defineStore('auth', {
         }
       }
     },
+
     async resetPassword(data) {
       try {
         const response = await axios.post('/password/reset', data);
@@ -133,6 +142,7 @@ export const useAuthStore = defineStore('auth', {
         console.error(error);
       }
     },
+
     async findPasswordResetToken(token: string) {
       try {
         const response = await axios.get(`/password/find/${token}`);
@@ -147,6 +157,7 @@ export const useAuthStore = defineStore('auth', {
         }
       }
     },
+
     async register(credentials) {
       try {
         await axios.post('/user/register', credentials);
@@ -162,6 +173,7 @@ export const useAuthStore = defineStore('auth', {
         throw new Error('Registration failed');
       }
     },
+
     async checkUsernameAvailability(username) {
       try {
         const response = await axios.get(`/user/find/username/${username}`);
@@ -173,6 +185,7 @@ export const useAuthStore = defineStore('auth', {
         throw new Error('Failed to check username availability');
       }
     },
+
     async checkEmailAvailability(email) {
       try {
         const response = await axios.get(`/user/find/email/${email}`);
@@ -184,12 +197,15 @@ export const useAuthStore = defineStore('auth', {
         throw new Error('Failed to check email availability');
       }
     },
+
     isLoggedIn() {
       return !!this.token;
     },
+
     setRedirectTo(path) {
       this.redirectTo = path;
     },
+
     clearAuthData() {
       this.user = null;
       this.token = null;
@@ -201,5 +217,6 @@ export const useAuthStore = defineStore('auth', {
       const favoritesStore = useFavoritesStore();
       favoritesStore.clearFavorites();
     },
+
   },
 });

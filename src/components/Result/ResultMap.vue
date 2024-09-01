@@ -15,7 +15,7 @@
           :municipality="selectedMunicipality"
           :distance="selectedDistance"
           :collection="selectedCollection"
-          :code="selectedCode"
+          :slug="selectedSlug"
           @close="closePopup"
       />
     </div>
@@ -56,7 +56,7 @@ const selectedProvince = ref('');
 const selectedMunicipality = ref('');
 const selectedDistance = ref('');
 const selectedCollection = ref('');
-const selectedCode = ref('');
+const selectedSlug = ref('');
 
 // Ref variables for wheel zoom handling
 const showZoomMessage = ref(false);
@@ -65,15 +65,6 @@ let wheelZoomHandler: (event: WheelEvent) => void;
 
 // Watch for active tab to ensure map is initialized properly
 const isMapTabActive = computed(() => collectionsStore.activeTab === 'map');
-
-// Map configuration
-const mapOptions = {
-  style: isDarkMode.value === 'dark'
-      ? 'mapbox://styles/mapbox/dark-v10'
-      : 'mapbox://styles/mapbox/streets-v11',
-  center: mapStore.mapCenter || [-2.6189, 43.25],
-  zoom: mapStore.mapZoom || 7,
-};
 
 // Determine which results to display on the map
 const mapResults = computed(() => collectionsStore.results);
@@ -84,8 +75,12 @@ let isRestoringState = false;
 const initializeMap = () => {
   if (!map) {
     map = new mapboxgl.Map({
+      style: isDarkMode.value === 'dark'
+        ? 'mapbox://styles/mapbox/dark-v10'
+        : 'mapbox://styles/mapbox/streets-v11',
+      center: mapStore.mapCenter || [-2.6189, 43.25],
+      zoom: mapStore.mapZoom || 7,
       container: mapContainer.value!,
-      ...mapOptions,
     });
 
     map.scrollZoom.disable();
@@ -350,7 +345,7 @@ const addMarkersAndClusters = async () => {
         subtype: getSubtype(markerData),
         province: markerData.nombre_provincia,
         municipality: markerData.nombre_municipio,
-        code: markerData.codigo,
+        slug: markerData.slug,
         images: markerData.imagenes ? JSON.stringify(markerData.imagenes) : '[]',
         collection: markerData.coleccion,
         fechaInicio: markerData.fechaInicio || null,
@@ -403,7 +398,7 @@ const handleMapClick = (e) => {
       feature.geometry.coordinates[0]
   ).toFixed(2);
   selectedCollection.value = feature.properties.collection;
-  selectedCode.value = feature.properties.code;
+  selectedSlug.value = feature.properties.slug;
 
   mapStore.setMapPopup(JSON.parse(JSON.stringify(feature)));
 
@@ -432,7 +427,7 @@ const openPopup = (feature) => {
       feature.geometry.coordinates[0]
   ).toFixed(2);
   selectedCollection.value = feature.properties.collection;
-  selectedCode.value = feature.properties.code;
+  selectedSlug.value = feature.properties.slug;
 
   showInfoPanel.value = true;
 };

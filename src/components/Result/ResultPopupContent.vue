@@ -21,7 +21,7 @@
       <p class="distance-text">
         <font-awesome-icon icon="location-dot" class="location-icon" /> {{ distance }} km
       </p>
-      <router-link :to="`/detail/${collection}/${code}`" class="btn btn-sm btn-primary mt-1 w-100">
+      <router-link :to="`/detail/${collection}/${slug}`" class="btn btn-sm btn-primary mt-1 w-100">
         Ver Detalles
       </router-link>
     </div>
@@ -42,7 +42,7 @@ const props = defineProps<{
   municipality: string;
   distance: string;
   collection: string;
-  code: string;
+  slug: string;
 }>();
 
 const imageUrl = ref('');
