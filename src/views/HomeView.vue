@@ -30,7 +30,7 @@ const restoreScrollPosition = () => {
 
 const fetchData = async () => {
   collectionsStore.clearErrorState();
-  await collectionsStore.fetchResults(collectionsStore.selectedCategory, collectionsStore.searchQuery, filterStore.getFilters());
+  await collectionsStore.fetchResources(collectionsStore.selectedCategory, collectionsStore.searchQuery, filterStore.getFilters());
 };
 
 onBeforeMount(() => {

@@ -150,13 +150,16 @@ watch(
 
 const fetchResource = async () => {
   loading.value = true;
-  const { id, category } = route.params;
+  const { slug, category } = route.params;
   const language = 'es';
+
+  // Extract ID from the slug (assuming slug format "title-id")
+  const id = slug.split('-').pop();
 
   if (collectionsStore.currentDetail && collectionsStore.currentDetail.id === Number(id) && collectionsStore.currentDetail.coleccion === category) {
     resource.value = collectionsStore.currentDetail;
   } else {
-    await collectionsStore.fetchResourceById(category, Number(id), language);
+    await collectionsStore.fetchResource(category, Number(id), language);
     resource.value = collectionsStore.currentDetail;
   }
 
@@ -258,7 +261,7 @@ const nextSlide = () => {
 const navigateToResource = (related: any) => {
   router.push({
     name: 'Detail',
-    params: { id: Number(related.codigo), category: related.coleccion },
+    params: { slug: related.slug, category: related.coleccion },
   });
 };
 

@@ -48,7 +48,7 @@ const fetchResultsWithFilters = () => {
   const filters = filterStore.getFilters(); // Get active filters
   console.log('Fetching results with query:', searchQuery.value);
   collectionsStore.setSearchQuery(searchQuery.value);
-  collectionsStore.fetchResults(
+  collectionsStore.fetchResources(
       collectionsStore.selectedCategory,
       searchQuery.value,
       filters // Pass active filters

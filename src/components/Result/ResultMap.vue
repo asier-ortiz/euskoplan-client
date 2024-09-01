@@ -526,7 +526,7 @@ const performMapSearch = async () => {
     }),
   };
 
-  await collectionsStore.fetchResults(selectedCategory, searchQuery, filters);
+  await collectionsStore.fetchResources(selectedCategory, searchQuery, filters);
 
   if (mapStore.shouldRefitBounds) {
     fitMapBounds();

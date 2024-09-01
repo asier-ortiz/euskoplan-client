@@ -4,6 +4,7 @@ import type  {ServiceModel} from "@/models/service.model";
 export interface NaturalModel {
   id:                                           number;
   coleccion:                                    string;
+  slug:                    string;
   codigo:                                       string;
   tipo_recurso?:                                string;
   nombre?:                                      string;

@@ -36,8 +36,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useImageHandler } from '@/utils/image';
 
 const props = defineProps({
-  itemId: {
-    type: [Number, String],
+  slug: {
+    type: String,
     required: true,
   },
   collection: {
@@ -106,7 +106,7 @@ const distance = computed(() => {
 });
 
 const navigateToDetail = () => {
-  router.push({ name: 'Detail', params: { id: Number(props.itemId), category: props.collection } });
+  router.push({ name: 'Detail', params: { slug: props.slug, category: props.collection } });
 };
 
 // Determine if the current collection is an event

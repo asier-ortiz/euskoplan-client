@@ -44,7 +44,7 @@ const toggleCategory = async (category) => {
     collectionsStore.setCurrentPage(1);
 
     const filters = filterStore.getFilters();
-    await collectionsStore.fetchResults(newCategory, collectionsStore.searchQuery, filters);
+    await collectionsStore.fetchResources(newCategory, collectionsStore.searchQuery, filters);
     mapStore.setDidCategoryChange(true);
     mapStore.setShouldRefitBounds(true);  // Ensure map refits bounds after category change
   } else {

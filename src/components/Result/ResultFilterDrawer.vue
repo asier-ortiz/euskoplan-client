@@ -363,7 +363,7 @@ const applyFilters = async () => {
   };
 
   // Use fetchResults to get data based on both search and filters
-  await collectionsStore.fetchResults(
+  await collectionsStore.fetchResources(
     selectedCategoryName.value,
     collectionsStore.searchQuery,
     filters

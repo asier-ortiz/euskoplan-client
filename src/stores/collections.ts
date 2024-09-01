@@ -89,7 +89,7 @@ export const useCollectionsStore = defineStore('collections', {
   },
 
   actions: {
-    async fetchResults(category: string | null, searchQuery: string, filters: any) {
+    async fetchResources(category: string | null, searchQuery: string, filters: any) {
       if (this.apiError) return;  // Prevent further API calls if an error exists
 
       this.loading = true;
@@ -169,30 +169,7 @@ export const useCollectionsStore = defineStore('collections', {
       }
     },
 
-    setSearchQuery(query: string) {
-      this.searchQuery = query;
-    },
-
-    setSortField(field: string) {
-      this.sortField = field;
-    },
-
-    setSortOrder(order: string) {
-      this.sortOrder = order;
-    },
-
-    setActiveTab(tab: string) {
-      this.activeTab = tab;
-    },
-
-    setSelectedCategory(category: string | null) {
-      if (this.selectedCategory !== category) {
-        this.searchQuery = '';  // Reset the search query
-        this.selectedCategory = category || '';
-      }
-    },
-
-    async fetchResourceById(category: string, id: number, language: string) {
+    async fetchResource(category: string, id: number, language: string) {
       // Check if the resource is already cached in currentDetail
       if (this.currentDetail && this.currentDetail.id === id && this.currentDetail.coleccion === category) {
         // No need to refetch if it's already in the store
@@ -246,6 +223,29 @@ export const useCollectionsStore = defineStore('collections', {
         }
       } finally {
         this.fetchRelatedResourcesAbortController = null;  // Reset controller after request completes
+      }
+    },
+
+    setSearchQuery(query: string) {
+      this.searchQuery = query;
+    },
+
+    setSortField(field: string) {
+      this.sortField = field;
+    },
+
+    setSortOrder(order: string) {
+      this.sortOrder = order;
+    },
+
+    setActiveTab(tab: string) {
+      this.activeTab = tab;
+    },
+
+    setSelectedCategory(category: string | null) {
+      if (this.selectedCategory !== category) {
+        this.searchQuery = '';  // Reset the search query
+        this.selectedCategory = category || '';
       }
     },
 

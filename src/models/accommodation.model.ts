@@ -5,6 +5,7 @@ import type {PriceModel} from "@/models/price.model";
 export interface AccommodationModel {
   id:                      number;
   coleccion:               string;
+  slug:                    string;
   codigo:                  string;
   tipo_recurso?:           string;
   nombre?:                 string;

@@ -3,6 +3,7 @@ import type  {ImageModel} from "@/models/image.model";
 export interface EventModel {
   id:                      number;
   coleccion:               string;
+  slug:                    string;
   codigo:                  string;
   tipo_recurso?:           string;
   nombre?:                 string;

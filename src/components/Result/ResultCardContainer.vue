@@ -31,7 +31,7 @@
         :collection="item.coleccion"
         :name="item.nombre"
         :images="item.imagenes"
-        :itemId="Number(item.codigo)"
+        :slug="item.slug"
         :longitude="Number(item.longitud)"
         :latitude="Number(item.latitud)"
         :subtype="getSubtype(item)"

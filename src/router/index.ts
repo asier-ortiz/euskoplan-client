@@ -30,7 +30,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/auth/password-reset', name: 'PasswordReset', component: PasswordReset },
   { path: '/auth/password-recovery', name: 'PasswordRecovery', component: PasswordRecovery },
 
-  { path: '/detail/:category/:id', name: 'Detail', component: Detail },
+  { path: '/detail/:category/:slug', name: 'Detail', component: Detail },
   { path: '/account', name: 'Account', component: Account, meta: { requiresAuth: true } },
 
 ];
@@ -76,7 +76,7 @@ router.beforeEach(async (to, from, next) => {
   if (to.name === 'Home' && !from.name) {
     const collectionsStore = useCollectionsStore();
     const filterStore = useFilterStore();
-    collectionsStore.fetchResults(collectionsStore.selectedCategory, collectionsStore.searchQuery, filterStore.getFilters());
+    collectionsStore.fetchResources(collectionsStore.selectedCategory, collectionsStore.searchQuery, filterStore.getFilters());
   }
 
   // Redirect to login if the route requires auth and the user isn't logged in

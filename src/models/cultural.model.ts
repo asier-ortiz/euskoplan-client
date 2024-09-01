@@ -4,6 +4,7 @@ import type  {ServiceModel} from "@/models/service.model";
 export interface CulturalModel {
   id:                      number;
   coleccion:               string;
+  slug:                    string;
   codigo:                  string;
   tipo_recurso?:           string;
   nombre?:                 string;

@@ -6,6 +6,7 @@ export interface PlanModel {
   idioma:       string;
   titulo:       string;
   descripcion?: string;
+  slug:         string;
   votos:        number;
   publico:      boolean;
   pasos?:       StepModel[];
