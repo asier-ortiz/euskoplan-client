@@ -146,6 +146,7 @@ const generatePlan = async () => {
       año: year,
       dias: selectedDays.value, // Asegurarse de que `dias` se envía como un entero
       tipo_viaje: selectedTripType.value.toLowerCase(),
+      idioma: 'es' // Idioma fijo para pruebas
     };
 
     const response = await planStore.suggestItinerary(itineraryData);
