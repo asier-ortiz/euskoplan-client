@@ -116,13 +116,13 @@
       <hr />
 
       <!-- Distance Slider -->
-      <label for="distance">Distancia ({{ selectedDistance }} km)</label>
+      <label for="distance">Distancia ({{ filterStore.distanceStatus }})</label>
       <input
         type="range"
         id="distance"
         v-model="selectedDistance"
-        @input="applyFilters"
-        min="10"
+        @input="handleDistanceFilter"
+        min="0"
         max="100"
         step="10"
         @touchstart="onTouchStart"
@@ -138,12 +138,14 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFilterStore } from '@/stores/filter';
 import { useCollectionsStore } from '@/stores/collections';
+import { useLocationStore } from '@/stores/location';
 import { useMapStore } from '@/stores/map';
 import DatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { defineProps, defineEmits } from 'vue';
 import { debounce } from 'lodash';
 import { formatDateForApi } from "@/utils/date";
+import Swal from 'sweetalert2';
 
 const props = defineProps({
   visible: {
@@ -157,6 +159,7 @@ const emit = defineEmits(['close', 'filtersApplied']);
 const filterStore = useFilterStore();
 const collectionsStore = useCollectionsStore();
 const mapStore = useMapStore();
+const locationStore = useLocationStore();
 
 // Ensure categories are fetched when component mounts
 onMounted(() => {
@@ -237,7 +240,58 @@ const selectedCategoryName = computed(() => selectedCategory.value);
 const selectedSubCategory = ref(null);
 
 // Variables and functions for distance filter
-const selectedDistance = ref(100); // Initial distance of 10km
+const selectedDistance = ref(0); // Initial distance of 0km
+
+const handleDistanceFilter = async () => {
+  // If location permission was previously denied, inform the user with SweetAlert
+  if (locationStore.locationPermissionDenied) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Location Permission Denied',
+      text: 'Location permission has been denied. Please enable it manually in your browser settings to apply the distance filter.',
+    });
+    selectedDistance.value = 0; // Reset the distance slider
+    return;
+  }
+
+  // If location is not available, ask the user with SweetAlert confirmation dialog
+  if (!locationStore.userLocation) {
+    const userConfirmed = await Swal.fire({
+      title: 'Enable Location?',
+      text: 'Location is disabled. Do you want to enable it to apply the distance filter?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, enable it',
+      cancelButtonText: 'No, keep it disabled',
+    });
+
+    if (userConfirmed.isConfirmed) {
+      try {
+        await locationStore.fetchUserLocation();
+      } catch (error) {
+        if (error.code === error.PERMISSION_DENIED) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Permission Denied',
+            text: 'Location permission was denied. The distance filter will not be applied.',
+          });
+          filterStore.setSelectedDistance(null);
+          selectedDistance.value = 0; // Reset the distance slider
+          return;
+        }
+      }
+    } else {
+      filterStore.setSelectedDistance(null);
+      selectedDistance.value = 0; // Reset the distance slider if the user does not grant permission
+      return;
+    }
+  }
+
+  filterStore.setSelectedDistance(selectedDistance.value);
+
+  // If location is available, apply the distance filter
+  debouncedApplyFilters();
+};
 
 const onTouchStart = (event) => {
   document.body.style.overflow = "hidden"; // Disable page scrolling
@@ -360,6 +414,11 @@ const applyFilters = async () => {
     ...(getSubCategoryFilter() && getSubCategoryFilter()), // Use helper function to get the correct parameter
     ...(formattedStart && { fecha_inicio: formattedStart }),
     ...(formattedEnd && { fecha_fin: formattedEnd }),
+    ...(locationStore.userLocation && {
+      latitud: locationStore.userLocation.latitude,
+      longitud: locationStore.userLocation.longitude,
+      distancia: selectedDistance.value,
+    }),
   };
 
   // Use fetchResults to get data based on both search and filters

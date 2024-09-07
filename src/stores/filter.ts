@@ -16,6 +16,7 @@ export const useFilterStore = defineStore('filter', {
         selectedLocality: useSessionStorage('selectedLocality', null),
         startDate: useSessionStorage('startDate', null),
         endDate: useSessionStorage('endDate', null),
+        selectedDistance: useSessionStorage('selectedDistance', 0),
         categories: {
             accommodation: [],
             cave: [],
@@ -49,6 +50,7 @@ export const useFilterStore = defineStore('filter', {
             if (state.selectedLocality) count++;
             if (state.startDate) count++;
             if (state.endDate) count++;
+            if (state.selectedDistance > 0) count++;
 
             // Check natural categories separately
             if (state.selectedCategories.natural.espacio_natural || state.selectedCategories.natural.playas_pantanos_rios) {
@@ -63,6 +65,11 @@ export const useFilterStore = defineStore('filter', {
             }
 
             return count;
+        },
+
+        // Display distance filter status (either the distance or "Desactivado")
+        distanceStatus: (state) => {
+            return state.selectedDistance > 0 ? `${state.selectedDistance} km` : 'Desactivado';
         },
     },
     actions: {
@@ -152,11 +159,16 @@ export const useFilterStore = defineStore('filter', {
             console.log('Selected Categories:', this.selectedCategories); // Debugging log
         },
 
+        setSelectedDistance(distance) {
+            this.selectedDistance = distance;
+        },
+
         clearFilters() {
             this.selectedProvince = null;
             this.selectedLocality = null;
             this.startDate = null;
             this.endDate = null;
+            this.selectedDistance = 0;
             this.selectedCategories = {
                 accommodation: null,
                 cave: null,
@@ -178,6 +190,7 @@ export const useFilterStore = defineStore('filter', {
                 nombre_municipio: this.selectedLocality || undefined,
                 fecha_inicio: this.startDate || undefined,
                 fecha_fin: this.endDate || undefined,
+                distancia: this.selectedDistance > 0 ? this.selectedDistance : undefined,
                 nombre_subtipo_recurso_espacio_natural: this.selectedCategories.natural.espacio_natural || undefined,
                 nombre_subtipo_recurso_playas_pantanos_rios: this.selectedCategories.natural.playas_pantanos_rios || undefined,
                 nombre_subtipo_recurso: this.nombre_subtipo_recurso || undefined
