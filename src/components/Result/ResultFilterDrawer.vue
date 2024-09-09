@@ -320,6 +320,8 @@ watch(selectedProvince, async (newProvince) => {
 watch(selectedCategory, () => {
   clearLocalFilters();
   filterStore.clearFilters();
+  selectedDistance.value = 0; // Reset the distance slider
+  filterStore.setSelectedDistance(0); // Reset distance in the store
   debouncedApplyFilters(); // Trigger filters application on category change
 });
 
