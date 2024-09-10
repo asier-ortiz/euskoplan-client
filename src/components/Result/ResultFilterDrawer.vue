@@ -27,6 +27,10 @@
           {{ selectedSubCategory }}
           <button class="chip-close" @click="removeSelectedCategory">&times;</button>
         </span>
+        <span v-if="selectedDistance > 0" class="chip">
+          {{ selectedDistance }} km
+          <button class="chip-close" @click="removeDistance">&times;</button>
+        </span>
       </div>
 
       <hr />
@@ -180,6 +184,9 @@ onMounted(() => {
   } else {
     selectedSubCategory.value = filterStore.selectedCategories[selectedCategory.value.toLowerCase()];
   }
+
+  // Initialize selected distance based on stored value
+  selectedDistance.value = filterStore.selectedDistance;
 });
 
 // Fixed provinces options
@@ -240,7 +247,7 @@ const selectedCategoryName = computed(() => selectedCategory.value);
 const selectedSubCategory = ref(null);
 
 // Variables and functions for distance filter
-const selectedDistance = ref(0); // Initial distance of 0km
+const selectedDistance = ref(filterStore.selectedDistance);
 
 const handleDistanceFilter = async () => {
   // If location permission was previously denied, inform the user with SweetAlert
@@ -347,6 +354,12 @@ watch([startDate, endDate], () => {
   debouncedApplyFilters();
 });
 
+// Watch for changes in selectedDistance and apply filters automatically
+watch(selectedDistance, (newDistance) => {
+  filterStore.setSelectedDistance(newDistance);
+  debouncedApplyFilters(); 
+});
+
 // Check if any filter is selected
 const anyFilterSelected = computed(() => {
   return (
@@ -384,7 +397,7 @@ const closeDrawer = () => {
 // Debounce the applyFilters function to reduce API calls
 const debouncedApplyFilters = debounce(() => {
   applyFilters();
-}, 300);
+}, 500);
 
 // Function to apply filters and update the store
 const applyFilters = async () => {
@@ -515,6 +528,14 @@ const removeSelectedCategory = async () => {
   selectedSubCategory.value = null;
   await debouncedApplyFilters(); // Trigger query after removal
 };
+
+// Function to remove the selected distance
+const removeDistance = async () => {
+  selectedDistance.value = 0;
+  filterStore.setSelectedDistance(0); // Reset in the store
+  await debouncedApplyFilters();
+};
+
 </script>
 
 <style scoped>
