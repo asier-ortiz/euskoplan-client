@@ -357,7 +357,7 @@ watch([startDate, endDate], () => {
 // Watch for changes in selectedDistance and apply filters automatically
 watch(selectedDistance, (newDistance) => {
   filterStore.setSelectedDistance(newDistance);
-  debouncedApplyFilters(); 
+  debouncedApplyFilters();
 });
 
 // Check if any filter is selected
@@ -367,7 +367,8 @@ const anyFilterSelected = computed(() => {
     selectedLocality.value ||
     startDate.value ||
     endDate.value ||
-    selectedSubCategory.value
+    selectedSubCategory.value ||
+    selectedDistance.value > 0
   );
 });
 
