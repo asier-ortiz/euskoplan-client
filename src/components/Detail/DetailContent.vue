@@ -91,6 +91,18 @@
         <p v-if="resource.num_hab_salon"><strong>Salones:</strong> <span v-html="resource.num_hab_salon"></span></p>
         <p v-if="resource.num_hab_hasta_4_plazas"><strong>Habitaciones hasta 4 plazas:</strong> <span v-html="resource.num_hab_hasta_4_plazas"></span></p>
         <p v-if="resource.num_hab_mas_4_plazas"><strong>Habitaciones más de 4 plazas:</strong> <span v-html="resource.num_hab_mas_4_plazas"></span></p>
+
+        <!-- Sección para mostrar los precios -->
+        <p v-if="resource.precios && resource.precios.length > 0"><strong>Precios:</strong></p>
+        <template v-for="(precio, index) in resource.precios" :key="index">
+          <p>
+            <strong>{{ precio.nombre }}</strong>
+            <span v-if="precio.capacidad && precio.capacidad > 0">
+              (Capacidad: {{ precio.capacidad }})
+            </span>:
+            {{ precio.precio_minimo }} - {{ precio.precio_maximo }} €
+          </p>
+        </template>
       </template>
 
       <!-- Cave Specific -->
